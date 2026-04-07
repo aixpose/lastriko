@@ -16,7 +16,9 @@ Ship the first official plugins and validate the plugin architecture with real-w
 
 ## Exit Criteria
 
-A developer must be able to write this and have it work with real API calls:
+**Tests:** Every plugin ships with its own test suite. Unit tests mock the external API. Integration tests run against the real API only in CI when the relevant secret is present (skip gracefully otherwise). Plugin isolation is verified: no plugin imports from another plugin.
+
+**Functional:** A developer must be able to write this and have it work with real API calls:
 
 ```typescript
 import { app } from 'lastriko';

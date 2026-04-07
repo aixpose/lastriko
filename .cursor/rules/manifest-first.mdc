@@ -25,6 +25,8 @@ This rule applies to:
 
 Before writing code, confirm ALL of the following:
 
+0. **Tests exist or will be written in the same PR** — Every function, component, message type, or engine behaviour added to `packages/` must have a corresponding test. If you cannot describe how to test it, stop and design the test first. See `.cursor/rules/test-coverage.mdc`.
+
 1. **MANIFEST.md** — Does the relevant section describe this code?
    - If adding a component: Is it in the component tables in Section 4?
    - If changing the protocol: Is it in [docs/architecture/PROTOCOL.md](../../docs/architecture/PROTOCOL.md)?

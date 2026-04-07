@@ -18,6 +18,7 @@ Polished desktop export experience and multiple deployment options. By the end o
 2. `bunx lastriko export --static` produces a `dist/` folder that opens correctly from the filesystem with no server.
 3. `bunx lastriko export --docker` produces a `Dockerfile` that builds and runs the demo correctly.
 4. `bunx lastriko share` produces a public URL that allows someone on another machine to access the demo.
+5. **All export flows have automated tests.** Desktop and static exports are tested in CI with Playwright (open the output in a headless browser, verify key components render). Docker export is tested with `docker build && docker run` in CI.
 
 ---
 

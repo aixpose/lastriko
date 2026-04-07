@@ -21,6 +21,7 @@ This phase makes Lastriko a **complete** prototyping toolkit, not just a minimal
 3. WebSocket message batching is implemented and measurably reduces network traffic.
 4. `ui.page()` multi-page navigation works end-to-end.
 5. Hot reload preserves scroll position and form state across reloads.
+6. **All unit, integration, and E2E tests pass.** Coverage gates maintained. Every component added in this phase has a co-located test file. No Phase 3 component is merged without tests.
 
 ---
 

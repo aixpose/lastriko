@@ -14,6 +14,16 @@ Ship the first usable version with enough components to build a real AI demo. Th
 
 ## Exit Criteria
 
+**All of the following must pass before Phase 3 begins:**
+
+### Tests (non-negotiable)
+- All unit tests pass across Bun and Node.js 20+
+- All integration tests pass
+- All E2E flows pass on Chromium
+- Coverage gates met for all new code
+- Bundle size gates: client ≤ 15KB, core ≤ 50KB
+
+### Functional
 A developer must be able to build and run this demo in under 60 lines of code:
 
 ```typescript
@@ -191,19 +201,56 @@ Full specs: [AI.md](../components/AI.md)
 
 ## Testing Requirements for Phase 2
 
-| Test | Type | What |
-|------|------|------|
-| All input components sync value via EVENT | Integration | 7 input types |
-| `table.prepend()` → row appears; `row.update()` → FRAGMENT | Integration | Live row mutation |
-| `streamText.append()` → STREAM_CHUNK messages in order | Integration | Streaming |
-| `shell` renders correct region HTML | Unit | Layout |
-| `grid` responsive: wraps at minWidth | Visual (Playwright) | CSS |
-| Button `setLoading(true)` disables the button | Integration | Lock pattern |
-| File upload: POST /upload returns metadata; EVENT carries it | Integration | Upload flow |
-| ChatUI `.addMessage()` pushes FRAGMENT | Integration | Chat |
-| All components render in light and dark mode | Visual (Playwright) | Theme |
-| Node.js 20+: all tests pass | CI matrix | Compat |
-| Client bundle ≤ 15KB gzip | Build | CI gate |
+Every component added in this phase ships with unit + integration tests. No component is "done" until its tests are written and passing.
+
+**Unit tests** (co-located with component source):
+
+| Test | Component |
+|------|-----------|
+| Renderer produces valid HTML with `data-lk-id` | All components |
+| Renderer escapes all user-supplied strings | All components |
+| Input `.value` reflects last `EVENT` change | All input types |
+| `table.prepend/append` returns a `RowHandle` | `table` |
+| `row.update()` sends `FRAGMENT` with row's id | `table` |
+| `table.remove()` sends `FRAGMENT` removing the row | `table` |
+| `streamText` renders cursor element | `streamText` |
+| `.done()` hides cursor | `streamText` |
+| `shell` renders only declared regions | `shell` |
+| `grid` generates correct column track CSS | `grid` |
+
+**Integration tests** (require running server):
+
+| Test | Flow |
+|------|------|
+| All 7 input types: change EVENT → atom updated | Input components |
+| `table.prepend` → row visible in RENDER; `row.update` → FRAGMENT | Table |
+| `streamText.append(chunk)` → `STREAM_CHUNK` messages in correct order | Streaming |
+| `streamText.done()` → final `STREAM_CHUNK` with `done: true` | Streaming |
+| Button `setLoading(true)` → HTML shows disabled state | Button lock |
+| File upload: `POST /upload` → metadata → EVENT → handle value | Upload |
+| chatUI `.addMessage()` → FRAGMENT appending message HTML | ChatUI |
+| Cross-region: handle declared in header, updated from main button | Handles |
+
+**E2E tests** (Playwright):
+
+| Test | What |
+|------|------|
+| Shell renders all 4 regions correctly | Layout |
+| Grid wraps columns at `minWidth` on narrow viewport | Responsive |
+| Sidebar collapses to hamburger on mobile | Shell/mobile |
+| All components render correctly in light + dark mode | Visual |
+| Button enters loading state and recovers | Button |
+| `streamText` shows tokens appearing one by one | Streaming |
+
+**CI gates:**
+
+| Gate | Threshold |
+|------|-----------|
+| Coverage — `packages/core/src/` | ≥ 90% lines, ≥ 85% branches |
+| Coverage — `packages/plugin-*/src/` | ≥ 85% lines, ≥ 80% branches |
+| Client bundle | ≤ 15KB gzip |
+| Core package | ≤ 50KB gzip |
+| Runtime matrix | Bun 1.1+ and Node.js 20+ |
 
 ---
 

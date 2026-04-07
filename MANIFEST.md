@@ -96,6 +96,7 @@ Streamlit proved that a declarative, script-to-UI paradigm is incredibly powerfu
 | 4 | **Bun-native, Node-compatible** | Optimized for Bun (52K req/s, 5ms startup), but runs on Node.js 20+ with no code changes. |
 | 5 | **Plugin architecture** | LLM connectors, media renderers, and export targets are plugins, not core dependencies. |
 | 6 | **Desktop-exportable** | Architecture designed to work inside Neutralino.js for lightweight desktop distribution (~2MB binary). |
+| 7 | **Tests are not optional** | Every piece of code ships with tests. No PR merges without passing tests. Coverage gates are enforced in CI. This is how the framework earns the right to be extended. |
 
 ---
 
@@ -850,7 +851,7 @@ async function monitorExperiment(row: RowHandle, jobId: string) {
 | First paint | < 100ms | Time from browser open to rendered UI |
 | Component render | < 5ms | Time to render a single component update |
 | WebSocket latency | < 10ms | Round-trip for input change to UI update |
-| Client bundle size | < 15KB gzip | Total JS sent to browser (excl. Pico.css) |
+| Client bundle size | < 15KB gzip | Total JS sent to browser (CSS served separately) |
 | Core package size | < 50KB gzip | npm package install size |
 | Memory (100 components) | < 30MB | Server memory with 100 active components |
 | Desktop binary | < 10MB | Neutralino export total size |
@@ -860,25 +861,85 @@ async function monitorExperiment(row: RowHandle, jobId: string) {
 ## 14. Testing Strategy
 
 > Full spec: [docs/TESTING.md](docs/TESTING.md)
+> Cursor rule: [`.cursor/rules/test-coverage.mdc`](.cursor/rules/test-coverage.mdc)
+
+### 14.0 The Testing Contract
+
+**Tests are the mechanism by which Lastriko earns the right to grow.**
+
+This is a framework — developers will build on top of it. A bug in core breaks every demo built with it. A regression in the WebSocket protocol silently corrupts state for every user. A broken component renderer produces wrong HTML that is invisible until runtime.
+
+The testing contract is:
+
+> **Every new function, component, protocol message, or engine behaviour added to `packages/core` must have a corresponding test before the PR is merged. No exceptions.**
+
+This applies equally to:
+- New component types (unit test for renderer output)
+- New WebSocket message types (integration test for send/receive)
+- New handle methods (unit test + integration test)
+- New plugin APIs (unit test for registration + integration test for lifecycle)
+- Bug fixes (a regression test that would have caught the bug)
+- Performance changes (benchmark test verifying the target is still met)
+
+The rule is enforced by the `.cursor/rules/test-coverage.mdc` Cursor rule and by CI coverage gates.
 
 ### 14.1 Test Pyramid
 
 | Level | Tool | Coverage Target | What It Tests |
 |-------|------|----------------|---------------|
-| Unit | `bun:test` / vitest | 90%+ | Component model, state sync, diffing, utils |
-| Integration | `bun:test` + puppeteer | 80%+ | Server-client WebSocket flow, hot reload |
-| E2E | Playwright | Key flows | Full demo creation, interaction, export |
-| Visual | Playwright screenshots | Key components | Regression testing for theme/layout |
+| Unit | `bun:test` | **90%+** | Component renderers, handle mutation, state atoms, HTML escaping, ID generation |
+| Integration | `bun:test` + in-process WS client | **80%+** | READY→RENDER, EVENT→FRAGMENT, STREAM_CHUNK, file upload, hot reload |
+| E2E | Playwright | All user-facing flows | Full demo in browser: shell, grid, table updates, streaming, theme toggle |
+| Visual | Playwright screenshots | All components | Pixel-level regression for light + dark mode |
+| Performance | `bun:test` benchmarks | Per target in §13 | Cold start, render time, bundle size, memory |
 
-### 14.2 CI Pipeline
+### 14.2 Coverage Gates (CI-enforced)
 
-Every pull request must pass:
-1. Type checking (`tsc --noEmit`)
-2. Linting (eslint)
-3. Unit tests (`bun test`)
-4. Integration tests
-5. Bundle size check (fail if core exceeds 50KB gzip)
-6. Cross-runtime tests (Bun + Node.js matrix)
+| Package | Line coverage | Branch coverage |
+|---------|--------------|----------------|
+| `packages/core/src/engine/` | ≥ 90% | ≥ 85% |
+| `packages/core/src/components/` | ≥ 90% | ≥ 85% |
+| `packages/core/src/client/` | ≥ 80% | ≥ 75% |
+| `packages/plugin-*/src/` | ≥ 85% | ≥ 80% |
+
+CI fails the PR if any gate is not met. Coverage is measured by `bun:test --coverage`.
+
+### 14.3 CI Pipeline
+
+Every pull request must pass all of the following — **in this order**:
+
+1. **Type check** — `tsc --noEmit` (zero errors)
+2. **Lint** — `eslint .` (zero warnings in `packages/`)
+3. **Unit tests** — `bun test` (100% pass, coverage gates met)
+4. **Integration tests** — `bun test:integration`
+5. **Bundle size** — client ≤ 15KB gzip, core ≤ 50KB gzip (hard fail)
+6. **E2E tests** — Playwright on Chromium
+7. **Visual regression** — Playwright screenshot diff (no unexpected changes)
+8. **Cross-runtime** — full test suite on Bun 1.1+ **and** Node.js 20+
+
+A PR that skips or disables any of these steps will not be merged.
+
+### 14.4 Test Location Convention
+
+Tests live next to the code they test:
+
+```
+packages/core/src/
+├── engine/
+│   ├── renderer.ts
+│   ├── renderer.test.ts      ← unit tests for renderer
+│   └── websocket.ts
+│   └── websocket.test.ts
+├── components/
+│   ├── table.ts
+│   └── table.test.ts
+└── __tests__/
+    └── integration/          ← integration tests (require a running server)
+        ├── render-cycle.test.ts
+        └── streaming.test.ts
+```
+
+E2E and visual tests live in `tests/` at the repo root.
 
 ---
 

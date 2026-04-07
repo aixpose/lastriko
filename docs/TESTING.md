@@ -1,7 +1,18 @@
 # Testing Strategy
 
 > **Back to:** [MANIFEST.md](../MANIFEST.md#14-testing-strategy)
-> **Phase:** 1 (unit test foundation), 2 (integration), 3 (E2E + visual)
+> **Cursor rule:** [`.cursor/rules/test-coverage.mdc`](../.cursor/rules/test-coverage.mdc)
+> **Phase:** 1 (unit + integration foundation), 2 (E2E + visual), 3+ (maintained and extended)
+
+---
+
+## The Non-Negotiable Rule
+
+**Every piece of code added to `packages/` ships with tests in the same PR.**
+
+Lastriko is a framework. Developers build production demos on top of it. A regression in core breaks every one of those demos silently. Tests are not a nice-to-have — they are the only way to ship new capabilities with confidence.
+
+The practical consequence: if you cannot describe how to test a change, the change is not ready to be written yet.
 
 ---
 
@@ -31,14 +42,21 @@
 
 ### What to Test
 
-| Module | Key test cases |
-|--------|---------------|
-| `components/id.ts` | Same position → same ID; different positions → different IDs; explicit `key` overrides position |
-| `components/renderer.ts` | Component → HTML string; `data-lk-id` on root element; correct escaping |
-| `components/registry.ts` | Register, retrieve, iterate; duplicate ID handling |
-| `engine/lifecycle.ts` | Bootstrap order; plugin setup called; shutdown order; teardown called |
-| `theme/tokens.ts` | All required tokens present; light/dark values valid CSS |
-| `utils/*` | All utility functions |
+Every module in `packages/core/src/` must have a corresponding `.test.ts` file. Minimum test cases per module:
+
+| Module | Required test cases |
+|--------|-------------------|
+| `engine/renderer.ts` | HTML output has `data-lk-id`; user content is escaped; all component types render without throwing |
+| `engine/executor.ts` | `app()` callback called once per connection; re-called on hot reload |
+| `engine/lifecycle.ts` | Bootstrap order; plugin `setup()` called before connections open; `teardown()` called on shutdown |
+| `engine/watcher.ts` | File change triggers reload callback; debounce prevents double-reload on rapid saves |
+| `components/id.ts` | Same position → same ID; different positions → different IDs |
+| `components/registry.ts` | Register and retrieve by ID; unknown ID returns undefined |
+| `components/context.ts` | Every `UIContext` method returns a handle; handle has `id`, `type`, `update()` |
+| `plugins/registry.ts` | Plugin registered once; duplicate name throws; `getPlugin()` returns plugin or undefined |
+| `state/scope.ts` | `ConnectionScope` is isolated per connection; `destroy()` clears atoms and runs cleanup fns |
+| `client/swap.ts` | `applyFragment()` replaces correct DOM element; unknown ID is a no-op |
+| `theme/tokens.ts` | All `--lk-*` tokens in MANIFEST.md §5.2 are defined in `lastriko.css` |
 
 ### Example Unit Test
 

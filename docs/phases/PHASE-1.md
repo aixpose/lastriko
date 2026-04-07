@@ -16,20 +16,22 @@ A working skeleton that can serve a page over WebSocket, call `app()` once per c
 
 ## Exit Criteria
 
-A developer must be able to run:
+**All of the following must pass before Phase 2 begins:**
 
-```bash
-bunx create-lastriko hello && cd hello && bun dev
-```
+### Functional
+- `bunx create-lastriko hello && cd hello && bun dev` opens a browser page
+- Title, a text element, and a button are displayed and styled
+- Clicking the button updates the text via `FRAGMENT`
+- Hot reload sends a fresh `RENDER` on file save
+- No console errors
 
-And see:
-- A styled page opens in the browser automatically
-- A title, a text element, and a button are displayed
-- Clicking the button updates the text (via `.update()` → `FRAGMENT`)
-- The page hot-reloads (fresh `RENDER`) when the script is saved
-- No errors in the console
+### Tests (non-negotiable)
+- All unit tests pass: `bun test`
+- All integration tests pass: `bun test:integration`
+- Coverage gates met: engine ≥ 90%, components ≥ 90%, client ≥ 80%
+- Bundle size check passes: client ≤ 15KB gzip
 
-This exit criteria is non-negotiable. Phase 2 does not begin until this passes.
+If any test fails or any coverage gate is missed, Phase 1 is not complete.
 
 ---
 
@@ -201,16 +203,26 @@ All decisions that were blocking Phase 1 are now resolved:
 
 ## Testing Requirements for Phase 1
 
-| Test | Type | What |
-|------|------|------|
-| `renderComponent` includes `data-lk-id` | Unit | HTML output |
-| HTML-escaping of user content | Unit | XSS prevention |
-| `ConnectionScope` isolated between connections | Unit | No shared state |
-| READY → RENDER handshake | Integration | WS lifecycle |
-| Button click → callback runs → FRAGMENT sent | Integration | Core event flow |
-| `update()` on handle → FRAGMENT with correct id | Integration | Handle mutation |
-| Hot reload → fresh RENDER, not FRAGMENT | Integration | Dev mode |
+Every deliverable above must have corresponding tests before the deliverable is considered done. Tests are written alongside the code — not after.
+
+| Test | Type | Coverage area |
+|------|------|---------------|
+| `renderComponent` includes `data-lk-id` on root | Unit | Renderer |
+| Rendered HTML escapes user content (XSS) | Unit | Renderer |
+| `ConnectionScope` is isolated per connection | Unit | State |
+| Destroying scope cleans up all atoms | Unit | State |
+| Component ID is stable for same declaration position | Unit | ID generation |
+| `update()` merges props correctly | Unit | Handle |
+| READY → RENDER handshake (full WS lifecycle) | Integration | Engine |
+| Button click → callback runs → FRAGMENT sent | Integration | Engine |
+| `update()` on handle → `FRAGMENT` with correct id and HTML | Integration | Handle |
+| Two concurrent connections have independent state | Integration | Isolation |
+| Hot reload → fresh `RENDER` sent; state reset | Integration | Dev mode |
+| File watcher debounce: rapid saves → single reload | Integration | Watcher |
+| Client `FRAGMENT` swap: correct element replaced | E2E | Client |
+| Client reconnects after server restart | E2E | Client |
 | Client bundle ≤ 15KB gzip | Build | CI gate |
+| Coverage gates: engine ≥ 90%, components ≥ 90%, client ≥ 80% | Build | CI gate |
 
 ---
 

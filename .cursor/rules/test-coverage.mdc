@@ -1,0 +1,122 @@
+---
+description: Test coverage rule — every new piece of code added to packages/ must have a corresponding test before the PR is merged. Apply when writing or modifying any source file in packages/.
+globs: ["packages/**/*.ts"]
+alwaysApply: false
+---
+
+# Test Coverage Rule
+
+## The Rule
+
+> **Every new function, component, protocol message, or engine behaviour added to `packages/` must have a corresponding test.**
+
+This is not a guideline. It is a hard requirement enforced by CI coverage gates. A PR without tests for its new code will fail CI and will not be merged.
+
+## What Requires a Test
+
+| What you add | Test required |
+|-------------|--------------|
+| New component type | Unit test: renderer produces correct HTML with `data-lk-id`; `.update()` sends `FRAGMENT` |
+| New `ComponentHandle` method | Unit test for the method; integration test verifying the WS message |
+| New WebSocket message type | Integration test: server sends it → client receives correct payload |
+| New engine behaviour | Unit test for the logic; integration test for the full flow |
+| New plugin API (`PluginContext` method) | Unit test for registration; integration test for lifecycle |
+| New CSS class / token | Visual regression test: screenshot before/after in light + dark |
+| New CLI command | Integration test: command runs, produces expected output/files |
+| Bug fix | Regression test that would have caught the bug and now passes |
+| Performance-sensitive code path | Benchmark test verifying the relevant target from MANIFEST.md §13 |
+
+## What Does NOT Require a New Test File
+
+- Documentation-only changes
+- Renaming/refactoring that does not change observable behaviour (existing tests must still pass)
+- `tsconfig.json`, `.eslintrc`, `.prettierrc` changes
+- `MANIFEST.md`, `docs/`, `examples/` changes
+
+## Test File Location
+
+Tests live **co-located** with the source file they cover:
+
+```
+packages/core/src/components/
+├── table.ts
+└── table.test.ts          ← lives next to the file it tests
+```
+
+Integration tests (which need a running server) live in:
+```
+packages/core/src/__tests__/integration/
+```
+
+E2E and visual tests live in:
+```
+tests/e2e/
+tests/visual/
+```
+
+## Coverage Gates
+
+These are the minimum coverage thresholds enforced by CI. Dropping below them fails the build:
+
+| Path | Line | Branch |
+|------|------|--------|
+| `packages/core/src/engine/` | 90% | 85% |
+| `packages/core/src/components/` | 90% | 85% |
+| `packages/core/src/client/` | 80% | 75% |
+| `packages/plugin-*/src/` | 85% | 80% |
+
+## Writing Good Tests
+
+**Unit tests** — test one thing in isolation. Mock external dependencies.
+
+```typescript
+// ✅ Tests exactly what the renderer produces
+test('table renderer includes data-lk-id on root element', () => {
+  const handle = makeTableHandle('table-1', [])
+  const html = renderComponent(handle)
+  expect(html).toContain('data-lk-id="table-1"')
+})
+
+// ✅ Tests that .update() sends a FRAGMENT message
+test('metric.update() sends FRAGMENT with new value', async () => {
+  const { scope, sentMessages } = createTestScope()
+  const metric = scope.uiContext.metric('Score', '0')
+  metric.update('42%')
+  expect(sentMessages).toContainEqual({
+    type: 'FRAGMENT',
+    payload: expect.objectContaining({ id: metric.id }),
+  })
+})
+```
+
+**Integration tests** — test the full server-client WebSocket flow.
+
+```typescript
+// ✅ Tests the complete READY → RENDER → EVENT → FRAGMENT cycle
+test('button click triggers FRAGMENT', async () => {
+  await withTestServer(`
+    app('Test', (ui) => {
+      const msg = ui.text('before')
+      ui.button('Click', () => msg.update('after'))
+    })
+  `, async (client) => {
+    await client.send({ type: 'READY', payload: { viewport: { width: 1280, height: 720 }, theme: null } })
+    await client.waitFor('RENDER')
+
+    const buttonId = client.findComponentId('button', 'Click')
+    await client.send({ type: 'EVENT', payload: { id: buttonId, event: 'click' } })
+
+    const fragment = await client.waitFor('FRAGMENT')
+    expect(fragment.payload.html).toContain('after')
+  })
+})
+```
+
+## Red Flags — Stop and Add Tests
+
+If you find yourself writing any of these, stop and write the test first:
+
+- `// TODO: add test`
+- `// @ts-ignore` without a test that would catch the underlying issue
+- A new exported function with no corresponding `.test.ts` entry
+- A new component type not listed in the coverage report
