@@ -1,0 +1,84 @@
+---
+description: Dependency policy rule — every new production dependency must be approved in MANIFEST.md Section 10 before being added to package.json. Apply when package.json files are being edited.
+globs: ["**/package.json"]
+alwaysApply: false
+---
+
+# Dependency Policy Rule
+
+## The Rule
+
+Every new **production dependency** must be listed and approved in [MANIFEST.md Section 10](../../MANIFEST.md#10-dependency-philosophy) before it can be added to any `package.json` in the `packages/` directory.
+
+## Plugin Isolation Rule (Enforced Here)
+
+**Plugins must not depend on each other.** Before adding any dependency to a plugin's `package.json`, verify:
+- It is the `lastriko` core package (allowed), OR
+- It is a third-party library specific to that plugin's domain (allowed), OR
+- It is another `@lastriko/*` plugin package (NOT allowed — stop and raise this)
+
+## Approved Production Dependencies
+
+Currently approved (from MANIFEST.md Section 10.2):
+
+| Package | Packages | Notes |
+|---------|----------|-------|
+| `nanostores` | `packages/core` | Server-side reactive state — non-replaceable |
+| `ws` | `packages/core` | Node.js WebSocket fallback only — not needed on Bun |
+
+**No CDN dependencies.** Lastriko ships its own `lastriko.css`. No Pico.css. No CDN links in `index.html`.
+
+## Approved Development Dependencies
+
+(From MANIFEST.md Section 10.2 — available in all packages)
+
+- `typescript`
+- `bun-types`
+- `vitest`
+- `turborepo`
+- `changesets`
+- `prettier`
+- `eslint`
+- `@antfu/eslint-config`
+
+## Adding a New Dependency
+
+To add a new production dependency:
+
+1. **Edit MANIFEST.md Section 10** — add the package to the appropriate table with:
+   - Package name
+   - Gzip size
+   - Purpose
+   - Whether it's replaceable
+   
+2. **Explain the trade-off** — why this dependency vs alternatives? Does it keep us under the bundle size limits in Section 13?
+
+3. **Update QUESTIONS.md** if the dependency is a decision (e.g., choosing between two markdown renderers)
+
+4. **Then** add it to `package.json`
+
+## Size Budget
+
+Current budget status (approximate):
+
+| Bundle | Target | Current | Remaining |
+|--------|--------|---------|-----------|
+| Core server (gzip) | 50KB | ~TBD | ~TBD |
+| Client bundle (gzip) | 15KB | ~TBD | ~TBD |
+
+Adding a dependency reduces the "Remaining" budget. The bundle size CI check will fail if limits are exceeded.
+
+## CDN Dependencies
+
+CDN dependencies (loaded in `<script src="...">` or `<link href="...">`) do not count against the npm bundle size, but they do:
+- Require an internet connection at demo runtime
+- Add latency to first page load
+- Create a supply chain dependency on the CDN
+
+New CDN dependencies must still be approved in MANIFEST.md Section 10.
+
+## Plugin Dependencies
+
+Plugin packages (`packages/plugin-*`) have their own dependency budgets. The key rule:
+
+**Plugin dependencies must not bleed into the core package.** If a plugin requires a large library (e.g., the OpenAI SDK), that library should be a direct dependency of the plugin package only, not the core.

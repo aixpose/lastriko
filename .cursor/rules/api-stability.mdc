@@ -1,0 +1,76 @@
+---
+description: API stability rule — after Phase 4, the public API is locked. Breaking changes require a documented process. Apply when modifying exported TypeScript interfaces or function signatures.
+globs: ["**/src/index.ts", "**/src/**/types.ts", "**/src/components/types.ts", "**/src/plugins/types.ts"]
+alwaysApply: false
+---
+
+# API Stability Rule
+
+## Current Status
+
+**Before Phase 4:** The API is unstable (`0.x.y`). Breaking changes are allowed but must still be documented.
+
+**After Phase 4:** The API is stable (`1.0.0+`). Breaking changes require the full process below.
+
+## What Counts as a Breaking Change
+
+A breaking change is anything that would cause existing developer code to fail to compile or behave differently without any code changes on the developer's part:
+
+- Removing a function or method
+- Removing a property from an interface
+- Changing a function signature (adding required parameters, changing types)
+- Changing a component's `value` type
+- Changing default behavior (e.g., default value of an option)
+- Renaming an export
+
+## What Does NOT Count as a Breaking Change
+
+- Adding new optional parameters to a function
+- Adding new optional properties to an interface
+- Adding new exports
+- Adding new component types
+- Changing internal (non-exported) implementation
+- Fixing a bug where the old behavior was clearly wrong/undefined
+
+## Breaking Change Process (Post-Phase 4)
+
+1. **Document the deprecation** — add a `@deprecated` JSDoc comment to the old API with the replacement
+
+2. **Ship the new API** alongside the old API in the same version:
+   ```typescript
+   /** @deprecated Use newName() instead */
+   export function oldName() { return newName(); }
+   export function newName() { /* ... */ }
+   ```
+
+3. **Update MANIFEST.md changelog** — document the deprecation and the new API
+
+4. **Deprecation period** — at least one minor version must pass with both APIs available
+
+5. **Remove old API** — in the next major version bump, remove the deprecated API
+
+6. **Update MANIFEST.md changelog again** — document the removal
+
+## Pre-Phase 4 Breaking Changes
+
+While the API is still `0.x.y`, breaking changes are allowed but must:
+
+1. Update MANIFEST.md with the new API specification
+2. Update the relevant component spec doc
+3. Include a `BREAKING:` prefix in the commit message
+4. Update all example projects to use the new API
+
+## Protected Interfaces
+
+These interfaces are the most critical and most likely to cause cascading breaks. Extra care required:
+
+- `LastrikoPlugin` — used by all plugins
+- `PluginContext` — used by all plugins
+- `ComponentHandle` — base type for all component handles
+- `InputHandle`, `TableHandle`, `RowHandle`, `StreamHandle` — specialised handle types
+- `UIContext` — the primary developer-facing API (`ui` object)
+- `ShellRegions`, `ShellOpts` — page layout entry point
+- `app()` function signature — the entry point
+- `defineConfig()` function signature — configuration
+
+Any change to these interfaces, even additive ones, should be reviewed against the plugin ecosystem.
