@@ -104,4 +104,55 @@ describe('uiContext', () => {
     expect(tabs.value).toBe('One');
     expect(scope.outbox.filter((message) => message.type === 'FRAGMENT').length).toBeGreaterThan(0);
   });
+
+  it('supports shell/grid helper methods and disconnect hook', () => {
+    const scope = createConnectionScope('c8');
+    const ui = new UIContext(scope);
+    let disconnected = false;
+    ui.onDisconnect(() => {
+      disconnected = true;
+    });
+
+    ui.shell({
+      header: (h) => {
+        h.text('header');
+      },
+      sidebar: (s) => {
+        s.text('sidebar');
+      },
+      main: (m) => {
+        m.grid([
+          (g1) => {
+            g1.code('const x = 1', { lang: 'ts' });
+            g1.json({ ok: true }, { label: 'payload' });
+          },
+          (g2) => {
+            g2.alert('info');
+            g2.loading('loading');
+          },
+        ], { cols: 2, gap: 8 });
+        m.card('card', (c) => {
+          c.divider({ label: 'sep' });
+          c.spacer('sm');
+        });
+      },
+      footer: (f) => {
+        f.text('footer');
+      },
+    }, { sidebarPosition: 'right', sidebarWidth: '300px' });
+
+    const handles = scope.listHandles();
+    expect(handles.some((h) => h.type === 'shell')).toBe(true);
+    expect(handles.some((h) => h.type === 'grid')).toBe(true);
+    expect(handles.some((h) => h.type === 'code')).toBe(true);
+    expect(handles.some((h) => h.type === 'json')).toBe(true);
+    expect(handles.some((h) => h.type === 'card')).toBe(true);
+    expect(handles.some((h) => h.type === 'divider')).toBe(true);
+    expect(handles.some((h) => h.type === 'spacer')).toBe(true);
+    expect(handles.some((h) => h.type === 'alert')).toBe(true);
+    expect(handles.some((h) => h.type === 'loading')).toBe(true);
+
+    scope.destroy();
+    expect(disconnected).toBe(true);
+  });
 });
