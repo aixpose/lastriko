@@ -36,6 +36,40 @@ function sendMessage(ws: WSLike, message: ClientMessage): void {
   ws.send(raw);
 }
 
+function getToastContainer(): HTMLElement | null {
+  const root = document.getElementById('lk-toast-root');
+  if (!root) {
+    return null;
+  }
+  root.classList.add('lk-toast-container');
+  return root;
+}
+
+function showToast(payload: {
+  message: string;
+  type: 'info' | 'success' | 'warning' | 'error';
+  duration?: number;
+}): void {
+  const container = getToastContainer();
+  if (!container) {
+    return;
+  }
+  const toast = document.createElement('div');
+  toast.className = `lk-toast lk-toast--${payload.type}`;
+  toast.textContent = payload.message;
+  container.appendChild(toast);
+
+  while (container.childElementCount > 3) {
+    container.firstElementChild?.remove();
+  }
+
+  const timeoutMs = payload.duration ?? 4000;
+  const safeDuration = Number.isFinite(timeoutMs) ? Math.max(200, timeoutMs) : 4000;
+  window.setTimeout(() => {
+    toast.remove();
+  }, safeDuration);
+}
+
 export function createWSManager(opts: WSManagerOptions = {}): WSManager {
   const wsFactory = opts.wsFactory ?? ((url) => new WebSocket(url));
   const maxRetries = opts.maxRetries ?? Number.POSITIVE_INFINITY;
@@ -108,7 +142,7 @@ export function createWSManager(opts: WSManagerOptions = {}): WSManager {
             window.localStorage.setItem('lk-connection-id', connectionId);
             break;
           }
-          // Minimal toast transport: visual UI not implemented yet.
+          showToast(parsed.payload);
           break;
         case 'STREAM_CHUNK':
           applyStreamChunk(

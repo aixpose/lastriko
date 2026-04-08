@@ -408,56 +408,56 @@ export function renderComponent(handle: AnyComponentHandle, byId?: Map<string, A
 
 export function renderPage(components: AnyComponentHandle[]): string {
   const byId = new Map<string, AnyComponentHandle>(components.map((component) => [component.id, component]));
+  const ownedByContainer = new Set<string>();
   const consumed = new Set<string>();
   const output: string[] = [];
+
+  for (const component of components) {
+    if (component.type === 'shell') {
+      const shellProps = component.props as { regions: Record<string, string[]> };
+      for (const ids of Object.values(shellProps.regions)) {
+        for (const id of ids) {
+          ownedByContainer.add(id);
+        }
+      }
+      continue;
+    }
+
+    if (component.type === 'grid') {
+      const gridProps = component.props as { cells: string[][] };
+      for (const cell of gridProps.cells) {
+        for (const id of cell) {
+          ownedByContainer.add(id);
+        }
+      }
+      continue;
+    }
+
+    if (component.type === 'tabs') {
+      const tabsProps = component.props as { tabs: Array<{ ids: string[] }> };
+      for (const tab of tabsProps.tabs) {
+        for (const id of tab.ids) {
+          ownedByContainer.add(id);
+        }
+      }
+      continue;
+    }
+
+    if (component.type === 'card') {
+      const cardProps = component.props as { ids: string[] };
+      for (const id of cardProps.ids) {
+        ownedByContainer.add(id);
+      }
+    }
+  }
 
   for (const component of components) {
     if (consumed.has(component.id)) {
       continue;
     }
 
-    if (component.type === 'shell') {
-      output.push(renderComponent(component, byId));
-      const shellProps = component.props as { regions: Record<string, string[]> };
-      for (const ids of Object.values(shellProps.regions)) {
-        for (const id of ids) {
-          consumed.add(id);
-        }
-      }
-      consumed.add(component.id);
-      continue;
-    }
-
-    if (component.type === 'grid') {
-      output.push(renderComponent(component, byId));
-      const gridProps = component.props as { cells: string[][] };
-      for (const cell of gridProps.cells) {
-        for (const id of cell) {
-          consumed.add(id);
-        }
-      }
-      consumed.add(component.id);
-      continue;
-    }
-
-    if (component.type === 'tabs') {
-      output.push(renderComponent(component, byId));
-      const tabsProps = component.props as { tabs: Array<{ ids: string[] }> };
-      for (const tab of tabsProps.tabs) {
-        for (const id of tab.ids) {
-          consumed.add(id);
-        }
-      }
-      consumed.add(component.id);
-      continue;
-    }
-
-    if (component.type === 'card') {
-      output.push(renderComponent(component, byId));
-      const cardProps = component.props as { ids: string[] };
-      for (const id of cardProps.ids) {
-        consumed.add(id);
-      }
+    // Components owned by shell/grid/tabs/card are rendered by their parent container.
+    if (ownedByContainer.has(component.id)) {
       consumed.add(component.id);
       continue;
     }
