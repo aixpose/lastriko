@@ -246,7 +246,7 @@ Sent when the user clicks the toolbar theme toggle.
 
 Files are NOT transported over WebSocket. See [INPUTS.md](../components/INPUTS.md#fileupload) for the HTTP POST `/upload` flow.
 
-After a successful HTTP upload, the client sends a standard `EVENT` message with `event: 'change'` and `value: { name, path, size, type }`.
+After a successful HTTP upload, the client sends a standard `EVENT` message with `event: 'change'` and `value: { name, path, size, type }` (or an array of those objects when `multiple: true`).
 
 ---
 

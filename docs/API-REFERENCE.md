@@ -509,6 +509,8 @@ ui.setTheme(mode: 'light' | 'dark' | 'auto'): void
 
 #### `ui.navigate()` 🔷
 
+> Deferred in Phase 3 per [PHASE-3.md](phases/PHASE-3.md#pre-phase-decisions-required).
+
 ```typescript
 ui.navigate(page: string): void
 ```
@@ -516,6 +518,8 @@ ui.navigate(page: string): void
 ---
 
 #### `ui.page()` 🔷
+
+> Deferred in Phase 3 per [PHASE-3.md](phases/PHASE-3.md#pre-phase-decisions-required).
 
 ```typescript
 ui.page(name: string, content: (page: UIContext) => void): void

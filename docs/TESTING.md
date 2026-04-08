@@ -225,7 +225,7 @@ The repository ships [`.github/workflows/ci.yml`](../.github/workflows/ci.yml). 
 
 Node 26 is not in the matrix until it is available on GitHub-hosted runners.
 
-Turbo runs `build` before `test` / `test:integration`, so the client bundle exists for HTTP handler tests. `check:bundle` fails if the core client bundle exceeds the gzip limit in `scripts/check-client-size.mjs`.
+Turbo runs `build` before `test` / `test:integration`, so distribution bundles exist for size checks. `check:bundle` fails if either client or core bundle exceeds the gzip limits in `scripts/check-client-size.mjs`.
 
 The published package requires **Node.js 22+** (`engines` in root and `packages/core/package.json`).
 

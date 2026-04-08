@@ -2,7 +2,7 @@
 
 > **The TypeScript UI Toolkit for AI Demos & Rapid Prototyping**
 >
-> Version 0.1.14 — April 2026
+> Version 0.1.16 — April 2026
 > AIXPOSE OÜ
 
 ---
@@ -83,6 +83,8 @@ See [`.cursor/rules/`](.cursor/rules/) for the enforced Cursor rules that implem
 | 2026-04-08 | 0.1.12 | `lastriko` **0.1.0** publish metadata (`package.json`: `exports`, `prepack`, README); CI runs `test:coverage` with Vitest thresholds on server/renderer stack; PHASE-2.md exit criteria clarified (E2E/visual deferred) | Cloud Agent |
 | 2026-04-08 | 0.1.13 | MVP CSS for shell/grid/tabs/table/metrics/etc.; `ui.markdown()` uses **marked** + **sanitize-html** (DISPLAY.md); tab `disabled` HTML fix + client tab switching; optional `?debug=1` WebSocket `console.debug`; §10.2 deps | Cloud Agent |
 | 2026-04-08 | 0.1.14 | Phase 2 closure pass: `tabs.setActive()`, mobile shell drawer, live `textInput` + blur clamp for `numberInput`, `ui.code()` server-side highlighting + copy button, collapsible `ui.json()`, upload-dir lifecycle wiring, coverage gate alignment to **70/66**; image-viewer Phase-3 usage removed | Cloud Agent |
+| 2026-04-08 | 0.1.15 | Manifest-first dependency alignment: add `chokidar` as approved core production dependency for Node file-watcher fallback in Phase 2 deliverables | Cloud Agent |
+| 2026-04-08 | 0.1.16 | Phase transition: Phase 2 marked Complete, Phase 3 set In Progress; enforced core+client bundle gate, upload 10MB limit+metadata contract, and Node watcher parity completed to close remaining Phase 2 criteria | Cloud Agent |
 
 > **When updating:** Add a row to this table for every meaningful change to this document. Include what section changed and why.
 
@@ -764,6 +766,7 @@ If two plugins need shared behaviour, that behaviour belongs in core (`PluginCon
 |---------|------------|---------|-------------|
 | `nanostores` | ~286 bytes | Server-side reactive state atoms per connection | No — core to architecture |
 | `ws` (Node only) | ~3KB | WebSocket server for Node.js fallback | Not needed on Bun |
+| `chokidar` (Node only) | Server-only | File-watcher fallback for Node.js runtime parity with Bun dev reload flow | Yes — can swap if behavior parity is preserved |
 | `marked` | ~12KB | Server-side Markdown → HTML for `ui.markdown()` | Yes — swap parser if API stays sanitized |
 | `sanitize-html` | ~8KB | Tag-allowlist sanitization after Markdown parse | Yes — must preserve XSS safety |
 | `shiki` + `@shikijs/langs` + `@shikijs/themes` | Server-only | `ui.code()` syntax highlighting with zero client bundle cost | Yes — must preserve safe escaped output |
@@ -815,8 +818,8 @@ Each phase produces a usable, publishable npm package. **Ship early, iterate fas
 | Phase | Name | Key Deliverable | Status |
 |-------|------|----------------|--------|
 | 1 | Infrastructure & Foundation | Working skeleton: serve a page, sync state, render basic components | Complete |
-| 2 | MVP Components | v0.1.0: enough components to build a real AI demo | In Progress |
-| 3 | Advanced Components & Polish | Feature parity with full component table | Not Started |
+| 2 | MVP Components | v0.1.0: enough components to build a real AI demo | Complete |
+| 3 | Advanced Components & Polish | Feature parity with full component table | In Progress |
 | 4 | Plugin Ecosystem | First official plugins (OpenAI, Anthropic, Ollama, Neutralino) | Not Started |
 | 5 | Desktop & Distribution | One-command desktop export, static export, Docker | Not Started |
 | 6 | Ecosystem & Community | Templates gallery, community plugins, Lastriko Cloud concept | Not Started |
@@ -957,7 +960,7 @@ The rule is enforced by the `.cursor/rules/test-coverage.mdc` Cursor rule and by
 | `packages/core/src/client/` | ≥ 80% | ≥ 75% |
 | `packages/plugin-*/src/` | ≥ 85% | ≥ 80% |
 
-**Current CI enforcement (Phase 2):** `npm run test:coverage` runs Vitest with `@vitest/coverage-v8` on `packages/core`, using `vitest.config.ts` thresholds (**70%** lines/statements, **66%** branches/functions) over engine + components + plugins, excluding the browser `client/` bundle, `watcher`, `shell` bootstrap, and `index.ts` (those stay on the E2E / manual checklist until Playwright lands). The table above remains the **target** for full `packages/core/src/` coverage; raise the Vitest thresholds as line coverage catches up.
+**Current CI enforcement (Phase 2 baseline retained into Phase 3 start):** `npm run test:coverage` runs Vitest with `@vitest/coverage-v8` on `packages/core`, using `vitest.config.ts` thresholds (**70%** lines/statements, **66%** branches/functions) over engine + components + plugins, excluding the browser `client/` bundle, `shell` bootstrap, and `index.ts` (those stay on the E2E / manual checklist until Playwright lands). The table above remains the **target** for full `packages/core/src/` coverage; raise the Vitest thresholds as line coverage catches up.
 
 ### 14.3 CI Pipeline
 

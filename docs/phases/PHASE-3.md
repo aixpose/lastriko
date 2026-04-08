@@ -1,7 +1,7 @@
 # Phase 3 — Advanced Components & Polish
 
 > **Back to:** [MANIFEST.md](../../MANIFEST.md)
-> **Status:** Not Started
+> **Status:** In Progress
 > **Target version:** `0.2.0`
 
 ---
@@ -19,9 +19,8 @@ This phase makes Lastriko a **complete** prototyping toolkit, not just a minimal
 1. Every component listed in MANIFEST.md Section 4 is implemented and documented.
 2. All components pass ARIA audit (aXe or similar) with zero critical violations.
 3. WebSocket message batching is implemented and measurably reduces network traffic.
-4. `ui.page()` multi-page navigation works end-to-end.
-5. Hot reload with `hotReloadPreserve: true` (default) preserves input values, scroll position, and active tabs across reloads.
-6. **All unit, integration, and E2E tests pass.** Coverage gates maintained. Every component added in this phase has a co-located test file. No Phase 3 component is merged without tests.
+4. Hot reload with `hotReloadPreserve: true` (default) preserves input values, scroll position, and active tabs across reloads.
+5. **All unit, integration, and E2E tests pass.** Coverage gates maintained. Every component added in this phase has a co-located test file. No Phase 3 component is merged without tests.
 
 ---
 
@@ -38,6 +37,16 @@ This phase makes Lastriko a **complete** prototyping toolkit, not just a minimal
 ---
 
 ## Deliverables
+
+## Phase 3 Start Snapshot (already done)
+
+The following scope is already implemented before new Phase 3 work begins:
+
+- `image` and `imageGrid` render with `loading="lazy"` (client-side lazy loading decision already applied).
+- Baseline ARIA improvements landed for existing Phase 2 components.
+- Server emits `ERROR` messages when initial `app()` render fails; client auto-retry reconnect loop exists.
+
+These do **not** satisfy all Phase 3 exit criteria by themselves; they are the baseline.
 
 ### 1. Remaining Input Components
 
@@ -141,32 +150,7 @@ Every component must meet WCAG 2.1 AA standards:
 
 ---
 
-### 8. Multi-Page Support
-
-**API:**
-
-```typescript
-app('Multi Demo', (ui) => {
-  ui.page('Home', (page) => {
-    page.text('# Welcome');
-    page.button('Go to Settings', () => ui.navigate('Settings'));
-  });
-  
-  ui.page('Settings', (page) => {
-    page.slider('Temperature', { min: 0, max: 2 });
-  });
-});
-```
-
-**Acceptance criteria:**
-- Navigation between pages does not trigger full WebSocket reconnect
-- Each page's component state is independent
-- Browser URL updates on page navigation (e.g., `#/settings`)
-- Back/forward browser buttons work
-
----
-
-### 9. Hot Reload State Preservation
+### 8. Hot Reload State Preservation
 
 **Phase 1–2 behaviour:** Hot reload resets all state — full `RENDER` sent, nothing restored.
 
