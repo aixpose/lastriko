@@ -80,6 +80,28 @@ function applyFragment(id: string, html: string): void {
 
 ---
 
+### `BATCH`
+
+Frame-window coalescing container for high-frequency UI updates.
+
+```typescript
+{
+  type: 'BATCH',
+  payload: {
+    messages: Array<
+      | { type: 'FRAGMENT'; payload: { id: string; html: string } }
+      | { type: 'STREAM_CHUNK'; payload: { id: string; chunk: string; done: boolean; format: 'plain' | 'markdown' } }
+    >,
+  }
+}
+```
+
+**Server behavior:** Accumulate eligible messages (`FRAGMENT`, `STREAM_CHUNK`) inside a 16ms window and send one `BATCH` message instead of many single messages.
+
+**Client behavior:** Iterate `payload.messages` in order and apply each nested message exactly as if it was received standalone.
+
+---
+
 ### `STREAM_CHUNK`
 
 Appends a text chunk to a `streamText` component. Separate from `FRAGMENT` because append is more efficient than full re-render for streaming.
