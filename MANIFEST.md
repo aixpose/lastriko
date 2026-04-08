@@ -2,7 +2,7 @@
 
 > **The TypeScript UI Toolkit for AI Demos & Rapid Prototyping**
 >
-> Version 0.1.3 — April 2026
+> Version 0.1.4 — April 2026
 > AIXPOSE OÜ
 
 ---
@@ -36,9 +36,9 @@ See [`.cursor/rules/`](.cursor/rules/) for the enforced Cursor rules that implem
 15. [Security Considerations](#15-security-considerations)
 16. [Licensing & Publishing](#16-licensing--publishing)
 17. [Competitive Positioning](#17-competitive-positioning)
-18. [Open Questions & Pending Decisions](#18-open-questions--pending-decisions)
-19. [Success Metrics](#19-success-metrics)
-20. [Appendix A — Full API Quick Reference](#appendix-a-full-api-quick-reference)
+18. [Success Metrics](#18-success-metrics)
+19. [Appendix A — Full API Quick Reference](#appendix-a-full-api-quick-reference)
+
 
 **Sub-documents:**
 
@@ -73,6 +73,7 @@ See [`.cursor/rules/`](.cursor/rules/) for the enforced Cursor rules that implem
 | 2026-04-07 | 0.1.1 | Architecture rewritten: app()-once + handle-based updates + HTML fragments | Owner decisions |
 | 2026-04-07 | 0.1.2 | Layout system (shell+grid), CSS self-contained, plugin isolation, all decisions resolved | Owner decisions |
 | 2026-04-07 | 0.1.3 | Full consistency audit: ComponentHandle rename, TableHandle+onRowClick, MetricHandle, TextHandle, STREAM_ERROR, hot reload preservation model | Owner decisions |
+| 2026-04-07 | 0.1.4 | All Phase 3 decisions resolved: lazy loading, no session persistence, parameterPanel custom schema, multi-page deferred | Owner decisions |
 
 > **When updating:** Add a row to this table for every meaningful change to this document. Include what section changed and why.
 
@@ -1041,29 +1042,7 @@ E2E and visual tests live in `tests/` at the repo root.
 
 ---
 
-## 18. Open Questions & Pending Decisions
-
-All Phase 1 and Phase 2 blocking decisions are resolved. **4 items remain open** and must be decided before Phase 3 implementation begins. 2 Phase 6 items are deferred pending separate business decisions.
-
-### Phase 3 — Must Decide Before Implementation
-
-| # | Question | Decision needed |
-|---|----------|----------------|
-| 1 | Image/video optimization strategy | Client-side lazy loading vs. server-side proxy |
-| 2 | State persistence across sessions | opt-in `localStorage` for input values (default: none) |
-| 3 | `parameterPanel` schema format | Custom Lastriko typed object (recommended) |
-| 4 | Multi-page support model (`ui.page()`) | How page switching interacts with `app()`-once model |
-
-### Phase 6 — Deferred (require separate business specification)
-
-| # | Question | Why deferred |
-|---|----------|-------------|
-| 5 | `Lastriko Cloud` | Requires infra, billing, privacy policy — out of scope for tech spec |
-| 6 | Visual Builder | Conflicts with code-first philosophy — recommend removal from roadmap |
-
----
-
-## 19. Success Metrics
+## 18. Success Metrics
 
 | Phase Range | Metric | Target |
 |-------------|--------|--------|
