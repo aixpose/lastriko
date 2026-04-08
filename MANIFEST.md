@@ -2,7 +2,7 @@
 
 > **The TypeScript UI Toolkit for AI Demos & Rapid Prototyping**
 >
-> Version 0.1.13 — April 2026
+> Version 0.1.14 — April 2026
 > AIXPOSE OÜ
 
 ---
@@ -82,6 +82,7 @@ See [`.cursor/rules/`](.cursor/rules/) for the enforced Cursor rules that implem
 | 2026-04-08 | 0.1.11 | CI matrix Node **22 / 24** only (26 not yet on runners); `examples/component-gallery` replaces phase1-smoke; export `TableRow` type | Cloud Agent |
 | 2026-04-08 | 0.1.12 | `lastriko` **0.1.0** publish metadata (`package.json`: `exports`, `prepack`, README); CI runs `test:coverage` with Vitest thresholds on server/renderer stack; PHASE-2.md exit criteria clarified (E2E/visual deferred) | Cloud Agent |
 | 2026-04-08 | 0.1.13 | MVP CSS for shell/grid/tabs/table/metrics/etc.; `ui.markdown()` uses **marked** + **sanitize-html** (DISPLAY.md); tab `disabled` HTML fix + client tab switching; optional `?debug=1` WebSocket `console.debug`; §10.2 deps | Cloud Agent |
+| 2026-04-08 | 0.1.14 | Phase 2 closure pass: `tabs.setActive()`, mobile shell drawer, live `textInput` + blur clamp for `numberInput`, `ui.code()` server-side highlighting + copy button, collapsible `ui.json()`, upload-dir lifecycle wiring, coverage gate alignment to **70/66**; image-viewer Phase-3 usage removed | Cloud Agent |
 
 > **When updating:** Add a row to this table for every meaningful change to this document. Include what section changed and why.
 
@@ -765,6 +766,7 @@ If two plugins need shared behaviour, that behaviour belongs in core (`PluginCon
 | `ws` (Node only) | ~3KB | WebSocket server for Node.js fallback | Not needed on Bun |
 | `marked` | ~12KB | Server-side Markdown → HTML for `ui.markdown()` | Yes — swap parser if API stays sanitized |
 | `sanitize-html` | ~8KB | Tag-allowlist sanitization after Markdown parse | Yes — must preserve XSS safety |
+| `shiki` + `@shikijs/langs` + `@shikijs/themes` | Server-only | `ui.code()` syntax highlighting with zero client bundle cost | Yes — must preserve safe escaped output |
 
 **No CSS framework dependency.** Lastriko ships its own `lastriko.css` (MVP layout + components; target still **≤ 10KB uncompressed** where practical; grow file as Phase 2 CSS completes). No CDN, no Pico.css, no external CSS.
 
@@ -955,7 +957,7 @@ The rule is enforced by the `.cursor/rules/test-coverage.mdc` Cursor rule and by
 | `packages/core/src/client/` | ≥ 80% | ≥ 75% |
 | `packages/plugin-*/src/` | ≥ 85% | ≥ 80% |
 
-**Current CI enforcement (Phase 2):** `npm run test:coverage` runs Vitest with `@vitest/coverage-v8` on `packages/core`, using `vitest.config.ts` thresholds (**~60%** lines/statements, **~58%** branches/functions) over engine + components + plugins, excluding the browser `client/` bundle, `watcher`, `shell` bootstrap, and `index.ts` (those stay on the E2E / manual checklist until Playwright lands). The table above remains the **target** for full `packages/core/src/` coverage; raise the Vitest thresholds as line coverage catches up.
+**Current CI enforcement (Phase 2):** `npm run test:coverage` runs Vitest with `@vitest/coverage-v8` on `packages/core`, using `vitest.config.ts` thresholds (**70%** lines/statements, **66%** branches/functions) over engine + components + plugins, excluding the browser `client/` bundle, `watcher`, `shell` bootstrap, and `index.ts` (those stay on the E2E / manual checklist until Playwright lands). The table above remains the **target** for full `packages/core/src/` coverage; raise the Vitest thresholds as line coverage catches up.
 
 ### 14.3 CI Pipeline
 
@@ -1115,4 +1117,4 @@ import {
 
 ---
 
-*End of Manifesto — LASTRIKO v0.1.13*
+*End of Manifesto — LASTRIKO v0.1.14*

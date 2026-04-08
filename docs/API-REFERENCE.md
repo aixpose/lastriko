@@ -100,6 +100,7 @@ See [docs/components/INPUTS.md](components/INPUTS.md#button)
 ui.textInput(label: string, opts?: TextInputOpts): TextInputComponent
 // Returns: { value: string, id: string, ... }
 ```
+Notes: Sends `EVENT { event: 'change' }` on every keystroke.
 See [docs/components/INPUTS.md](components/INPUTS.md#textinput)
 
 ---
@@ -110,6 +111,7 @@ See [docs/components/INPUTS.md](components/INPUTS.md#textinput)
 ui.numberInput(label: string, opts?: NumberInputOpts): NumberInputComponent
 // Returns: { value: number, id: string, ... }
 ```
+Notes: Values are clamped to `min`/`max` on blur.
 
 ---
 
@@ -216,6 +218,7 @@ ui.imageGrid(sources: Array<string | ImageGridItem>, opts?: ImageGridOpts): void
 ```typescript
 ui.code(content: string, opts?: CodeOpts): void
 ```
+Notes: Server-side Shiki syntax highlighting and copy button.
 
 ---
 
@@ -224,6 +227,7 @@ ui.code(content: string, opts?: CodeOpts): void
 ```typescript
 ui.json(data: unknown, opts?: JsonOpts): void
 ```
+Notes: Rendered as collapsible `<details>/<summary>`.
 
 ---
 
@@ -316,6 +320,7 @@ interface ShellOpts {
   stickyFooter?:    boolean            // Default: false
 }
 ```
+Notes: On mobile, sidebar collapses into a hamburger drawer.
 
 ---
 
@@ -347,6 +352,11 @@ interface TabDef {
   label:     string
   content:   (ctx: UIContext) => void
   disabled?: boolean
+}
+
+interface TabsComponent extends ComponentHandle<TabsProps, string> {
+  value: string
+  setActive(label: string): void
 }
 ```
 
