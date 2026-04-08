@@ -14,9 +14,11 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - node-version: '20'
-            toolchain: npm
           - node-version: '22'
+            toolchain: npm
+          - node-version: '24'
+            toolchain: npm
+          - node-version: '26'
             toolchain: npm
           - node-version: '22'
             toolchain: bun

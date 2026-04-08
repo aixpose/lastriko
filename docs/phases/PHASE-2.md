@@ -17,7 +17,7 @@ Ship the first usable version with enough components to build a real AI demo. Th
 **All of the following must pass before Phase 3 begins:**
 
 ### Tests (non-negotiable)
-- All unit tests pass across Bun and Node.js 20+
+- All unit tests pass across Bun and Node.js 22, 24, and 26
 - All integration tests pass
 - All E2E flows pass on Chromium
 - Coverage gates met for all new code
@@ -62,7 +62,7 @@ app('Experiment Lab', (ui) => {
 The result must:
 - Show a structured dark-mode shell UI (header + sidebar + main)
 - Have live-updating table rows and a streaming text output
-- Work on Bun and Node.js 20+
+- Work on Bun and Node.js 22+
 
 ---
 
@@ -77,10 +77,10 @@ All Phase 2 blocking decisions are resolved. See [MANIFEST.md §11.1](../../MANI
 ### 1. Node.js Support
 
 **Acceptance criteria:**
-- All Phase 1 features work identically on Node.js 20+
+- All Phase 1 features work identically on Node.js 22+
 - Runtime detection: `const isBun = typeof Bun !== 'undefined'`
 - Fallbacks: `ws` for WebSocket, `chokidar` for file watcher
-- CI matrix: Bun 1.1+ **and** Node.js 20+
+- CI matrix: Node.js **22, 24, and 26** (npm), plus **Bun** (same scripts after `npm ci`; see `.github/workflows/ci.yml`)
 
 ---
 
@@ -250,7 +250,7 @@ Every component added in this phase ships with unit + integration tests. No comp
 | Coverage — `packages/plugin-*/src/` | ≥ 85% lines, ≥ 80% branches |
 | Client bundle | ≤ 15KB gzip |
 | Core package | ≤ 50KB gzip |
-| Runtime matrix | Bun 1.1+ and Node.js 20+ |
+| Runtime matrix | Bun 1.1+; Node.js 22, 24, 26 (npm) + Bun job |
 
 ---
 

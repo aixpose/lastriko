@@ -219,11 +219,14 @@ The repository ships [`.github/workflows/ci.yml`](../.github/workflows/ci.yml). 
 
 | Job | What runs |
 |-----|-----------|
-| Node 20 (npm) | `npm ci`, then `npm run` typecheck, lint, test, test:integration, check:bundle |
-| Node 22 (npm) | Same as Node 20 |
+| Node 22 (npm) | `npm ci`, then `npm run` typecheck, lint, test, test:integration, check:bundle |
+| Node 24 (npm) | Same as Node 22 |
+| Node 26 (npm) | Same as Node 22 |
 | 22 (bun) | `npm ci` for a single lockfile, then `bun run` for the same scripts (validates the Bun primary runtime alongside Node) |
 
 Turbo runs `build` before `test` / `test:integration`, so the client bundle exists for HTTP handler tests. `check:bundle` fails if the core client bundle exceeds the gzip limit in `scripts/check-client-size.mjs`.
+
+The published package requires **Node.js 22+** (`engines` in root and `packages/core/package.json`).
 
 **Phase 2** adds Playwright E2E and visual jobs when those suites exist under `tests/e2e/` and `tests/visual/`.
 

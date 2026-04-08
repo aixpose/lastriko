@@ -2,7 +2,7 @@
 
 > **The TypeScript UI Toolkit for AI Demos & Rapid Prototyping**
 >
-> Version 0.1.9 — April 2026
+> Version 0.1.10 — April 2026
 > AIXPOSE OÜ
 
 ---
@@ -77,7 +77,8 @@ See [`.cursor/rules/`](.cursor/rules/) for the enforced Cursor rules that implem
 | 2026-04-08 | 0.1.6 | HTTP server: default port **3500**, EADDRINUSE port hop (up to 64 tries), `/style.css` resolves theme from package or `LASTRIKO_THEME_CSS`, request handler errors return 500 without crashing the process | Cloud Agent |
 | 2026-04-08 | 0.1.7 | Foundation milestone complete: roadmap marks MVP Components as active; §8 project structure reflects implemented monorepo; tests run after build; CI workflow added | Cloud Agent |
 | 2026-04-08 | 0.1.8 | Retired standalone PHASE-1.md; foundation summary and pre–Phase 2 decision status consolidated under §11; removed manifest §19 | Cloud Agent |
-| 2026-04-08 | 0.1.9 | §11.1 Phase 2 line-count aligned with PHASE-2 (60 lines); §14 + docs/TESTING.md: Vitest, integration naming, CI matrix (Node 20/22 + Bun) | Cloud Agent |
+| 2026-04-08 | 0.1.9 | §11.1 Phase 2 line-count aligned with PHASE-2 (60 lines); §14 + docs/TESTING.md: Vitest, integration naming, CI matrix (Node + Bun) | Cloud Agent |
+| 2026-04-08 | 0.1.10 | Node.js baseline **22+**; CI matrix Node **22 / 24 / 26** (npm) + Bun on Node 22; `engines` on root + `lastriko` package | Cloud Agent |
 
 > **When updating:** Add a row to this table for every meaningful change to this document. Include what section changed and why.
 
@@ -100,7 +101,7 @@ Streamlit proved that a declarative, script-to-UI paradigm is incredibly powerfu
 | 1 | **Zero-config start** | One import, one function call, a running UI. |
 | 2 | **Minimal dependencies** | Core ships under 50KB gzipped. Self-contained `lastriko.css` (~8KB). Reactivity via Nanostores (~1KB, server-only). |
 | 3 | **TypeScript-first** | Full type inference, autocomplete, and compile-time safety for every component. |
-| 4 | **Bun-native, Node-compatible** | Optimized for Bun (52K req/s, 5ms startup), but runs on Node.js 20+ with no code changes. |
+| 4 | **Bun-native, Node-compatible** | Optimized for Bun (52K req/s, 5ms startup), but runs on **Node.js 22+** with no code changes. |
 | 5 | **Plugin architecture** | LLM connectors, media renderers, and export targets are plugins, not core dependencies. |
 | 6 | **Desktop-exportable** | Architecture designed to work inside Neutralino.js for lightweight desktop distribution (~2MB binary). |
 | 7 | **Tests are not optional** | Every piece of code ships with tests. No PR merges without passing tests. Coverage gates are enforced in CI. This is how the framework earns the right to be extended. |
@@ -198,7 +199,7 @@ No framework. No diffing. No virtual DOM. The client bundle target of **< 15KB g
 
 | Layer | Technology | Rationale |
 |-------|-----------|-----------|
-| Runtime | Bun 1.1+ (primary), Node.js 20+ (Phase 2) | Bun: 4x startup, native TS, built-in server. Node: ecosystem compat. |
+| Runtime | Bun 1.1+ (primary), Node.js 22+ | Bun: 4x startup, native TS, built-in server. Node: ecosystem compat. |
 | HTTP Server | `Bun.serve()` / Node `http` module | Zero-dependency server. No Express, no Hono needed. |
 | WebSocket | Bun native WS / `ws` package (Node) | Bidirectional: client sends events, server pushes HTML fragments. |
 | State (server) | Nanostores (~286 bytes) | Per-connection atom store. Server-only — client has no state library. |
@@ -960,7 +961,7 @@ Every pull request must pass the **quality** matrix in [`.github/workflows/ci.ym
 4. **Integration tests** — `npm run test:integration` / `bun run test:integration`
 5. **Bundle size** — `check:bundle` — client ≤ 15KB gzip, core ≤ 50KB gzip (hard fail)
 
-**Matrix:** Node.js **20** and **22** (npm), plus **Bun** on Node 22 (same scripts after `npm ci`). E2E and visual Playwright jobs are added in Phase 2 when those suites exist.
+**Matrix:** Node.js **22, 24, and 26** (npm), plus **Bun** on Node 22 (`npm ci` then `bun run` for the same scripts). E2E and visual Playwright jobs are added in Phase 2 when those suites exist.
 
 A PR that skips or disables any of these steps will not be merged.
 
@@ -1106,4 +1107,4 @@ import {
 
 ---
 
-*End of Manifesto — LASTRIKO v0.1.9*
+*End of Manifesto — LASTRIKO v0.1.10*
