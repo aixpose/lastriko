@@ -68,7 +68,7 @@ The result must:
 
 ## Pre-Phase Decisions — All Resolved
 
-All Phase 2 blocking decisions are resolved. See MANIFEST.md §19 and `.cursor/rules/open-questions-check.mdc` for the four Phase 3 items that were resolved ahead of implementation.
+All Phase 2 blocking decisions are resolved. See [MANIFEST.md §11.1](../../MANIFEST.md#111-foundation-milestone-complete) and `.cursor/rules/open-questions-check.mdc` for pre–Phase 2 status and the four Phase 3 items that were resolved ahead of implementation.
 
 ---
 
@@ -265,4 +265,4 @@ Every component added in this phase ships with unit + integration tests. No comp
 
 ---
 
-*[← Phase 1](PHASE-1.md) — Phase 2 of 6 — [Next: Phase 3 →](PHASE-3.md)*
+*[← Foundation (MANIFEST §11.1)](../../MANIFEST.md#111-foundation-milestone-complete) — Phase 2 of 6 — [Next: Phase 3 →](PHASE-3.md)*

@@ -2,7 +2,7 @@
 
 > **The TypeScript UI Toolkit for AI Demos & Rapid Prototyping**
 >
-> Version 0.1.7 — AIXPOSE OÜ
+> Version 0.1.8 — AIXPOSE OÜ
 
 ---
 
@@ -59,7 +59,7 @@ This repository contains the project specification, the `lastriko` core package,
 
 | Phase | Document | Status |
 |-------|----------|--------|
-| 1 | [Infrastructure & Foundation](docs/phases/PHASE-1.md) | Complete |
+| 1 | Infrastructure & Foundation — [MANIFEST.md §11.1](MANIFEST.md#111-foundation-milestone-complete) | Complete |
 | 2 | [MVP Components](docs/phases/PHASE-2.md) | In Progress |
 | 3 | [Advanced Components & Polish](docs/phases/PHASE-3.md) | Not Started |
 | 4 | [Plugin Ecosystem](docs/phases/PHASE-4.md) | Not Started |

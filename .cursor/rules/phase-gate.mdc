@@ -95,9 +95,8 @@ If you encounter a request to implement a component or feature that belongs to a
 
 ## Advancing Phases
 
-Phases advance when their exit criteria are met. **Do not advance a phase until ALL exit criteria pass.** Exit criteria are defined in each phase document:
+Phases advance when their exit criteria are met. **Do not advance a phase until ALL exit criteria pass.** Exit criteria are defined in [MANIFEST.md](../../MANIFEST.md#11-development-phases--roadmap) (roadmap + §11.1 foundation summary) and in each remaining phase document:
 
-- [PHASE-1.md](../../docs/phases/PHASE-1.md#exit-criteria)
 - [PHASE-2.md](../../docs/phases/PHASE-2.md#exit-criteria)
 - [PHASE-3.md](../../docs/phases/PHASE-3.md#exit-criteria)
 - [PHASE-4.md](../../docs/phases/PHASE-4.md#exit-criteria)

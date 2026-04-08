@@ -1,5 +1,5 @@
 ---
-description: Open questions check — before implementing anything that touches an unresolved design decision, verify the question is resolved in MANIFEST.md section 19. Always apply.
+description: Open questions check — before implementing anything that touches an unresolved design decision, verify the question is resolved (manifest §11.1 + relevant docs). Always apply.
 globs:
 alwaysApply: true
 ---
@@ -8,7 +8,7 @@ alwaysApply: true
 
 ## The Rule
 
-Before implementing code that depends on an unresolved design decision, check [MANIFEST.md §19](../../MANIFEST.md#19-open-questions--pending-decisions) to ensure the relevant question is resolved.
+Before implementing code that depends on an unresolved design decision, confirm [MANIFEST.md §11.1](../../MANIFEST.md#111-foundation-milestone-complete) (no blocking questions before Phase 2) and that the choice is recorded in the relevant `docs/` spec and [changelog](../../MANIFEST.md#changelog) if it is a new fork.
 
 All foundation and Phase 2 blocking decisions are **resolved**. The remaining open items are Phase 3 scope:
 
@@ -46,7 +46,7 @@ These are **resolved** and must not be re-opened without updating MANIFEST.md:
 ## How to Resolve a Question
 
 1. Make a decision
-2. Add a row to MANIFEST.md §19 changing status from ⏳ to ✅
+2. Add a row to the MANIFEST.md [changelog](../../MANIFEST.md#changelog) and update the relevant spec in `docs/`
 3. Update the relevant component spec doc
 4. Update MANIFEST.md changelog
 5. Commit manifesto update separately from the code change
