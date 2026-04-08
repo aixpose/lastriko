@@ -12,11 +12,11 @@
       "dependsOn": ["^lint"]
     },
     "test": {
-      "dependsOn": ["^test"],
+      "dependsOn": ["build"],
       "outputs": ["coverage/**"]
     },
     "test:integration": {
-      "dependsOn": ["^test:integration"]
+      "dependsOn": ["build"]
     }
   }
 }

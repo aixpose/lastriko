@@ -1,3 +1,4 @@
+import process from 'node:process';
 import type { LastrikoPlugin } from './plugins/types';
 import { createServer, type RuntimeConfig, type RunningServer } from './engine/server';
 import type { AppCallback } from './components/types';

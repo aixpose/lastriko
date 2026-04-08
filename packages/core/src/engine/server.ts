@@ -1,3 +1,4 @@
+import { Buffer } from 'node:buffer';
 import { existsSync, readFileSync } from 'node:fs';
 import {
   type IncomingMessage,
