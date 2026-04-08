@@ -1,4 +1,4 @@
-import { app } from '../../packages/core/dist/index.js'
+import { app } from 'lastriko';
 
 app('Phase 1 Smoke', (ui) => {
   const text = ui.text('Phase 1 baseline is running')
