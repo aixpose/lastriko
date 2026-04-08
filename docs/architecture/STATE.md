@@ -212,8 +212,8 @@ Plugins can create named atoms scoped to a connection via `PluginContext.getStor
 setup(ctx: PluginContext) {
   ctx.onConnection((scope) => {
     // Per-connection store — namespaced by plugin name automatically
-    const historyAtom = ctx.getStore<Message[]>(scope, 'chat-history', []);
-    // atom key internally: 'openai/chat-history'
+    const historyAtom = ctx.getStore<Message[]>('chat-history', []);
+    // atom key internally: 'openai/chat-history' (namespaced by plugin name automatically)
   });
 }
 ```

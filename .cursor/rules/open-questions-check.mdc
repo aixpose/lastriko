@@ -35,8 +35,10 @@ These are **resolved** and must not be re-opened without updating MANIFEST.md:
 | Client rendering | `outerHTML` swap; no diffing library; no framework |
 | Plugin isolation | `plugin → core` only |
 | streamText | Handle-based; `.append(chunk)` + `STREAM_CHUNK`; no re-run |
-| table | `TableHandle` with `.prepend/.append/.remove`; `RowHandle.update()` |
-| Hot reload | Full `RENDER` re-sent; state NOT preserved across reload |
+| table | `TableHandle` with `.prepend/.append/.remove/.onRowClick`; `RowHandle.update()` |
+| metric | `MetricHandle`; value is always `string`; `.update(value, opts?)` |
+| text | `TextHandle`; `.update(content)` pushes `FRAGMENT` |
+| Hot reload | Phase 1–2: full reset. Phase 3+: `hotReloadPreserve: true` (default) preserves inputs, scroll, active tabs |
 | Button lock | `btn.setLoading(true/false)` |
 
 ## How to Resolve a Question

@@ -32,6 +32,7 @@ Build community momentum, expand capabilities based on real user feedback, and r
 4. Documentation is complete: every public API has at least one usage example.
 5. The project has a `CONTRIBUTING.md` and contributor onboarding guide.
 6. At least 3 community-contributed plugins or examples exist.
+7. All CI gates from MANIFEST.md §14.2 continue to pass — coverage has not dropped below thresholds as a result of Phase 6 additions.
 
 ---
 

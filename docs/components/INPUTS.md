@@ -32,8 +32,9 @@ interface ButtonOpts {
   icon?: string;      // Optional icon name (Phase 3 stretch)
 }
 
-interface ButtonComponent extends LastrikoComponent<void> {
+interface ButtonHandle extends ComponentHandle<ButtonProps, void> {
   // No value — buttons are actions, not state holders
+  update(opts: Partial<ButtonProps>): void  // e.g. change label or variant
 }
 ```
 
@@ -65,7 +66,7 @@ interface TextInputOpts {
   type?: 'text' | 'email' | 'url' | 'password';  // Default: 'text'
 }
 
-interface TextInputComponent extends LastrikoComponent<string> {
+interface TextInputComponent extends InputHandle<string> {
   value: string;
 }
 ```
@@ -97,7 +98,7 @@ interface NumberInputOpts {
   precision?: number;      // Decimal places (default: 0 for integer, 2 for decimal)
 }
 
-interface NumberInputComponent extends LastrikoComponent<number> {
+interface NumberInputComponent extends InputHandle<number> {
   value: number;
 }
 ```
@@ -127,7 +128,7 @@ interface SliderOpts {
   marks?: number[];        // Optional tick marks at specific values
 }
 
-interface SliderComponent extends LastrikoComponent<number> {
+interface SliderComponent extends InputHandle<number> {
   value: number;
 }
 ```
@@ -156,7 +157,7 @@ interface ToggleOpts {
   offLabel?: string;       // Text when false (e.g., 'Disabled')
 }
 
-interface ToggleComponent extends LastrikoComponent<boolean> {
+interface ToggleComponent extends InputHandle<boolean> {
   value: boolean;
 }
 ```
@@ -184,7 +185,7 @@ interface SelectOpts {
   placeholder?: string;    // First option if no default (e.g., 'Choose a model...')
 }
 
-interface SelectComponent extends LastrikoComponent<string> {
+interface SelectComponent extends InputHandle<string> {
   value: string;
 }
 ```
@@ -222,7 +223,7 @@ interface UploadedFile {
   lastModified: number;     // Timestamp
 }
 
-interface FileUploadComponent extends LastrikoComponent<UploadedFile | UploadedFile[] | null> {
+interface FileUploadComponent extends InputHandle<UploadedFile | UploadedFile[] | null> {
   value: UploadedFile | UploadedFile[] | null;  // null if no file selected
 }
 ```
@@ -250,7 +251,7 @@ interface MultiSelectOpts {
   maxSelections?: number;   // Limit number of selectable options
 }
 
-interface MultiSelectComponent extends LastrikoComponent<string[]> {
+interface MultiSelectComponent extends InputHandle<string[]> {
   value: string[];
 }
 ```
@@ -275,7 +276,7 @@ interface ColorPickerOpts {
   swatches?: string[];      // Preset color chips to show
 }
 
-interface ColorPickerComponent extends LastrikoComponent<string> {
+interface ColorPickerComponent extends InputHandle<string> {
   value: string;            // Always hex, regardless of format setting
 }
 ```
@@ -301,7 +302,7 @@ interface DateInputOpts {
   type?: 'date' | 'datetime-local' | 'time' | 'month';  // Default: 'date'
 }
 
-interface DateInputComponent extends LastrikoComponent<string> {
+interface DateInputComponent extends InputHandle<string> {
   value: string;             // ISO date/datetime string
 }
 ```

@@ -50,7 +50,7 @@ Sent once per connection after `READY`. Contains the full rendered HTML for the 
 }
 ```
 
-**Client behavior:** Replace `document.body.innerHTML` with `html`. Set `document.title`. Apply theme.
+**Client behavior:** Replace `document.getElementById('lk-root').innerHTML` with `html`. Set `document.title`. Apply theme. The `#lk-root` element is the sole mount point inside the HTML shell; the toolbar (`.lk-toolbar`) lives outside it and is never replaced by `RENDER`.
 
 ---
 

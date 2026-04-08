@@ -71,6 +71,8 @@ See [`.cursor/rules/`](.cursor/rules/) for the enforced Cursor rules that implem
 |------|---------|--------|--------|
 | 2026-04-07 | 0.1.0 | Initial manifesto created from spec | Cloud Agent |
 | 2026-04-07 | 0.1.1 | Architecture rewritten: app()-once + handle-based updates + HTML fragments | Owner decisions |
+| 2026-04-07 | 0.1.2 | Layout system (shell+grid), CSS self-contained, plugin isolation, all decisions resolved | Owner decisions |
+| 2026-04-07 | 0.1.3 | Full consistency audit: ComponentHandle rename, TableHandle+onRowClick, MetricHandle, TextHandle, STREAM_ERROR, hot reload preservation model | Owner decisions |
 
 > **When updating:** Add a row to this table for every meaningful change to this document. Include what section changed and why.
 
@@ -239,16 +241,18 @@ interface InputHandle<TValue> extends ComponentHandle<any, TValue> {
   value: TValue;  // Updated when client sends EVENT for this component
 }
 
-// Table has row management methods
+// Table has row management and event methods
 interface TableHandle extends ComponentHandle<TableProps> {
   append(row: Record<string, any>): RowHandle;
   prepend(row: Record<string, any>): RowHandle;
   remove(rowId: string): void;
+  rowCount: number;
+  onRowClick(handler: (row: Record<string, any>) => void): void;
 }
 
 interface RowHandle {
   id: string;
-  update(data: Record<string, any>): void;
+  update(data: Partial<Record<string, any>>): void;
   remove(): void;
 }
 
@@ -275,6 +279,7 @@ Lastriko uses a simple protocol over WebSocket. The key design decision: **the s
 | `NAVIGATE` | `{ page: string }` | Switch page — server sends `FRAGMENT` for main content area |
 | `ERROR` | `{ message: string, stack?: string }` | Unhandled error in `app()` — show error overlay |
 | `STREAM_CHUNK` | `{ id: string, chunk: string, done: boolean }` | Streaming text append (for `streamText` component) |
+| `STREAM_ERROR` | `{ id: string, error: string }` | Stream failed mid-flight — show error in the `streamText` component |
 
 **Client → Server Messages**
 
@@ -300,12 +305,38 @@ Each WebSocket connection gets its own `ConnectionScope` containing all Nanostor
 File watcher runs in dev mode only. On script change:
 
 1. All active connections receive a `TOAST` ("Reloading...")
-2. Module cache invalidated for the changed file
-3. `app()` callback re-imported and re-called for each active connection
-4. Fresh `RENDER` sent to each client — full page body replaced
-5. **State is not preserved across hot reloads** — this is intentional. A script change means structural change; stale state would be confusing.
+2. Client snapshots preservable state (see below) before the reload arrives
+3. Module cache invalidated for the changed file
+4. `app()` callback re-imported and re-called for each active connection
+5. Fresh `RENDER` sent to each client — full page body replaced
+6. Client restores preserved state into the new component tree by matching stable component IDs
 
-The dev experience is: save file → browser updates in < 100ms with the new UI.
+**State preservation (Phase 3 feature, opt-in via config):**
+
+```typescript
+// lastriko.config.ts
+export default defineConfig({
+  hotReloadPreserve: true,  // Default: true in Phase 3+
+})
+```
+
+When `hotReloadPreserve` is enabled, the following are saved client-side before hot reload and restored into the new tree if the same component ID exists:
+
+| What | How |
+|------|-----|
+| Input values (`textInput`, `numberInput`, `slider`, `toggle`, `select`) | Stored in `sessionStorage` keyed by component ID |
+| Scroll position | `window.scrollY` + per-scrollable-container scroll offset |
+| Active tab in `ui.tabs()` | Active tab label stored by tabs component ID |
+
+**What is NOT preserved (always resets on hot reload):**
+- `streamText` content — streams are considered transient
+- `table` rows appended at runtime — runtime data is not a form value
+- `chatUI` history — managed separately (connection-scoped atom, which itself resets on full WS reconnect)
+- Any state that cannot be trivially represented as a serialisable value
+
+**Phase 1–2 behaviour:** `hotReloadPreserve` does not exist yet — hot reload always resets everything. Phase 3 adds this feature.
+
+The dev experience (Phase 3+): save file → browser updates in < 100ms, input values and scroll position restored.
 
 ---
 
@@ -343,14 +374,14 @@ Display components whose content changes after initial render return a `Componen
 
 | Component | Returns | Description | Phase |
 |-----------|---------|-------------|-------|
-| `text` | `TextHandle` | Plain text / inline Markdown (headings, bold, italic) | 2 |
+| `text` | `TextHandle` | Plain text / inline Markdown. `.update(content)` pushes a `FRAGMENT`. | 2 |
 | `markdown` | `void` | Full Markdown prose block — server-rendered via `marked` | 2 |
 | `image` | `ImageHandle` | Image with optional caption, zoom, download | 2 |
 | `imageGrid` | `void` | Responsive grid of images | 2 |
 | `code` | `CodeHandle` | Syntax-highlighted (shiki, server-side) code block + copy button | 2 |
 | `json` | `JsonHandle` | Collapsible JSON tree | 2 |
 | `table` | `TableHandle` | Data table with `.append()`, `.prepend()`, `.remove()`, row `.update()` | 2 |
-| `metric` | `MetricHandle` | KPI card — label, value, optional delta | 2 |
+| `metric` | `MetricHandle` | KPI card. `.update(value, opts?)` pushes a `FRAGMENT`. | 2 |
 | `progress` | `ProgressHandle` | Progress bar (0–100) or indeterminate spinner (null) | 2 |
 | `video` | `void` | HTML5 video player | 3 |
 | `audio` | `void` | HTML5 audio player | 3 |
@@ -394,7 +425,7 @@ The layout system uses two primitives — `shell` for page structure and `grid` 
 | Component | API Signature | Description | Phase |
 |-----------|--------------|-------------|-------|
 | `chatUI` | `chatUI(opts?)` | Chat interface with message history, typing indicator | 2 |
-| `modelCompare` | `modelCompare(models[], prompt)` | Side-by-side output comparison for N models | 3 |
+| `modelCompare` | `modelCompare(models[], opts?)` | Side-by-side output comparison for N models | 3 |
 | `promptEditor` | `promptEditor(opts?)` | Multi-line prompt input with variable highlighting | 2 |
 | `parameterPanel` | `parameterPanel(params)` | Auto-generated controls from a parameter schema | 3 |
 | `filmStrip` | `filmStrip(images[], opts?)` | Horizontal scrollable image strip with thumbnails | 3 |
@@ -571,7 +602,7 @@ lastriko/
 │   │   │   ├── engine/        # Server, WebSocket, lifecycle
 │   │   │   ├── components/    # Built-in component definitions
 │   │   │   ├── client/        # Browser-side bundle source
-│   │   │   ├── theme/         # CSS custom properties, Pico overrides
+│   │   │   ├── theme/         # lastriko.css — self-contained stylesheet + CSS tokens
 │   │   │   ├── plugins/       # Plugin system interfaces
 │   │   │   ├── utils/         # Shared helpers
 │   │   │   └── index.ts       # Public API exports
@@ -651,7 +682,7 @@ app('Experiment Lab', (ui) => {
         const row = queue.prepend({ name: 'exp-1', status: 'queued', score: '—' })
         const result = await runExperiment(model.value, temp.value)
         row.update({ status: 'done', score: result.score })
-        runCount.update(queue.rowCount)
+        runCount.update(String(queue.rowCount))
         btn.setLoading(false)
       })
     },
@@ -1005,16 +1036,23 @@ E2E and visual tests live in `tests/` at the repo root.
 
 ## 18. Open Questions & Pending Decisions
 
-All Phase 1 and Phase 2 blocking decisions are resolved. Remaining items must be decided before Phase 3 begins.
+All Phase 1 and Phase 2 blocking decisions are resolved. **4 items remain open** and must be decided before Phase 3 implementation begins. 2 Phase 6 items are deferred pending separate business decisions.
 
-| # | Question | Must Decide By | Status |
-|---|----------|---------------|--------|
-| 1 | Image/video optimization strategy | Phase 3 | ⏳ Open |
-| 2 | State persistence across sessions | Phase 3 | ⏳ Open |
-| 3 | `parameterPanel` schema format | Phase 3 | ⏳ Open |
-| 4 | Multi-page support model (`ui.page()`) | Phase 3 | ⏳ Open |
-| 5 | `Lastriko Cloud` — requires separate business spec | Phase 6 | ⏳ Deferred |
-| 6 | Visual Builder — recommended removal from roadmap | Phase 6 | ⏳ Deferred |
+### Phase 3 — Must Decide Before Implementation
+
+| # | Question | Decision needed |
+|---|----------|----------------|
+| 1 | Image/video optimization strategy | Client-side lazy loading vs. server-side proxy |
+| 2 | State persistence across sessions | opt-in `localStorage` for input values (default: none) |
+| 3 | `parameterPanel` schema format | Custom Lastriko typed object (recommended) |
+| 4 | Multi-page support model (`ui.page()`) | How page switching interacts with `app()`-once model |
+
+### Phase 6 — Deferred (require separate business specification)
+
+| # | Question | Why deferred |
+|---|----------|-------------|
+| 5 | `Lastriko Cloud` | Requires infra, billing, privacy policy — out of scope for tech spec |
+| 6 | Visual Builder | Conflicts with code-first philosophy — recommend removal from roadmap |
 
 ---
 

@@ -20,7 +20,7 @@ This phase makes Lastriko a **complete** prototyping toolkit, not just a minimal
 2. All components pass ARIA audit (aXe or similar) with zero critical violations.
 3. WebSocket message batching is implemented and measurably reduces network traffic.
 4. `ui.page()` multi-page navigation works end-to-end.
-5. Hot reload preserves scroll position and form state across reloads.
+5. Hot reload with `hotReloadPreserve: true` (default) preserves input values, scroll position, and active tabs across reloads.
 6. **All unit, integration, and E2E tests pass.** Coverage gates maintained. Every component added in this phase has a co-located test file. No Phase 3 component is merged without tests.
 
 ---
@@ -166,18 +166,36 @@ app('Multi Demo', (ui) => {
 
 ---
 
-### 9. Improved Hot Reload
+### 9. Hot Reload State Preservation
 
-**Phase 2 hot reload:** Page fully re-renders on script change (scroll resets, all state lost except component values).
+**Phase 1–2 behaviour:** Hot reload resets all state — full `RENDER` sent, nothing restored.
 
-**Phase 3 improvements:**
-- Scroll position preserved across hot reloads
-- Form field focus preserved (restore focus to element with same ID)
-- Expanded/collapsed `accordion` state preserved
-- Active `tabs` tab preserved
-- `chatUI` history preserved across hot reloads
+**Phase 3 introduces `hotReloadPreserve`** (enabled by default in Phase 3+):
 
-**Implementation note:** Requires client-side "preserve state" snapshot before reload and restore after new render.
+```typescript
+// lastriko.config.ts
+export default defineConfig({
+  hotReloadPreserve: true,  // default: true once Phase 3 ships
+})
+```
+
+**Preserved across hot reload (matched by stable component ID):**
+- Input values — `textInput`, `numberInput`, `slider`, `toggle`, `select`
+- Scroll position — `window.scrollY` + per-container scroll offsets
+- Active tab — `ui.tabs()` active label
+
+**NOT preserved (always resets):**
+- `streamText` content
+- Runtime-appended `table` rows
+- `chatUI` message history
+
+**Implementation:** Client snapshots these values into `sessionStorage` before the new `RENDER` arrives. After rendering, values are restored into matching component IDs. Components without a matching ID (new components) use their declared defaults.
+
+**Acceptance criteria (exit criterion for Phase 3):**
+- Save a script with a slider at value 1.5 → hot reload → slider is still at 1.5
+- Page is scrolled 500px → hot reload → scroll restored to 500px
+- Active tab is "Results" → hot reload → "Results" tab still active
+- New component added to script → hot reload → new component renders with default value
 
 ---
 

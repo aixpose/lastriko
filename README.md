@@ -67,7 +67,7 @@ This repository is in the **documentation and planning phase**. No code has been
 |----------|-------------------|
 | [INPUTS.md](docs/components/INPUTS.md) | button, textInput, slider, toggle, select, fileUpload, + Phase 3 inputs |
 | [DISPLAY.md](docs/components/DISPLAY.md) | text, markdown, image, imageGrid, code, json, table, metric, progress, + Phase 3 display |
-| [LAYOUT.md](docs/components/LAYOUT.md) | columns, tabs, card, divider, spacer, + Phase 3 layout |
+| [LAYOUT.md](docs/components/LAYOUT.md) | shell, grid, tabs, card, divider, spacer, + Phase 3 layout |
 | [FEEDBACK.md](docs/components/FEEDBACK.md) | toast, alert, loading, streamText |
 | [AI.md](docs/components/AI.md) | chatUI, promptEditor, + Phase 3 AI components |
 

@@ -174,7 +174,8 @@ ui.dateInput(label: string, opts?: DateInputOpts): DateInputComponent
 #### `ui.text()` ✅
 
 ```typescript
-ui.text(content: string): void
+ui.text(content: string): TextHandle
+// TextHandle.update(content: string) re-renders and pushes FRAGMENT
 ```
 
 ---
@@ -229,6 +230,7 @@ interface TableHandle extends ComponentHandle<TableProps> {
   prepend(row: Record<string, any>): RowHandle
   remove(rowId: string): void
   rowCount: number
+  onRowClick(handler: (row: Record<string, any>) => void): void
 }
 
 interface RowHandle {
@@ -243,7 +245,9 @@ interface RowHandle {
 #### `ui.metric()` ✅
 
 ```typescript
-ui.metric(label: string, value: string | number, opts?: MetricOpts): void
+ui.metric(label: string, value: string, opts?: MetricOpts): MetricHandle
+// MetricHandle.update(value: string, opts?: MetricOpts) re-renders and pushes FRAGMENT
+// value is always string — convert numbers: String(count)
 ```
 
 ---

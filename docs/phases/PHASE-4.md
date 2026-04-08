@@ -232,7 +232,7 @@ Add to `examples/`:
 
 - `LastrikoPlugin` interface (all fields)
 - `PluginContext` interface (all methods)
-- `LastrikoComponent` interface (all fields)
+- `ComponentHandle` base interface and all specialised handle types (`InputHandle`, `TableHandle`, `RowHandle`, `StreamHandle`, `MetricHandle`, `ProgressHandle`, `TextHandle`)
 - `app()` function signature
 - `defineConfig()` function signature
 - All input/display/layout/feedback/AI component signatures

@@ -32,7 +32,7 @@ All TypeScript in `packages/` must be written with strict mode enabled. Specific
 |--------|-----------|---------|
 | Files | `kebab-case.ts` | `component-registry.ts` |
 | Classes | `PascalCase` | `ComponentRegistry` |
-| Interfaces | `PascalCase` | `LastrikoComponent` |
+| Interfaces | `PascalCase` | `ComponentHandle`, `InputHandle`, `TableHandle` |
 | Type aliases | `PascalCase` | `MessageType` |
 | Functions | `camelCase` | `generateId()` |
 | Constants | `SCREAMING_SNAKE_CASE` | `DEFAULT_PORT` |
@@ -111,7 +111,7 @@ const componentRegistry = new Map();
 // ✅ Per-connection state
 class Connection {
   theme: 'light' | 'dark' = 'light';
-  components: Map<string, LastrikoComponent> = new Map();
+  handles: Map<string, ComponentHandle<any>> = new Map();
 }
 ```
 

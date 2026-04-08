@@ -19,7 +19,11 @@
 
 **API:**
 ```typescript
-ui.text(content: string): void
+ui.text(content: string): TextHandle
+
+interface TextHandle extends ComponentHandle<{ content: string }> {
+  update(content: string): void  // Re-renders and pushes FRAGMENT
+}
 ```
 
 **Renders as:** `<p>` element. If content starts with `#`, `##`, etc., treat as heading (`<h1>`, `<h2>`, etc.).
@@ -255,6 +259,7 @@ interface TableHandle extends ComponentHandle<TableProps> {
   prepend(row: Record<string, any>): RowHandle;  // Add row at top
   remove(rowId: string): void;
   rowCount: number;
+  onRowClick(handler: (row: Record<string, any>) => void): void;
 }
 
 interface RowHandle {
@@ -287,7 +292,11 @@ ui.button('Run', async (btn) => {
 
 **API:**
 ```typescript
-ui.metric(label: string, value: string | number, opts?: MetricOpts): void
+ui.metric(label: string, value: string, opts?: MetricOpts): MetricHandle
+
+interface MetricHandle extends ComponentHandle<MetricProps> {
+  update(value: string, opts?: MetricOpts): void  // Re-renders and pushes FRAGMENT
+}
 
 interface MetricOpts {
   delta?: number;           // Change indicator (+5, -2.3, etc.)
@@ -297,6 +306,8 @@ interface MetricOpts {
   size?: 'sm' | 'md' | 'lg';  // Default: 'md'
 }
 ```
+
+**Note:** `value` is always a `string`. Convert numbers before passing: `metric.update(String(count))`. This keeps the rendering contract simple — the handle does not need to know about number formatting.
 
 **Renders as:** A card-like block:
 ```
@@ -319,7 +330,11 @@ interface MetricOpts {
 
 **API:**
 ```typescript
-ui.progress(value: number | null, opts?: ProgressOpts): ProgressComponent
+ui.progress(value: number | null, opts?: ProgressOpts): ProgressHandle
+
+interface ProgressHandle extends ComponentHandle<ProgressProps> {
+  update(value: number | null, opts?: ProgressOpts): void  // Re-renders and pushes FRAGMENT
+}
 
 interface ProgressOpts {
   label?: string;
@@ -327,27 +342,21 @@ interface ProgressOpts {
   color?: 'accent' | 'success' | 'error' | 'warning';  // Default: 'accent'
   size?: 'sm' | 'md' | 'lg';  // Default: 'md'
 }
-
-interface ProgressComponent extends LastrikoComponent<number | null> {
-  value: number | null;    // 0–100, or null for indeterminate
-}
 ```
 
 **Renders as:**
 - `value` is 0–100: `<progress value={value} max="100">` + percentage text
 - `value` is null: animated indeterminate spinner
 
-**Note:** `progress` has a `ProgressComponent` return (unlike other display components) because the value can be updated reactively as a task progresses:
-
+**Usage:**
 ```typescript
-const prog = ui.progress(0, { label: 'Processing...' });
+const prog = ui.progress(0, { label: 'Processing...' })
 for (let i = 0; i <= 100; i += 10) {
-  await processChunk(i);
-  prog.value = i;  // Triggers PATCH to update the progress bar
+  await processChunk(i)
+  prog.update(i)  // Re-renders this component and pushes FRAGMENT
 }
+prog.update(null)  // Switch to spinner if next operation has unknown duration
 ```
-
-Actually this requires the component to be mutable. The mechanics of this must be designed carefully — updating `prog.value` after the render function has completed means we need a direct atom write that bypasses the normal re-render cycle. This is a **design issue** to resolve in Phase 2.
 
 **Phase:** 2
 

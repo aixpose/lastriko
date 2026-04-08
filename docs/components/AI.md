@@ -46,7 +46,7 @@ interface Message {
   latencyMs?: number;
 }
 
-interface ChatUIComponent extends LastrikoComponent<Message[]> {
+interface ChatUIComponent extends ComponentHandle<ChatUIProps, Message[]> {
   value: Message[];           // Full conversation history
   lastMessage: Message | null;
   tokenCount: number;         // Cumulative tokens used
@@ -105,7 +105,7 @@ interface PromptEditorOpts {
   showTokenCount?: boolean;// Estimated token count (default: false — requires tokenizer)
 }
 
-interface PromptEditorComponent extends LastrikoComponent<string> {
+interface PromptEditorComponent extends InputHandle<string> {
   value: string;
   interpolate(vars: Record<string, string>): string;  // Replace {{variable}} with values
 }
@@ -166,7 +166,7 @@ interface ModelCompareOpts {
   streaming?: boolean;      // Default: true
 }
 
-interface ModelCompareComponent extends LastrikoComponent<ModelCompareResults> {
+interface ModelCompareComponent extends ComponentHandle<ModelCompareProps, ModelCompareResults> {
   value: ModelCompareResults;
   results: Record<string, string>;  // model label → response text
   isStreaming: Record<string, boolean>;
@@ -225,7 +225,7 @@ interface ParameterPanelOpts {
   collapsible?: boolean;   // Wrap in accordion (default: false)
 }
 
-interface ParameterPanelComponent extends LastrikoComponent<Record<string, any>> {
+interface ParameterPanelComponent extends ComponentHandle<ParameterPanelProps, Record<string, any>> {
   value: Record<string, any>;  // All parameter values by key
 }
 ```

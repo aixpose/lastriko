@@ -30,7 +30,7 @@ Currently approved (from MANIFEST.md Section 10.2):
 
 ## Approved Development Dependencies
 
-(From MANIFEST.md Section 10.2 — available in all packages)
+(From MANIFEST.md Section 10.3 — available in all packages)
 
 - `typescript`
 - `bun-types`

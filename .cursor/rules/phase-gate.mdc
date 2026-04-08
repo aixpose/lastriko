@@ -20,8 +20,10 @@ Use these tables to determine which phase owns a given piece of work:
 
 **Phase 1 (Foundation):**
 - Engine: HTTP server, WebSocket, lifecycle, file watcher
-- Component model: interfaces, registry, ID generation, diffing
-- CSS foundation: tokens.css, theme switching
+- Component handle system: `ComponentHandle`, `InputHandle`, registry, ID generation
+- HTML renderer: component → HTML string; `FRAGMENT` send logic
+- Client: WebSocket manager + `outerHTML` swap (no diffing library)
+- CSS foundation: `lastriko.css` tokens + base styles, theme switching
 - Plugin interface: types only, stubs
 - CLI scaffold: create-lastriko
 

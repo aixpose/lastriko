@@ -8,7 +8,7 @@ A real-time ML experiment tracking dashboard with parallel runs, live log stream
 |---------|----------|
 | Full shell (header + sidebar + main) | `ui.shell()` |
 | Header with live counters | `ui.metric()` updated from sidebar + main callbacks |
-| Auto-generated parameter controls | `ui.parameterPanel()` |
+| Hyperparameter controls | `ui.slider()` + `ui.toggle()` (Phase 2 API; `ui.parameterPanel()` is Phase 3) |
 | Tabbed main area (Queue / Logs / Results / Compare) | `ui.tabs()` |
 | Live experiment queue with row-level updates | `ui.table()` + `row.update()` |
 | Per-run log streaming | `ui.streamText()` + `output.append()` |

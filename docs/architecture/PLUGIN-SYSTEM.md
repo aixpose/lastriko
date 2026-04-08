@@ -39,8 +39,8 @@ A plugin package must never `import` from another plugin package. If two plugins
 - Each plugin can be updated independently without breaking others
 
 **What plugins CAN do via `PluginContext`:**
-- Read other registered plugin names: `ctx.getPlugin('openai')?.version`
-- Use shared state stores: `ctx.getStore(scope, 'key', default)`
+- Read other registered plugin metadata (name/version only): `ctx.getPlugin('openai')?.version`
+- Use per-connection state stores: `ctx.getStore('key', defaultValue)`
 - Register components, routes, and middleware
 - Everything they need to operate independently
 
@@ -80,6 +80,8 @@ interface PluginContext {
   
   // Get or create a Nanostores atom scoped to a connection
   // Called inside onConnection() to get per-connection state
+  // Get or create a per-connection Nanostores atom scoped to this plugin
+  // Call inside onConnection() to get per-connection state
   getStore<T>(key: string, initialValue: T): WritableAtom<T>;
   
   // Register a connection lifecycle handler
@@ -102,7 +104,9 @@ interface PluginContext {
   };
   
   // Access other registered plugins (for plugin-to-plugin communication)
-  getPlugin(name: string): LastrikoPlugin | undefined;
+  // Read-only access to another plugin's metadata (name, version)
+  // Plugins MUST NOT import from each other — this is metadata only, not a call bridge
+  getPlugin(name: string): Pick<LastrikoPlugin, 'name' | 'version'> | undefined;
 }
 ```
 
@@ -335,7 +339,7 @@ class PluginRegistry {
 
 These limitations exist in the initial implementation and are addressed in Phase 4:
 
-1. **No plugin-to-plugin communication** — `ctx.getPlugin()` stubs throw in Phase 1.
+1. **`getPlugin()` is metadata-only** — returns `{ name, version }` of another registered plugin. It is NOT a way to call another plugin's methods. Code must never do `ctx.getPlugin('openai').doSomething()`. That would violate the isolation rule. `getPlugin()` exists only to let a plugin check whether an optional companion plugin is present.
 2. **No client-side plugin code** — Custom component renderers must use built-in renderer primitives. Full custom client renderers come in Phase 4.
 3. **No hot-reload for plugins** — If a plugin's source changes, the server must be restarted. (Developer scripts hot-reload; plugins do not.)
 4. **Single plugin instance** — You cannot register the same plugin twice (e.g., two OpenAI instances with different API keys). This constraint may be relaxed in Phase 4.

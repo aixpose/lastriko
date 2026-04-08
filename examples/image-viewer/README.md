@@ -10,7 +10,7 @@ A phased image review tool for **ArchivDemo GmbH** — a fictional demo company.
 | Two-column grid (stats + apply panel) | `ui.grid()` |
 | Folder list with row click | `ui.table()` + `onRowClick` |
 | Per-phase progress cards | `ui.metric()` with `.update()` |
-| Image film strip | `ui.filmStrip()` |
+| Image film strip | `ui.filmStrip()` (Phase 3 feature — shown here as a preview) |
 | Live content update on folder selection | `handle.update()` |
 | Theme toggle | Built-in toolbar |
 

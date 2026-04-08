@@ -103,6 +103,9 @@ test('table row update sends FRAGMENT with correct id', async () => {
 | READY → RENDER cycle | Client connects, sends READY, receives RENDER with component tree |
 | EVENT → FRAGMENT cycle | Client sends EVENT (button click), server runs handler, sends FRAGMENT(s) |
 | Hot reload flow | File changes, module re-imported, fresh RENDER sent to all clients |
+| Hot reload preservation (Phase 3) | Slider at 1.5 → save script → slider still 1.5 after reload |
+| Hot reload scroll (Phase 3) | Scroll 500px → save script → scroll restored to 500px |
+| Hot reload tabs (Phase 3) | Active tab "Results" → save script → "Results" still active |
 | Multi-connection isolation | Two clients → different state, no cross-contamination |
 | File upload flow | POST /upload returns metadata, EVENT carries metadata, component.value correct |
 | Stream text flow | STREAM_CHUNK messages arrive in order, done=true on completion |
