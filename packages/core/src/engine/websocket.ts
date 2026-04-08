@@ -1,5 +1,5 @@
 import type { AppDefinition } from './executor';
-import { executeApp, handleClientEvent, runAppForScope } from './executor';
+import { executeApp, handleClientEvent } from './executor';
 import type { ClientMessage, EventMessage, ReadyMessage, ThemeMode } from './messages';
 import { parseClientMessage, serializeServerMessage } from './messages';
 import { createConnectionScope } from '../components/registry';
@@ -87,8 +87,13 @@ export class WebSocketHub {
 
   private handleReady(entry: SocketConnection, message: ReadyMessage): void {
     this.currentTheme = message.payload.theme ?? this.currentTheme;
-    const result = runAppForScope(entry.scope, this.appDef.title, this.appDef.callback, this.currentTheme);
-    this.send(entry.socket, { type: 'RENDER', payload: result });
+    const result = executeApp(this.appDef, entry.scope, this.currentTheme);
+    if (!result.ok) {
+      this.send(entry.socket, {
+        type: 'ERROR',
+        payload: { message: result.error.message, stack: result.error.stack },
+      });
+    }
   }
 
   private handleEvent(entry: SocketConnection, message: EventMessage): void {

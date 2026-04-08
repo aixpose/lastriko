@@ -20,6 +20,9 @@ export async function app(title: string, callback: AppCallback, opts: AppOptions
     app: callback,
     ...(opts.server ?? {}),
   });
+  if (process.env.NODE_ENV !== 'test') {
+    console.info(`[lastriko] Ready at http://${server.host}:${server.port}`);
+  }
 
   return {
     server,
