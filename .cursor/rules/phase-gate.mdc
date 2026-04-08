@@ -1,0 +1,106 @@
+---
+description: Phase gate rule — code must only implement what is scoped to the current active phase. Apply when adding new features or components.
+globs:
+alwaysApply: true
+---
+
+# Phase Gate Rule
+
+## The Rule
+
+Code must only implement what is scoped to the **current active phase**.
+
+The current phase is tracked in [MANIFEST.md](../../MANIFEST.md#11-development-phases--roadmap) — look for the phase with status "In Progress".
+
+## Phase Component Ownership
+
+Use these tables to determine which phase owns a given piece of work:
+
+### Components by Phase
+
+**Phase 1 (Foundation):**
+- Engine: HTTP server, WebSocket, lifecycle, file watcher
+- Component handle system: `ComponentHandle`, `InputHandle`, registry, ID generation
+- HTML renderer: component → HTML string; `FRAGMENT` send logic
+- Client: WebSocket manager + `outerHTML` swap (no diffing library)
+- CSS foundation: `lastriko.css` tokens + base styles, theme switching
+- Plugin interface: types only, stubs
+- CLI scaffold: create-lastriko
+
+**Phase 2 (MVP Components):**
+- `button`, `textInput`, `numberInput`, `slider`, `toggle`, `select`, `fileUpload`
+- `text`, `markdown`, `image`, `imageGrid`, `code`, `json`, `table`, `metric`, `progress`
+- `shell`, `grid`, `tabs`, `card`, `divider`, `spacer`
+- `toast`, `alert`, `loading`, `streamText`
+- `chatUI`, `promptEditor`
+- Complete theme (all tokens, toolbar toggle)
+- Node.js 20+ support (alongside Bun)
+- npm publish: lastriko v0.1.0
+
+**Phase 3 (Advanced):**
+- `multiSelect`, `colorPicker`, `dateInput`
+- `video`, `audio`, `diff`
+- `accordion`, `fullscreen`
+- `modelCompare`, `parameterPanel`, `filmStrip`, `beforeAfter`
+- WebSocket message batching
+- Virtual scrolling in `table`
+- Accessibility audit
+- Multi-page support (`ui.page()`, `ui.navigate()`)
+- Improved hot reload (scroll/state preservation)
+- Error boundaries
+
+**Phase 4 (Plugins):**
+- `@lastriko/plugin-openai`
+- `@lastriko/plugin-anthropic`
+- `@lastriko/plugin-ollama`
+- `@lastriko/plugin-neutralino` (stub → full)
+- `@lastriko/plugin-auth`
+- Full `PluginContext` implementation (all methods)
+
+**Phase 5 (Distribution):**
+- `bunx lastriko export --desktop`
+- `bunx lastriko export --static`
+- `bunx lastriko export --docker`
+- `bunx lastriko share`
+- `@lastriko/plugin-static`
+
+**Phase 6 (Ecosystem):**
+- Templates gallery
+- Community plugin scaffolding
+- Additional official plugins (huggingface, replicate, generic-llm)
+
+## Violation Examples
+
+These are phase gate violations — do not do them:
+
+```typescript
+// ❌ Adding accordion in Phase 2 (it's a Phase 3 component)
+ui.accordion([{ label: 'Advanced', content: ... }]);
+
+// ❌ Implementing desktop export in Phase 3
+const neutralino = await import('@neutralinojs/neutralino');
+
+// ❌ Writing OpenAI plugin code in Phase 1
+class OpenAIPlugin implements LastrikoPlugin { ... }
+```
+
+## When You See Phase-Gated Items
+
+If you encounter a request to implement a component or feature that belongs to a later phase:
+
+1. Check: is the current phase actually that later phase? (Look at MANIFEST.md)
+2. If yes: proceed, make sure the manifesto has the spec before coding
+3. If no: decline to implement it, explain which phase it belongs to
+
+## Advancing Phases
+
+Phases advance when their exit criteria are met. **Do not advance a phase until ALL exit criteria pass.** Exit criteria are defined in each phase document:
+
+- [PHASE-1.md](../../docs/phases/PHASE-1.md#exit-criteria)
+- [PHASE-2.md](../../docs/phases/PHASE-2.md#exit-criteria)
+- [PHASE-3.md](../../docs/phases/PHASE-3.md#exit-criteria)
+- [PHASE-4.md](../../docs/phases/PHASE-4.md#exit-criteria)
+- [PHASE-5.md](../../docs/phases/PHASE-5.md#exit-criteria)
+- [PHASE-6.md](../../docs/phases/PHASE-6.md#exit-criteria)
+
+When a phase is complete, update MANIFEST.md to mark it as "Complete" and the next phase as "In Progress".

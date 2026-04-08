@@ -1,0 +1,97 @@
+---
+description: Manifest-first development rule. Every code change must be validated against and described in the manifesto before being written. Always apply when writing or modifying any source code.
+globs:
+alwaysApply: true
+---
+
+# Manifest-First Development Rule
+
+## The Rule
+
+**Before writing any code, the relevant section of the manifesto must already describe what you are building.**
+
+If the manifesto does not describe it, update the manifesto first, then write the code.
+
+This rule applies to:
+- New files
+- New functions or classes
+- New component types
+- New configuration options
+- New API surface
+- New dependencies
+- Any behavior change
+
+## Validation Checklist
+
+Before writing code, confirm ALL of the following:
+
+0. **Tests exist or will be written in the same PR** — Every function, component, message type, or engine behaviour added to `packages/` must have a corresponding test. If you cannot describe how to test it, stop and design the test first. See `.cursor/rules/test-coverage.mdc`.
+
+1. **MANIFEST.md** — Does the relevant section describe this code?
+   - If adding a component: Is it in the component tables in Section 4?
+   - If changing the protocol: Is it in [docs/architecture/PROTOCOL.md](../../docs/architecture/PROTOCOL.md)?
+   - If adding a dependency: Is it in Section 10 (Dependency Philosophy)?
+   - If changing performance behavior: Does it still meet Section 13 targets?
+
+2. **Phase gate** — Is this code in scope for the current phase?
+   - Check the phase docs in [docs/phases/](../../docs/phases/)
+   - Code for a later phase must not be written until that phase is active
+   - "I'll just stub it" is not acceptable — stubs create technical debt and ambiguity
+
+3. **Open questions** — Is there an unresolved question in [QUESTIONS.md](../../QUESTIONS.md) that affects this code?
+   - If yes: the question must be resolved (answered in QUESTIONS.md Decision Log) before coding
+   - Do not write code that assumes an answer to an open question
+
+4. **Type safety** — Does the code have full TypeScript types?
+   - No `any` unless explicitly justified in a comment
+   - No `@ts-ignore` unless explicitly justified in a comment
+   - Exported APIs must have explicit type declarations
+
+5. **Performance** — Does this change risk violating a target in Section 13?
+   - If adding to the client bundle: estimate the gzip size contribution
+   - If adding server-side work on the hot path: estimate latency contribution
+
+## Manifesto Update Process
+
+When you need to change something not described in the manifesto:
+
+1. Update the relevant section(s) in MANIFEST.md
+2. Update the relevant sub-document(s) in docs/
+3. Add a row to the MANIFEST.md changelog table
+4. If the change resolves an open question: mark it resolved in QUESTIONS.md Decision Log
+5. If the change introduces a new open question: add it to QUESTIONS.md
+6. Commit the manifesto update SEPARATELY from the code change
+
+**Commit message format for manifesto updates:**
+```
+docs: update manifesto — [brief description of change]
+
+Updated sections: [list sections]
+Reason: [why the change was needed]
+```
+
+## What Counts as a Manifesto Violation
+
+These actions MUST NOT be taken without updating the manifesto first:
+
+- Adding a component not in the component tables
+- Changing a component's API signature
+- Adding a production dependency not in Section 10
+- Changing the WebSocket protocol
+- Changing the app() function signature
+- Changing the plugin interface
+- Adding a new CLI command
+- Changing default configuration values
+- Adding a new HTTP route to the engine
+
+## Exceptions
+
+The following are explicitly exempt from the manifesto-first rule:
+
+- Bug fixes that do not change observable behavior
+- Test files (`*.test.ts`, `*.spec.ts`)
+- Documentation fixes (typos, clarifications that don't change meaning)
+- Internal refactoring that does not change the public API
+- CI/CD configuration
+
+Even for exceptions: if the bug fix reveals a gap in the manifesto (the spec was ambiguous or wrong), update the manifesto to document the correct behavior.

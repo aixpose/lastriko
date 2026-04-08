@@ -1,0 +1,50 @@
+---
+description: Open questions check — before implementing anything that touches an unresolved design decision, verify the question is resolved in MANIFEST.md §18. Always apply.
+globs:
+alwaysApply: true
+---
+
+# Open Questions Check
+
+## The Rule
+
+Before implementing code that depends on an unresolved design decision, check [MANIFEST.md §18](../../MANIFEST.md#18-open-questions--pending-decisions) to ensure the relevant question is resolved.
+
+All Phase 1 and Phase 2 blocking decisions are **resolved**. The remaining open items are Phase 3 scope:
+
+## Remaining Open Questions (Phase 3 Blockers)
+
+| # | Question | Impacts |
+|---|----------|---------|
+| 1 | Image/video optimization strategy | `image`, `imageGrid`, `video` lazy loading |
+| 2 | State persistence across sessions (localStorage opt-in) | `defineConfig({ persistence })` |
+| 3 | `parameterPanel` schema format | `parameterPanel` component |
+| 4 | Multi-page support model (`ui.page()`) | `ui.page()`, `ui.navigate()` |
+
+## All Phase 1 + 2 Decisions — Locked
+
+These are **resolved** and must not be re-opened without updating MANIFEST.md:
+
+| Decision | Resolution |
+|----------|-----------|
+| Execution model | `app()` once per connection; button callbacks; handles |
+| Wire format | `FRAGMENT` messages (HTML); `outerHTML` swap on client |
+| State | Nanostores server-side only; `ConnectionScope` per connection |
+| Layout | `shell()` + `grid()` — no standalone `sidebar()`, no `columns()` |
+| CSS | Self-contained `lastriko.css`; no Pico.css; no CDN |
+| Client rendering | `outerHTML` swap; no diffing library; no framework |
+| Plugin isolation | `plugin → core` only |
+| streamText | Handle-based; `.append(chunk)` + `STREAM_CHUNK`; no re-run |
+| table | `TableHandle` with `.prepend/.append/.remove/.onRowClick`; `RowHandle.update()` |
+| metric | `MetricHandle`; value is always `string`; `.update(value, opts?)` |
+| text | `TextHandle`; `.update(content)` pushes `FRAGMENT` |
+| Hot reload | Phase 1–2: full reset. Phase 3+: `hotReloadPreserve: true` (default) preserves inputs, scroll, active tabs |
+| Button lock | `btn.setLoading(true/false)` |
+
+## How to Resolve a Question
+
+1. Make a decision
+2. Add a row to MANIFEST.md §18 changing status from ⏳ to ✅
+3. Update the relevant component spec doc
+4. Update MANIFEST.md changelog
+5. Commit manifesto update separately from the code change

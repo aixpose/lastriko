@@ -1,0 +1,122 @@
+---
+description: Code quality rules for Lastriko. No undocumented magic. Apply when writing TypeScript source files.
+globs: ["**/*.ts", "**/*.tsx"]
+alwaysApply: false
+---
+
+# Code Quality Rules
+
+## TypeScript Strictness
+
+All TypeScript in `packages/` must be written with strict mode enabled. Specifically:
+
+```json
+{
+  "compilerOptions": {
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitReturns": true,
+    "exactOptionalPropertyTypes": true
+  }
+}
+```
+
+- No `any` without a justification comment (`// any: reason`)
+- No `@ts-ignore` without a justification comment (`// ts-ignore: reason`)
+- No `as unknown as T` casts without a justification comment
+- Use `unknown` instead of `any` for external/untrusted data
+
+## Naming Conventions
+
+| Entity | Convention | Example |
+|--------|-----------|---------|
+| Files | `kebab-case.ts` | `component-registry.ts` |
+| Classes | `PascalCase` | `ComponentRegistry` |
+| Interfaces | `PascalCase` | `ComponentHandle`, `InputHandle`, `TableHandle` |
+| Type aliases | `PascalCase` | `MessageType` |
+| Functions | `camelCase` | `generateId()` |
+| Constants | `SCREAMING_SNAKE_CASE` | `DEFAULT_PORT` |
+| Variables | `camelCase` | `componentTree` |
+| CSS classes | `lk-kebab-case` | `.lk-card`, `.lk-input` |
+| CSS custom props | `--lk-kebab-case` | `--lk-accent` |
+| Component IDs | `type-position` | `textInput-3` |
+
+## Comments Policy
+
+Write comments only when the code cannot explain itself. Do NOT write:
+
+```typescript
+// ❌ Obvious comment
+const port = 3000; // Set the port to 3000
+
+// ❌ Narrating what the code does
+function add(a: number, b: number): number {
+  // Add a and b together
+  return a + b;
+}
+
+// ❌ Explaining a change you made
+// Changed from Map to WeakMap for GC
+const store = new WeakMap(); // should just be the code, no comment needed
+```
+
+DO write comments when:
+
+```typescript
+// ✅ Explaining non-obvious intent
+// IDs assigned at declaration time (app() call) — stable for the connection lifetime
+function generateId(type: string): string { ... }
+
+// ✅ Explaining a trade-off
+// outerHTML swap invalidates the element reference — callers must re-query after update
+function applyFragment(id: string, html: string): void { ... }
+
+// ✅ Documenting a constraint
+// Bun's file watcher has a 50ms debounce built-in; we add another 50ms here
+// to handle editors that write files in two passes (temp + rename)
+const DEBOUNCE_MS = 50;
+```
+
+## Error Handling
+
+All async functions that can fail must handle errors explicitly:
+
+```typescript
+// ❌ Silent failure
+async function loadScript(path: string) {
+  const mod = await import(path).catch(() => null);
+  return mod;
+}
+
+// ✅ Explicit error handling with useful context
+async function loadScript(path: string): Promise<ScriptModule | null> {
+  try {
+    return await import(path);
+  } catch (err) {
+    logger.error('Failed to load script', { path, error: err });
+    return null;
+  }
+}
+```
+
+## No Global Mutable State
+
+Lastriko handles multiple concurrent WebSocket connections. Global mutable state is a concurrency bug:
+
+```typescript
+// ❌ Global mutable state — shared across all connections
+let currentTheme = 'light';
+const componentRegistry = new Map();
+
+// ✅ Per-connection state
+class Connection {
+  theme: 'light' | 'dark' = 'light';
+  handles: Map<string, ComponentHandle<any>> = new Map();
+}
+```
+
+Exception: The plugin registry is global (plugins are registered once at startup, before any connections).
+
+## File Size Guideline
+
+Source files should not exceed 300 lines. If a file is approaching this limit, consider splitting by responsibility.
