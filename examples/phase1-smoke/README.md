@@ -14,11 +14,14 @@ npm run dev
 
 The server starts on `http://127.0.0.1:3500` by default (or the next free port if 3500 is in use).
 
-`npm run dev` uses `tsx watch`, so editing `demo.ts` restarts the server automatically.
+`npm run dev` now does two things:
+
+1. builds `packages/core` once (so client assets like `/client.js` exist),
+2. starts `tsx watch demo.ts` (so editing `demo.ts` restarts the server automatically).
 
 Clicking **Ping** should replace only the text component via a `FRAGMENT` update.
 
-## Why this imports `../../packages/core/src/index.ts`
+## Why this uses `file:../../packages/core`
 
-This example is intended for fast local iteration and imports core source directly.
-That means you can run the demo without building `packages/core` first.
+The smoke app depends on the local package build output so its browser client assets are served correctly.
+The `dev` script handles this automatically via `build:core`, so you still run a single command.
