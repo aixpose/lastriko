@@ -36,7 +36,7 @@ The practical consequence: if you cannot describe how to test a change, the chan
 
 **Tool:** [Vitest](https://vitest.dev/) — same API as Jest; runs on Node.js and is invoked by **both** `npm` and `bun` in CI (`npm run test` / `bun run test` from the repo root).
 
-**Coverage target:** 90%+ for all code in `packages/core/src/`.
+**Coverage target:** 90%+ for all code in `packages/core/src/` (north star; see [MANIFEST.md §14.2](../MANIFEST.md#142-coverage-gates-ci-enforced) for current CI-enforced Vitest thresholds).
 
 **Location:** `packages/core/src/**/*.test.ts` next to source, **excluding** `*.integration.test.ts` (those are integration tests; the core `test` script excludes them so they run only under `test:integration`).
 
@@ -219,7 +219,7 @@ The repository ships [`.github/workflows/ci.yml`](../.github/workflows/ci.yml). 
 
 | Job | What runs |
 |-----|-----------|
-| Node 22 (npm) | `npm ci`, then `npm run` typecheck, lint, test, test:integration, check:bundle |
+| Node 22 (npm) | `npm ci`, then `npm run` typecheck, lint, **test:coverage**, test:integration, check:bundle |
 | Node 24 (npm) | Same as Node 22 |
 | 22 (bun) | `npm ci` for a single lockfile, then `bun run` for the same scripts (validates the Bun primary runtime alongside Node) |
 

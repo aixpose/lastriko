@@ -19,8 +19,8 @@ Ship the first usable version with enough components to build a real AI demo. Th
 ### Tests (non-negotiable)
 - All unit tests pass across Bun and Node.js 22 and 24 (current CI matrix)
 - All integration tests pass
-- All E2E flows pass on Chromium
-- Coverage gates met for all new code
+- **E2E (Playwright) and visual regression:** tracked in this doc (§Testing Requirements) but **not blocking** Phase 2 exit until `tests/e2e/` and `tests/visual/` exist — ship after first `npm publish` if needed
+- **Coverage:** CI enforces Vitest thresholds on `packages/core` (`npm run test:coverage`; see `packages/core/vitest.config.ts`). Full **90% line / 85% branch** targets in [MANIFEST.md §14.2](../../MANIFEST.md#142-coverage-gates-ci-enforced) remain the north star; raise thresholds as coverage grows.
 - Bundle size gates: client ≤ 15KB, core ≤ 50KB
 
 ### Functional
@@ -191,9 +191,10 @@ Full specs: [AI.md](../components/AI.md)
 ### 10. npm Publish — `lastriko` v0.1.0
 
 **Pre-publish checklist:**
-- [ ] `@lastriko` npm scope claimed
-- [ ] `package.json` has correct `main`, `module`, `types`, `exports`
-- [ ] `CHANGELOG.md` generated via Changesets
+- [ ] npm name **`lastriko`** (unscoped) available on the registry
+- [ ] `packages/core/package.json` has **`version`**, `exports` (including `import`), `types`, `prepack`, `files`, `license`, `repository`
+- [ ] `packages/core/README.md` present (npm package page)
+- [ ] Optional: root `CHANGELOG.md` or Changesets — not required to cut the first release
 - [ ] All CI checks pass (Bun + Node.js matrix)
 - [ ] Bundle size: client ≤ 15KB gzip, core ≤ 50KB gzip
 
