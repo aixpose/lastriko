@@ -52,13 +52,13 @@ function renderText(handle: TextHandle): string {
 
 function renderButton(handle: ButtonHandle): string {
   const attrs = renderAttributes({
-    class: `lk-button lk-button--${handle.props.variant ?? 'primary'}`,
+    'class': `lk-button lk-button--${handle.props.variant ?? 'primary'}`,
     'data-lk-id': handle.id,
     'data-lk-kind': 'button',
     'data-lk-event': 'click',
-    disabled: handle.props.loading || handle.props.disabled,
+    'disabled': handle.props.loading || handle.props.disabled,
     'aria-busy': handle.props.loading ? 'true' : undefined,
-    type: 'button',
+    'type': 'button',
   });
   const spinner = handle.props.loading ? '<span class="lk-spinner" aria-hidden="true"></span>' : '';
   return `<button${attrs}>${spinner}<span>${escapeHtml(handle.props.label)}</span></button>`;
@@ -69,9 +69,9 @@ function renderTextInput(handle: TextInputHandle | PromptEditorHandle): string {
     'data-lk-id': handle.id,
     'data-lk-kind': handle.type,
     'data-lk-event': 'change',
-    disabled: handle.props.disabled,
-    maxlength: handle.props.maxLength,
-    placeholder: handle.props.placeholder,
+    'disabled': handle.props.disabled,
+    'maxlength': handle.props.maxLength,
+    'placeholder': handle.props.placeholder,
     'aria-label': handle.props.label,
   });
   const value = escapeHtml(handle.props.value);
@@ -89,12 +89,12 @@ function renderTextInput(handle: TextInputHandle | PromptEditorHandle): string {
 
 function renderNumberInput(handle: NumberInputHandle): string {
   const attrs = renderAttributes({
-    type: 'number',
-    value: handle.props.value,
-    min: handle.props.min,
-    max: handle.props.max,
-    step: handle.props.step ?? 1,
-    disabled: handle.props.disabled,
+    'type': 'number',
+    'value': handle.props.value,
+    'min': handle.props.min,
+    'max': handle.props.max,
+    'step': handle.props.step ?? 1,
+    'disabled': handle.props.disabled,
     'data-lk-event': 'change',
     'aria-label': handle.props.label,
   });
@@ -105,12 +105,12 @@ function renderNumberInput(handle: NumberInputHandle): string {
 
 function renderSlider(handle: SliderHandle): string {
   const attrs = renderAttributes({
-    type: 'range',
-    min: handle.props.min,
-    max: handle.props.max,
-    step: handle.props.step ?? 1,
-    value: handle.props.value,
-    disabled: handle.props.disabled,
+    'type': 'range',
+    'min': handle.props.min,
+    'max': handle.props.max,
+    'step': handle.props.step ?? 1,
+    'value': handle.props.value,
+    'disabled': handle.props.disabled,
     'data-lk-event': 'change',
     'aria-label': handle.props.label,
   });
@@ -122,9 +122,9 @@ function renderSlider(handle: SliderHandle): string {
 
 function renderToggle(handle: ToggleHandle): string {
   const attrs = renderAttributes({
-    type: 'checkbox',
-    checked: handle.props.value,
-    disabled: handle.props.disabled,
+    'type': 'checkbox',
+    'checked': handle.props.value,
+    'disabled': handle.props.disabled,
     'data-lk-event': 'change',
     'aria-label': handle.props.label,
   });
@@ -149,7 +149,7 @@ function renderSelect(handle: SelectHandle): string {
     ? `<option value="" selected disabled>${escapeHtml(handle.props.placeholder)}</option>`
     : '';
   const attrs = renderAttributes({
-    disabled: handle.props.disabled,
+    'disabled': handle.props.disabled,
     'data-lk-event': 'change',
     'aria-label': handle.props.label,
   });
@@ -160,10 +160,10 @@ function renderSelect(handle: SelectHandle): string {
 
 function renderFileUpload(handle: FileUploadHandle): string {
   const attrs = renderAttributes({
-    type: 'file',
-    accept: handle.props.accept,
-    multiple: handle.props.multiple,
-    disabled: handle.props.disabled,
+    'type': 'file',
+    'accept': handle.props.accept,
+    'multiple': handle.props.multiple,
+    'disabled': handle.props.disabled,
     'data-lk-event': 'change',
     'aria-label': handle.props.label,
   });
@@ -225,9 +225,9 @@ function renderTable(handle: TableHandle): string {
   const head = handle.props.columns.map((column) => `<th>${escapeHtml(column)}</th>`).join('');
   const body = handle.props.rows.length > 0
     ? handle.props.rows.map((row) => {
-      const cells = handle.props.columns.map((column) => `<td>${escapeHtml(String(row.data[column] ?? ''))}</td>`).join('');
-      return `<tr data-lk-table-row-id="${row.id}">${cells}</tr>`;
-    }).join('')
+        const cells = handle.props.columns.map((column) => `<td>${escapeHtml(String(row.data[column] ?? ''))}</td>`).join('');
+        return `<tr data-lk-table-row-id="${row.id}">${cells}</tr>`;
+      }).join('')
     : `<tr><td colspan="${Math.max(1, handle.props.columns.length)}">${escapeHtml(handle.props.emptyMessage ?? 'No data')}</td></tr>`;
   const style = handle.props.maxHeight ? `style="max-height:${handle.props.maxHeight}px;overflow:auto;display:block;"` : '';
   return `<div class="lk-table-wrap" data-lk-id="${handle.id}" data-lk-kind="table" ${style}><table class="lk-table${handle.props.striped ? ' lk-table--striped' : ''}"><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>`;

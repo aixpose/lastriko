@@ -1,5 +1,5 @@
 import { Buffer } from 'node:buffer';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import {
   type IncomingMessage,
   type ServerResponse,
@@ -8,7 +8,6 @@ import {
 import { dirname, join } from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
-import { mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { WebSocketServer, type RawData, type WebSocket } from 'ws';
 import { createHtmlShell } from './shell';
@@ -289,7 +288,7 @@ function createHttpHandler(opts: {
           ?? req.headers['x-lastriko-connection']
           ?? req.headers['x-lastriko-connection-id']
           ?? 'shared';
-        const safeScopeDir = String(scopeDirName).replaceAll(/[^a-zA-Z0-9._-]/g, '_').slice(0, 120) || 'shared';
+        const safeScopeDir = String(scopeDirName).replaceAll(/[^\w.-]/g, '_').slice(0, 120) || 'shared';
         const uploadDir = join(opts.uploadDirRoot, safeScopeDir);
         mkdirSync(uploadDir, { recursive: true });
         const saved = parts.map((part, index) => {

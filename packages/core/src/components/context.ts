@@ -36,7 +36,6 @@ import type {
   SliderOpts,
   StreamHandle,
   StreamTextOpts,
-  StreamTextProps,
   TabDef,
   TabsOpts,
   TableHandle,
@@ -685,7 +684,7 @@ export class UIContext implements IUIContext {
         this.scope.pushFragment(handle as AnyComponentHandle);
       },
       interpolate: (vars: Record<string, string>) =>
-        valueAtom.get().replaceAll(/\{\{([a-zA-Z0-9_-]+)\}\}/g, (_, key: string) => vars[key] ?? ''),
+        valueAtom.get().replaceAll(/\{\{([\w-]+)\}\}/g, (_, key: string) => vars[key] ?? ''),
     };
     return this.register(handle as AnyComponentHandle) as PromptEditorHandle;
   }
