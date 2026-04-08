@@ -209,4 +209,4 @@ export default defineConfig({
 
 ---
 
-*[← Phase 2](PHASE-2.md) — Phase 3 of 6 — [Next: Phase 4 →](PHASE-4.md)*
+*Phase 3 of 6 — [Next: Phase 4 →](PHASE-4.md)*
