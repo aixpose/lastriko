@@ -1,0 +1,28 @@
+{
+  "name": "lastriko",
+  "version": "0.0.1",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./style.css": "./dist/style.css"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint src --ext .ts",
+    "test": "vitest run",
+    "test:integration": "vitest run src/__tests__/integration",
+    "check:bundle": "node ../../scripts/check-client-size.mjs"
+  },
+  "dependencies": {
+    "nanostores": "^1.1.0"
+  }
+}

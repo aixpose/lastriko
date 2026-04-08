@@ -41,9 +41,9 @@ Run `bun demo.ts` — a browser opens with a live, structured, interactive page.
 
 ## Status
 
-This repository contains the **complete project specification and architecture documentation**. All architectural decisions are resolved. Implementation has not yet started.
+This repository contains the project specification and the active Phase 1 foundation implementation.
 
-**Current phase:** Pre-Phase 1 — documentation complete, ready for implementation
+**Current phase:** Phase 1 — Infrastructure & Foundation (In Progress)
 
 ---
 

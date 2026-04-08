@@ -1,0 +1,15 @@
+{
+  "name": "phase1-smoke",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx demo.ts",
+    "link:local": "npm install ../../packages/core && npm install"
+  },
+  "dependencies": {
+    "lastriko": "file:../../packages/core"
+  },
+  "devDependencies": {
+    "tsx": "^4.20.6"
+  }
+}

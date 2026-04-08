@@ -1,0 +1,116 @@
+import type { AppDefinition } from './executor';
+import { executeApp, handleClientEvent, runAppForScope } from './executor';
+import type { ClientMessage, EventMessage, ReadyMessage, ThemeMode } from './messages';
+import { parseClientMessage, serializeServerMessage } from './messages';
+import { createConnectionScope } from '../components/registry';
+import type { ConnectionScope } from '../components/types';
+
+export interface WebSocketLike {
+  send(data: string): void;
+}
+
+export interface SocketConnection {
+  socket: WebSocketLike;
+  scope: ConnectionScope;
+}
+
+export class WebSocketHub {
+  private readonly connections = new Map<WebSocketLike, SocketConnection>();
+  private currentTheme: ThemeMode = 'light';
+
+  constructor(private readonly appDef: AppDefinition) {}
+
+  addConnection(socket: WebSocketLike): ConnectionScope {
+    const scope = createConnectionScope(undefined, {
+      send: (message: Parameters<typeof serializeServerMessage>[0]) => this.send(socket, message),
+    });
+    this.connections.set(socket, { socket, scope });
+    return scope;
+  }
+
+  removeConnection(socket: WebSocketLike): void {
+    const entry = this.connections.get(socket);
+    if (!entry) {
+      return;
+    }
+    entry.scope.destroy();
+    this.connections.delete(socket);
+  }
+
+  handleRawMessage(socket: WebSocketLike, raw: unknown): void {
+    const parsed = parseClientMessage(raw);
+    if (!parsed) {
+      return;
+    }
+    this.handleMessage(socket, parsed);
+  }
+
+  handleHotReload(): void {
+    for (const { socket, scope } of this.connections.values()) {
+      this.send(socket, {
+        type: 'TOAST',
+        payload: { message: 'Reloading...', type: 'info', duration: 1200 },
+      });
+      scope.clearTransientState();
+      const result = executeApp(this.appDef, scope, this.currentTheme);
+      if (!result.ok) {
+        this.send(socket, {
+          type: 'ERROR',
+          payload: { message: result.error.message, stack: result.error.stack },
+        });
+      }
+    }
+  }
+
+  private handleMessage(socket: WebSocketLike, message: ClientMessage): void {
+    const entry = this.connections.get(socket);
+    if (!entry) {
+      return;
+    }
+
+    switch (message.type) {
+      case 'READY':
+        this.handleReady(entry, message);
+        break;
+      case 'EVENT':
+        this.handleEvent(entry, message);
+        break;
+      case 'THEME_CHANGE':
+        this.currentTheme = message.payload.mode;
+        this.send(socket, { type: 'THEME', payload: { mode: this.currentTheme } });
+        break;
+      case 'RESIZE':
+        // Phase 1 does not react to RESIZE yet.
+        break;
+    }
+  }
+
+  private handleReady(entry: SocketConnection, message: ReadyMessage): void {
+    this.currentTheme = message.payload.theme ?? this.currentTheme;
+    const result = runAppForScope(entry.scope, this.appDef.title, this.appDef.callback, this.currentTheme);
+    this.send(entry.socket, { type: 'RENDER', payload: result });
+  }
+
+  private handleEvent(entry: SocketConnection, message: EventMessage): void {
+    const { scope } = entry;
+    try {
+      handleClientEvent(scope, message.payload);
+    } catch (error: unknown) {
+      this.send(entry.socket, {
+        type: 'TOAST',
+        payload: {
+          type: 'error',
+          message: error instanceof Error ? error.message : String(error),
+        },
+      });
+    }
+  }
+
+  private send(socket: WebSocketLike, message: Parameters<typeof serializeServerMessage>[0]): void {
+    socket.send(serializeServerMessage(message));
+  }
+}
+
+export function createWebSocketHub(appDef: AppDefinition): WebSocketHub {
+  return new WebSocketHub(appDef);
+}

@@ -1,0 +1,116 @@
+:root {
+  --lk-bg: #f8fafc;
+  --lk-surface: #ffffff;
+  --lk-surface-2: #f1f5f9;
+  --lk-text: #0f172a;
+  --lk-muted: #475569;
+  --lk-border: #dbe2ea;
+  --lk-primary: #2563eb;
+  --lk-primary-contrast: #ffffff;
+  --lk-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+  --lk-radius: 10px;
+  --lk-font:
+    Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+}
+
+[data-theme='dark'] {
+  --lk-bg: #020617;
+  --lk-surface: #0f172a;
+  --lk-surface-2: #1e293b;
+  --lk-text: #e2e8f0;
+  --lk-muted: #94a3b8;
+  --lk-border: #334155;
+  --lk-primary: #60a5fa;
+  --lk-primary-contrast: #020617;
+  --lk-shadow: 0 8px 24px rgba(2, 6, 23, 0.5);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--lk-bg);
+  color: var(--lk-text);
+  font-family: var(--lk-font);
+  line-height: 1.45;
+}
+
+.lk-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--lk-border);
+  background: var(--lk-surface);
+}
+
+.lk-main {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 1.25rem;
+}
+
+.lk-stack {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.lk-card {
+  border: 1px solid var(--lk-border);
+  border-radius: var(--lk-radius);
+  background: var(--lk-surface);
+  padding: 0.9rem;
+  box-shadow: var(--lk-shadow);
+}
+
+.lk-text {
+  margin: 0;
+  color: var(--lk-text);
+}
+
+.lk-button {
+  border: 1px solid transparent;
+  border-radius: 999px;
+  padding: 0.55rem 1rem;
+  font-weight: 600;
+  background: var(--lk-primary);
+  color: var(--lk-primary-contrast);
+  cursor: pointer;
+}
+
+.lk-button[disabled] {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.lk-toast-container {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  display: grid;
+  gap: 0.5rem;
+  z-index: 99;
+}
+
+.lk-toast {
+  border: 1px solid var(--lk-border);
+  border-radius: 10px;
+  background: var(--lk-surface);
+  color: var(--lk-text);
+  padding: 0.65rem 0.85rem;
+  min-width: 220px;
+  box-shadow: var(--lk-shadow);
+}

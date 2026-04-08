@@ -74,6 +74,7 @@ See [`.cursor/rules/`](.cursor/rules/) for the enforced Cursor rules that implem
 | 2026-04-07 | 0.1.2 | Layout system (shell+grid), CSS self-contained, plugin isolation, all decisions resolved | Owner decisions |
 | 2026-04-07 | 0.1.3 | Full consistency audit: ComponentHandle rename, TableHandle+onRowClick, MetricHandle, TextHandle, STREAM_ERROR, hot reload preservation model | Owner decisions |
 | 2026-04-07 | 0.1.4 | All Phase 3 decisions resolved: lazy loading, no session persistence, parameterPanel custom schema, multi-page deferred | Owner decisions |
+| 2026-04-08 | 0.1.5 | Phase 1 implementation kickoff: status moved to In Progress, monorepo/package structure now active | Cloud Agent 
 
 > **When updating:** Add a row to this table for every meaningful change to this document. Include what section changed and why.
 
@@ -802,7 +803,7 @@ Each phase produces a usable, publishable npm package. **Ship early, iterate fas
 
 | Phase | Name | Key Deliverable | Status |
 |-------|------|----------------|--------|
-| 1 | Infrastructure & Foundation | Working skeleton: serve a page, sync state, render basic components | Not Started |
+| 1 | Infrastructure & Foundation | Working skeleton: serve a page, sync state, render basic components | In Progress |
 | 2 | MVP Components | v0.1.0: enough components to build a real AI demo | Not Started |
 | 3 | Advanced Components & Polish | Feature parity with full component table | Not Started |
 | 4 | Plugin Ecosystem | First official plugins (OpenAI, Anthropic, Ollama, Neutralino) | Not Started |
@@ -1062,7 +1063,7 @@ E2E and visual tests live in `tests/` at the repo root.
 
 ---
 
-## Appendix A: Full API Quick Reference
+## Appendix A: Full API Quick Reference 
 
 > Detailed API reference: [docs/API-REFERENCE.md](docs/API-REFERENCE.md)
 

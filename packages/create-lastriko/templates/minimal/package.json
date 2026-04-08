@@ -1,0 +1,14 @@
+{
+  "name": "lastriko-app",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx demo.ts"
+  },
+  "dependencies": {
+    "lastriko": "workspace:*"
+  },
+  "devDependencies": {
+    "tsx": "^4.20.6"
+  }
+}

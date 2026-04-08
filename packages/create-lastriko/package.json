@@ -1,0 +1,19 @@
+{
+  "name": "create-lastriko",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "create-lastriko": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json && chmod +x dist/index.js",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "lint": "eslint src --ext .ts",
+    "test": "vitest run",
+    "smoke": "node ./dist/index.js"
+  },
+  "devDependencies": {
+    "@types/node": "^24.7.2"
+  }
+}
