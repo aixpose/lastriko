@@ -20,7 +20,7 @@ function byType<T = Record<string, unknown>>(sent: string[], type: string): T[] 
 }
 
 describe('websocket integration flow', () => {
-  it('READY emits RENDER and button click emits FRAGMENT', () => {
+  it('ready emits RENDER and button click emits FRAGMENT', () => {
     const { socket, sent } = createSocket();
     const runtime = createWebSocketHub({
       title: 'Phase2',

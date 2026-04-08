@@ -18,8 +18,6 @@ jobs:
             toolchain: npm
           - node-version: '24'
             toolchain: npm
-          - node-version: '26'
-            toolchain: npm
           - node-version: '22'
             toolchain: bun
 

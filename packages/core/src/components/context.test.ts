@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { UIContext } from './context';
 import { createConnectionScope } from './registry';
 
-describe('UIContext', () => {
+describe('uiContext', () => {
   it('creates stable ids per component type', () => {
     const scope = createConnectionScope('c1');
     const ui = new UIContext(scope);

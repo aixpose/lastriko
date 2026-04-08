@@ -65,6 +65,7 @@ export type {
   SelectOpts,
   FileUploadOpts,
   TableHandle,
+  TableRow,
   TableRowHandle as RowHandle,
   MetricHandle,
   MetricOpts,
