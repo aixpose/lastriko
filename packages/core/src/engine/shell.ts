@@ -25,7 +25,7 @@ export function createHtmlShell(input: {
   </head>
   <body>
     ${toolbar}
-    <main id="lk-root">${input.bodyHtml}</main>
+    <main id="lk-root" class="lk-page">${input.bodyHtml}</main>
     <div id="lk-toast-root" class="lk-toast-root"></div>
   </body>
 </html>`;

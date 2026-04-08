@@ -63,6 +63,21 @@ body {
   padding: 1.25rem;
 }
 
+/* App body: padded column, centered, comfortable spacing (Phase 1 default shell). */
+.lk-page {
+  box-sizing: border-box;
+  max-width: 40rem;
+  width: 100%;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  align-items: stretch;
+  min-height: calc(100vh - 3.5rem);
+  justify-content: center;
+}
+
 .lk-stack {
   display: grid;
   gap: 0.75rem;
@@ -79,9 +94,12 @@ body {
 .lk-text {
   margin: 0;
   color: var(--lk-text);
+  font-size: 1.0625rem;
+  line-height: 1.55;
 }
 
 .lk-button {
+  align-self: flex-start;
   border: 1px solid transparent;
   border-radius: 999px;
   padding: 0.55rem 1rem;
