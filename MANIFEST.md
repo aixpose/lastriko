@@ -2,7 +2,7 @@
 
 > **The TypeScript UI Toolkit for AI Demos & Rapid Prototyping**
 >
-> Version 0.1.7 — April 2026
+> Version 0.1.8 — April 2026
 > AIXPOSE OÜ
 
 ---
@@ -37,8 +37,7 @@ See [`.cursor/rules/`](.cursor/rules/) for the enforced Cursor rules that implem
 16. [Licensing & Publishing](#16-licensing--publishing)
 17. [Competitive Positioning](#17-competitive-positioning)
 18. [Success Metrics](#18-success-metrics)
-19. [Open Questions & Pending Decisions](#19-open-questions--pending-decisions)
-20. [Appendix A — Full API Quick Reference](#appendix-a-full-api-quick-reference)
+19. [Appendix A — Full API Quick Reference](#appendix-a-full-api-quick-reference)
 
 
 **Sub-documents:**
@@ -76,7 +75,8 @@ See [`.cursor/rules/`](.cursor/rules/) for the enforced Cursor rules that implem
 | 2026-04-07 | 0.1.4 | All Phase 3 decisions resolved: lazy loading, no session persistence, parameterPanel custom schema, multi-page deferred | Owner decisions |
 | 2026-04-08 | 0.1.5 | Phase 1 implementation kickoff: status moved to In Progress, monorepo/package structure now active | Cloud Agent |
 | 2026-04-08 | 0.1.6 | HTTP server: default port **3500**, EADDRINUSE port hop (up to 64 tries), `/style.css` resolves theme from package or `LASTRIKO_THEME_CSS`, request handler errors return 500 without crashing the process | Cloud Agent |
-| 2026-04-08 | 0.1.7 | Foundation milestone complete: roadmap marks MVP Components as active; §8 project structure reflects implemented monorepo; §19 open-questions anchor restored; tests run after build; CI workflow added | Cloud Agent |
+| 2026-04-08 | 0.1.7 | Foundation milestone complete: roadmap marks MVP Components as active; §8 project structure reflects implemented monorepo; tests run after build; CI workflow added | Cloud Agent |
+| 2026-04-08 | 0.1.8 | Retired standalone PHASE-1.md; foundation summary and pre–Phase 2 decision status consolidated under §11; removed manifest §19 | Cloud Agent |
 
 > **When updating:** Add a row to this table for every meaningful change to this document. Include what section changed and why.
 
@@ -811,6 +811,12 @@ Each phase produces a usable, publishable npm package. **Ship early, iterate fas
 | 5 | Desktop & Distribution | One-command desktop export, static export, Docker | Not Started |
 | 6 | Ecosystem & Community | Templates gallery, community plugins, Lastriko Cloud concept | Not Started |
 
+### 11.1 Foundation milestone (complete)
+
+**Phase 1 — Infrastructure & Foundation** is done. The codebase includes: npm workspaces + Turborepo; `lastriko` core with HTTP server (default port **3500**, hop on `EADDRINUSE`), WebSocket at `/ws`, and `app()` invoked once per connection with per-connection scope; `ui.text` / `ui.button` handles, HTML renderer with escaping, client bundle (`outerHTML` swaps, reconnect); self-contained `lastriko.css` at `/style.css`; plugin **types** and registry stubs; `create-lastriko` scaffold. Behaviour and protocol are specified in [§3](#3-core-engine-specification), [§8](#8-project-structure), [ENGINE.md](docs/architecture/ENGINE.md), and [PROTOCOL.md](docs/architecture/PROTOCOL.md).
+
+**Before Phase 2 (MVP Components):** There are **no unresolved design questions** blocking implementation. Locked decisions through early MVP scope are summarized in [`.cursor/rules/open-questions-check.mdc`](.cursor/rules/open-questions-check.mdc). If a new fork appears (for example, choosing between two libraries), resolve it in the relevant `docs/` spec and add a row to the [changelog](#changelog) **before** writing code.
+
 **Phase 2 Exit Criteria:** A developer can build and share a working AI chat demo with streaming output, image display, parameter controls, and dark mode in under 50 lines of code.
 
 ---
@@ -1062,14 +1068,6 @@ E2E and visual tests live in `tests/` at the repo root.
 
 ---
 
-## 19. Open Questions & Pending Decisions
-
-There are **no unresolved questions** blocking implementation through **Phase 2** (MVP Components). Foundation and early-MVP design choices are recorded in phase docs and in the locked decision tables in [`.cursor/rules/open-questions-check.mdc`](.cursor/rules/open-questions-check.mdc).
-
-When a new design fork appears (for example, choosing between two libraries), resolve it here before coding: add a row with status, decision, and outcome, then update the relevant spec in `docs/`.
-
----
-
 ## Appendix A: Full API Quick Reference 
 
 > Detailed API reference: [docs/API-REFERENCE.md](docs/API-REFERENCE.md)
@@ -1109,4 +1107,4 @@ import {
 
 ---
 
-*End of Manifesto — LASTRIKO v0.1.7*
+*End of Manifesto — LASTRIKO v0.1.8*
