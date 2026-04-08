@@ -5,3 +5,5 @@ coverage
 .turbo
 *.tsbuildinfo
 bun.lock
+packages/core/coverage
+coverage

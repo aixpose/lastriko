@@ -2,7 +2,7 @@
 
 > **The TypeScript UI Toolkit for AI Demos & Rapid Prototyping**
 >
-> Version 0.1.11 — April 2026
+> Version 0.1.12 — April 2026
 > AIXPOSE OÜ
 
 ---
@@ -80,6 +80,7 @@ See [`.cursor/rules/`](.cursor/rules/) for the enforced Cursor rules that implem
 | 2026-04-08 | 0.1.9 | §11.1 Phase 2 line-count aligned with PHASE-2 (60 lines); §14 + docs/TESTING.md: Vitest, integration naming, CI matrix (Node + Bun) | Cloud Agent |
 | 2026-04-08 | 0.1.10 | Node.js baseline **22+**; CI matrix Node **22 / 24 / 26** (npm) + Bun on Node 22; `engines` on root + `lastriko` package | Cloud Agent |
 | 2026-04-08 | 0.1.11 | CI matrix Node **22 / 24** only (26 not yet on runners); `examples/component-gallery` replaces phase1-smoke; export `TableRow` type | Cloud Agent |
+| 2026-04-08 | 0.1.12 | `lastriko` **0.1.0** publish metadata (`package.json`: `exports`, `prepack`, README); CI runs `test:coverage` with Vitest thresholds on server/renderer stack; PHASE-2.md exit criteria clarified (E2E/visual deferred) | Cloud Agent |
 
 > **When updating:** Add a row to this table for every meaningful change to this document. Include what section changed and why.
 
@@ -951,7 +952,7 @@ The rule is enforced by the `.cursor/rules/test-coverage.mdc` Cursor rule and by
 | `packages/core/src/client/` | ≥ 80% | ≥ 75% |
 | `packages/plugin-*/src/` | ≥ 85% | ≥ 80% |
 
-CI fails the PR if any gate is not met. Coverage is measured with Vitest (`vitest run --coverage`) when coverage is enabled for a job.
+**Current CI enforcement (Phase 2):** `npm run test:coverage` runs Vitest with `@vitest/coverage-v8` on `packages/core`, using `vitest.config.ts` thresholds (**~60%** lines/statements, **~58%** branches/functions) over engine + components + plugins, excluding the browser `client/` bundle, `watcher`, `shell` bootstrap, and `index.ts` (those stay on the E2E / manual checklist until Playwright lands). The table above remains the **target** for full `packages/core/src/` coverage; raise the Vitest thresholds as line coverage catches up.
 
 ### 14.3 CI Pipeline
 
@@ -959,7 +960,7 @@ Every pull request must pass the **quality** matrix in [`.github/workflows/ci.ym
 
 1. **Type check** — `npm run typecheck` / `bun run typecheck` (zero errors)
 2. **Lint** — `npm run lint` / `bun run lint`
-3. **Unit tests** — `npm run test` / `bun run test` (integration files excluded; see [docs/TESTING.md](docs/TESTING.md))
+3. **Unit tests + coverage** — `npm run test:coverage` / `bun run test:coverage` (integration files excluded; enforces Vitest thresholds in `packages/core/vitest.config.ts`)
 4. **Integration tests** — `npm run test:integration` / `bun run test:integration`
 5. **Bundle size** — `check:bundle` — client ≤ 15KB gzip, core ≤ 50KB gzip (hard fail)
 
@@ -1025,9 +1026,11 @@ E2E and visual tests live in `tests/` at the repo root.
 
 ### 16.3 Versioning
 
-- SemVer with Changesets for automated changelog generation.
-- Phases 1–3: versions `0.x.y` (API may change).
+- SemVer; **optional** [Changesets](https://github.com/changesets/changesets) for automated changelog generation (not wired in-repo yet — publish still uses `npm version` / manual `CHANGELOG.md` if desired).
+- Phases 1–3: versions `0.x.y` (API may change). Published core package: **`lastriko@0.1.0`** (see `packages/core/package.json`).
 - Version `1.0.0` targeted after Phase 4 when the plugin API is stable.
+
+**Publish `lastriko` from the monorepo:** `npm publish -w lastriko --access public` (after `npm run build -w lastriko`; `prepack` runs `build` automatically).
 
 ---
 
@@ -1109,4 +1112,4 @@ import {
 
 ---
 
-*End of Manifesto — LASTRIKO v0.1.11*
+*End of Manifesto — LASTRIKO v0.1.12*

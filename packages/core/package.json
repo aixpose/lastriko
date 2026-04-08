@@ -1,27 +1,52 @@
 {
   "name": "lastriko",
-  "version": "0.0.1",
+  "version": "0.1.0",
+  "description": "TypeScript UI toolkit for AI demos and rapid prototyping (server-rendered HTML + WebSocket).",
   "type": "module",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
       "default": "./dist/index.js"
     },
     "./style.css": "./dist/style.css"
   },
   "files": [
-    "dist"
+    "dist",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "sideEffects": false,
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aixpose/lastriko.git",
+    "directory": "packages/core"
+  },
+  "bugs": {
+    "url": "https://github.com/aixpose/lastriko/issues"
+  },
+  "homepage": "https://github.com/aixpose/lastriko#readme",
+  "keywords": [
+    "ui",
+    "websocket",
+    "demo",
+    "prototyping",
+    "ai",
+    "typescript"
   ],
   "engines": {
     "node": ">=22"
   },
   "scripts": {
     "build": "tsc -p tsconfig.json && node ./scripts/copy-theme.mjs",
+    "prepack": "npm run build",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint src --ext .ts",
     "test": "vitest run --exclude '**/*.integration.test.ts'",
+    "test:coverage": "vitest run --coverage --exclude '**/*.integration.test.ts'",
     "test:integration": "vitest run src/__tests__/integration",
     "check:bundle": "node ../../scripts/check-client-size.mjs"
   },
