@@ -36,9 +36,9 @@ See [`.cursor/rules/`](.cursor/rules/) for the enforced Cursor rules that implem
 15. [Security Considerations](#15-security-considerations)
 16. [Licensing & Publishing](#16-licensing--publishing)
 17. [Competitive Positioning](#17-competitive-positioning)
-18. [Open Questions & Pending Decisions](#18-open-questions--pending-decisions)
-19. [Success Metrics](#19-success-metrics)
-20. [Appendix A — Full API Quick Reference](#appendix-a-full-api-quick-reference)
+18. [Success Metrics](#18-success-metrics)
+19. [Appendix A — Full API Quick Reference](#appendix-a-full-api-quick-reference)
+
 
 **Sub-documents:**
 
@@ -1043,29 +1043,7 @@ E2E and visual tests live in `tests/` at the repo root.
 
 ---
 
-## 18. Open Questions & Pending Decisions
-
-All Phase 1, 2, and 3 blocking decisions are resolved. No open items remain before implementation begins.
-
-### Resolved — Phase 3 Decisions
-
-| # | Question | Decision | Date |
-|---|----------|----------|------|
-| 1 | Image/video optimization | **Client-side lazy loading** — `loading="lazy"` on all `<img>` and `<video>` elements. No server proxy. | 2026-04-07 |
-| 2 | State persistence across sessions | **No persistence** — every page refresh starts fresh. Default stays as-is. Developers handle persistence in their own backend if needed. | 2026-04-07 |
-| 3 | `parameterPanel` schema format | **Custom Lastriko typed object** — `{ key: { type, label, min, max, step, options, default } }`. No Zod dependency. | 2026-04-07 |
-| 4 | Multi-page support (`ui.page()`) | **Deferred — `ui.tabs()` covers the use case.** No multi-page routing in Phase 3. Revisit post-Phase 5 if needed. | 2026-04-07 |
-
-### Deferred — Phase 6 (require separate business specification)
-
-| # | Question | Why deferred |
-|---|----------|-------------|
-| 5 | `Lastriko Cloud` | Requires infra, billing, privacy policy — out of scope for tech spec |
-| 6 | Visual Builder | Conflicts with code-first philosophy — recommend removal from roadmap |
-
----
-
-## 19. Success Metrics
+## 18. Success Metrics
 
 | Phase Range | Metric | Target |
 |-------------|--------|--------|
