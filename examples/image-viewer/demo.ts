@@ -10,7 +10,7 @@
  *   ui.grid()         — two-column stats + apply panel
  *   ui.table()        — folder list with status badges
  *   ui.metric()       — per-phase progress stats
- *   ui.filmStrip()    — before/after image sets
+ *   ui.imageGrid()    — restoration image sets
  *   ui.toggle()       — hide completed toggle
  *   handle.update()   — live row/metric updates
  */
@@ -162,7 +162,10 @@ app('ArchivDemo Image Viewer', { theme: 'dark' }, (ui) => {
             },
             (rest) => {
               rest.text('PHASE 1 — RESTORATION')
-              rest.filmStrip(img.phase1, { height: 100, zoom: true })
+              rest.imageGrid(
+                img.phase1.map(src => ({ src, alt: `${img.filename} restoration` })),
+                { cols: 'auto', minWidth: 140, gap: 8 }
+              )
             },
           ], { cols: ['200px', '1fr'], gap: 8 })
         })

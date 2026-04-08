@@ -20,7 +20,7 @@ Ship the first usable version with enough components to build a real AI demo. Th
 - All unit tests pass across Bun and Node.js 22 and 24 (current CI matrix)
 - All integration tests pass
 - **E2E (Playwright) and visual regression:** tracked in this doc (§Testing Requirements) but **not blocking** Phase 2 exit until `tests/e2e/` and `tests/visual/` exist — ship after first `npm publish` if needed
-- **Coverage:** CI enforces Vitest thresholds on `packages/core` (`npm run test:coverage`; see `packages/core/vitest.config.ts`). Full **90% line / 85% branch** targets in [MANIFEST.md §14.2](../../MANIFEST.md#142-coverage-gates-ci-enforced) remain the north star; raise thresholds as coverage grows.
+- **Coverage:** CI enforces Vitest thresholds on `packages/core` (`npm run test:coverage`; see `packages/core/vitest.config.ts`) at **70% lines/statements** and **66% branches/functions**. Full **90% line / 85% branch** targets in [MANIFEST.md §14.2](../../MANIFEST.md#142-coverage-gates-ci-enforced) remain the north star; raise thresholds as coverage grows.
 - Bundle size gates: client ≤ 15KB, core ≤ 50KB
 
 ### Functional
@@ -247,7 +247,7 @@ Every component added in this phase ships with unit + integration tests. No comp
 
 | Gate | Threshold |
 |------|-----------|
-| Coverage — `packages/core/src/` | ≥ 90% lines, ≥ 85% branches |
+| Coverage — `packages/core/src/` | CI-enforced: ≥ 70% lines/statements, ≥ 66% branches/functions (target remains ≥ 90%/85%) |
 | Coverage — `packages/plugin-*/src/` | ≥ 85% lines, ≥ 80% branches |
 | Client bundle | ≤ 15KB gzip |
 | Core package | ≤ 50KB gzip |

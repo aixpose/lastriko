@@ -99,4 +99,29 @@ describe('handleClientEvent', () => {
       expect(onClick).toHaveBeenCalledWith({ id: 'r1', name: 'row' });
     });
   });
+
+  it('routes tabs change through handle.update and updates active value', () => {
+    const scope = createConnectionScope('exec-tabs');
+    const ui = new UIContext(scope);
+    const tabs = ui.tabs([
+      { label: 'A', content: (ctx) => ctx.text('tab a') },
+      { label: 'B', content: (ctx) => ctx.text('tab b') },
+    ], { defaultTab: 'A' });
+    scope.outbox.length = 0;
+
+    handleClientEvent(scope, {
+      id: tabs.id,
+      event: 'change',
+      value: 'B',
+    });
+
+    expect(tabs.value).toBe('B');
+    const fragment = scope.outbox.find(
+      (message) => message.type === 'FRAGMENT'
+        && (message as { payload: { id: string } }).payload.id === tabs.id,
+    ) as { payload: { html: string } } | undefined;
+    expect(fragment).toBeDefined();
+    expect(fragment?.payload.html).toContain('data-lk-tab-target="B"');
+    expect(fragment?.payload.html).toContain('aria-selected="true"');
+  });
 });

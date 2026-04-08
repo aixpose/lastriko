@@ -331,6 +331,11 @@ export interface ProgressHandle extends Omit<ComponentHandle<ProgressProps, numb
   update(value: number | null, opts?: ProgressOpts): void;
 }
 
+export interface TabsHandle extends ComponentHandle<Record<string, unknown>, string> {
+  readonly type: 'tabs';
+  setActive(label: string): void;
+}
+
 export interface StreamHandle extends Omit<ComponentHandle<StreamTextProps, string>, 'update'> {
   readonly type: 'streamText';
   readonly text: string;
@@ -366,6 +371,7 @@ export type AnyComponentHandle
     | TableHandle
     | MetricHandle
     | ProgressHandle
+    | TabsHandle
     | StreamHandle
     | ChatHandle
     | PromptEditorHandle
@@ -441,7 +447,7 @@ export interface UIContext {
   fileUpload(label: string, opts?: FileUploadOpts): FileUploadHandle;
   shell(regions: ShellRegions, opts?: ShellOpts): void;
   grid(areas: Array<(ctx: UIContext) => void>, opts?: GridOpts): void;
-  tabs(tabs: TabDef[], opts?: TabsOpts): ComponentHandle<Record<string, unknown>, string>;
+  tabs(tabs: TabDef[], opts?: TabsOpts): TabsHandle;
   card(titleOrContent: string | ((ctx: UIContext) => void), contentOrNothing?: (ctx: UIContext) => void): void;
   divider(opts?: { label?: string }): void;
   spacer(size?: number | 'sm' | 'md' | 'lg'): void;

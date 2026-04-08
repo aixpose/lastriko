@@ -4,6 +4,7 @@ import type {
   ButtonHandle,
   ConnectionScope,
   TableHandle,
+  TabsHandle,
 } from '../components/types';
 import type { ClientEventPayload, ThemeMode } from './messages';
 import { renderPage } from './renderer';
@@ -39,6 +40,12 @@ export function handleClientEvent(scope: ConnectionScope, payload: ClientEventPa
     scope.setValue(payload.id, payload.value);
 
     if (handle.type === 'table') {
+      return;
+    }
+
+    if (handle.type === 'tabs') {
+      const target = String(payload.value ?? '');
+      (handle as TabsHandle).update({ value: target });
       return;
     }
 
