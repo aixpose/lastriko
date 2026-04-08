@@ -70,6 +70,97 @@ function showToast(payload: {
   }, safeDuration);
 }
 
+function applyTabsActiveState(root: ParentNode): void {
+  const tabsRoots = Array.from(root.querySelectorAll<HTMLElement>('.lk-tabs[data-lk-id]'));
+  for (const tabsRoot of tabsRoots) {
+    const activeButton = tabsRoot.querySelector<HTMLButtonElement>('.lk-tab.is-active[data-lk-tab-target]');
+    const fallbackButton = tabsRoot.querySelector<HTMLButtonElement>('.lk-tab[data-lk-tab-target]:not(:disabled)');
+    const current = activeButton ?? fallbackButton;
+    if (!current) {
+      continue;
+    }
+    const activeLabel = current.dataset.lkTabTarget ?? '';
+    for (const btn of Array.from(tabsRoot.querySelectorAll<HTMLButtonElement>('.lk-tab[data-lk-tab-target]'))) {
+      const isActive = btn.dataset.lkTabTarget === activeLabel;
+      btn.classList.toggle('is-active', isActive);
+      btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
+      btn.tabIndex = isActive ? 0 : -1;
+    }
+    for (const panel of Array.from(tabsRoot.querySelectorAll<HTMLElement>('.lk-tab-panel[data-lk-tab-panel]'))) {
+      const isActive = panel.dataset.lkTabPanel === activeLabel;
+      if (isActive) {
+        panel.removeAttribute('hidden');
+      } else {
+        panel.setAttribute('hidden', '');
+      }
+    }
+  }
+}
+
+function initTabState(target?: Element | Document): void {
+  if (target) {
+    applyTabsActiveState(target);
+    return;
+  }
+  applyTabsActiveState(document);
+}
+
+function syncShellDrawerButtons(root: ParentNode): void {
+  const toggles = Array.from(root.querySelectorAll<HTMLInputElement>('.lk-shell-mobile-toggle'));
+  for (const toggle of toggles) {
+    const shell = toggle.closest<HTMLElement>('.lk-shell[data-lk-id]');
+    if (!shell) {
+      continue;
+    }
+    const shellId = shell.dataset.lkId ?? '';
+    const controlsId = `lk-shell-sidebar-${shellId}`;
+    const sidebar = shell.querySelector<HTMLElement>('.lk-shell-sidebar');
+    if (sidebar && !sidebar.id) {
+      sidebar.id = controlsId;
+    }
+    const labels = shell.querySelectorAll<HTMLLabelElement>(`label[for="${toggle.id}"].lk-shell-mobile-button`);
+    for (const label of Array.from(labels)) {
+      label.setAttribute('role', 'button');
+      label.setAttribute('tabindex', '0');
+      label.setAttribute('aria-controls', controlsId);
+      label.setAttribute('aria-expanded', toggle.checked ? 'true' : 'false');
+      label.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          toggle.checked = !toggle.checked;
+          label.setAttribute('aria-expanded', toggle.checked ? 'true' : 'false');
+        }
+      });
+    }
+    toggle.addEventListener('change', () => {
+      for (const label of Array.from(labels)) {
+        label.setAttribute('aria-expanded', toggle.checked ? 'true' : 'false');
+      }
+    });
+  }
+}
+
+let keyboardA11yBound = false;
+function setupKeyboardA11y(): void {
+  if (keyboardA11yBound) {
+    return;
+  }
+  keyboardA11yBound = true;
+  document.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape') {
+      return;
+    }
+    for (const toggle of Array.from(document.querySelectorAll<HTMLInputElement>('.lk-shell-mobile-toggle'))) {
+      toggle.checked = false;
+    }
+  });
+}
+
+function applyClientTheme(mode: 'light' | 'dark'): void {
+  document.documentElement.setAttribute('data-theme', mode);
+  window.localStorage.setItem('lk-theme', mode);
+}
+
 export function createWSManager(opts: WSManagerOptions = {}): WSManager {
   const wsFactory = opts.wsFactory ?? ((url) => new WebSocket(url));
   const maxRetries = opts.maxRetries ?? Number.POSITIVE_INFINITY;
@@ -128,13 +219,18 @@ export function createWSManager(opts: WSManagerOptions = {}): WSManager {
       switch (parsed.type) {
         case 'RENDER':
           applyRender(parsed.payload);
+          initTabState();
+          syncShellDrawerButtons(document);
+          setupKeyboardA11y();
           break;
         case 'FRAGMENT':
           applyFragmentSwap(parsed.payload.id, parsed.payload.html);
+          initTabState();
+          syncShellDrawerButtons(document);
+          setupKeyboardA11y();
           break;
         case 'THEME':
-          document.documentElement.setAttribute('data-theme', parsed.payload.mode);
-          window.localStorage.setItem('lk-theme', parsed.payload.mode);
+          applyClientTheme(parsed.payload.mode);
           break;
         case 'TOAST':
           if (parsed.payload.message.startsWith('__connection_id__:')) {

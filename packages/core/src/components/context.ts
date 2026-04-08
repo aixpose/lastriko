@@ -37,6 +37,7 @@ import type {
   StreamHandle,
   StreamTextOpts,
   TabDef,
+  TabsHandle,
   TabsOpts,
   TableHandle,
   TableProps,
@@ -464,10 +465,9 @@ export class UIContext implements IUIContext {
     this.createPassiveHandle('grid', { cells, opts });
   }
 
-  tabs(tabs: TabDef[], opts: TabsOpts = {}): ComponentHandle<Record<string, unknown>, string> {
+  tabs(tabs: TabDef[], opts: TabsOpts = {}): TabsHandle {
     const id = createComponentId(this.scope, 'tabs');
-    const initial = opts.defaultTab ?? tabs[0]?.label ?? '';
-    const valueAtom = this.scope.getAtom<string>(`${id}/value`, initial);
+    const requestedDefault = opts.defaultTab ?? tabs[0]?.label ?? '';
     const renderedTabs = tabs.map((tab) => {
       const before = this.scope.listHandles().length;
       tab.content(this);
@@ -477,8 +477,15 @@ export class UIContext implements IUIContext {
         ids: this.scope.listHandles().slice(before).map((h) => h.id),
       };
     });
+    const firstEnabled = renderedTabs.find((tab) => !tab.disabled)?.label ?? '';
+    const initial = renderedTabs.some((tab) => tab.label === requestedDefault && !tab.disabled)
+      ? requestedDefault
+      : firstEnabled;
+    const valueAtom = this.scope.getAtom<string>(`${id}/value`, initial);
+    const canActivate = (label: string): boolean =>
+      renderedTabs.some((tab) => tab.label === label && !tab.disabled);
 
-    const handle: ComponentHandle<Record<string, unknown>, string> = {
+    const handle: TabsHandle = {
       id,
       type: 'tabs',
       props: { tabs: renderedTabs, active: initial },
@@ -489,9 +496,18 @@ export class UIContext implements IUIContext {
         Object.assign(handle.props, patch);
         if (patch.value !== undefined) {
           const next = String(patch.value);
-          valueAtom.set(next);
-          handle.props.active = next;
+          if (canActivate(next)) {
+            valueAtom.set(next);
+            handle.props.active = next;
+          }
         }
+        this.scope.pushFragment(handle as AnyComponentHandle);
+      },
+      setActive: (label: string) => {
+        if (!canActivate(label))
+          return;
+        valueAtom.set(label);
+        handle.props.active = label;
         this.scope.pushFragment(handle as AnyComponentHandle);
       },
     };

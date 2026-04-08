@@ -16,6 +16,7 @@ export interface SocketConnection {
 
 export class WebSocketHub {
   private readonly connections = new Map<WebSocketLike, SocketConnection>();
+  private readonly scopesById = new Map<string, ConnectionScope>();
   private currentTheme: ThemeMode = 'light';
 
   constructor(private readonly appDef: AppDefinition) {}
@@ -33,6 +34,7 @@ export class WebSocketHub {
       },
     });
     this.connections.set(socket, { socket, scope });
+    this.scopesById.set(scope.id, scope);
     return scope;
   }
 
@@ -41,8 +43,13 @@ export class WebSocketHub {
     if (!entry) {
       return;
     }
+    this.scopesById.delete(entry.scope.id);
     entry.scope.destroy();
     this.connections.delete(socket);
+  }
+
+  getScopeById(scopeId: string): ConnectionScope | undefined {
+    return this.scopesById.get(scopeId);
   }
 
   handleRawMessage(socket: WebSocketLike, raw: unknown): void {

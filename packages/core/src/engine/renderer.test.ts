@@ -102,6 +102,52 @@ describe('renderer', () => {
     expect(twoOpen).toContain('disabled');
   });
 
+  it('renders tabs with aria-selected and tabindex semantics', () => {
+    const handles: AnyComponentHandle[] = [
+      {
+        id: 'text-1',
+        type: 'text',
+        props: { content: 'tab A' },
+        get value() {
+          return this.props.content;
+        },
+        update: () => {},
+      } as TextHandle,
+      {
+        id: 'text-2',
+        type: 'text',
+        props: { content: 'tab B' },
+        get value() {
+          return this.props.content;
+        },
+        update: () => {},
+      } as TextHandle,
+      {
+        id: 'tabs-1',
+        type: 'tabs',
+        props: {
+          active: 'A',
+          tabs: [
+            { label: 'A', disabled: false, ids: ['text-1'] },
+            { label: 'B', disabled: false, ids: ['text-2'] },
+          ],
+        },
+        get value() {
+          return 'A';
+        },
+        update: () => {},
+      } as ComponentHandle<Record<string, unknown>, string>,
+    ];
+
+    const html = renderPage(handles);
+    const activeOpen = html.match(/<button[^>]*data-lk-tab-target="A"[^>]*>/)?.[0] ?? '';
+    const inactiveOpen = html.match(/<button[^>]*data-lk-tab-target="B"[^>]*>/)?.[0] ?? '';
+    expect(activeOpen).toContain('aria-selected="true"');
+    expect(activeOpen).toContain('tabindex="0"');
+    expect(inactiveOpen).toContain('aria-selected="false"');
+    expect(inactiveOpen).toContain('tabindex="-1"');
+  });
+
   it('renders shell composition containing child content', () => {
     const handles: AnyComponentHandle[] = [
       textHandle('inside shell'),

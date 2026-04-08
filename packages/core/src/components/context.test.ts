@@ -83,4 +83,25 @@ describe('uiContext', () => {
     const finalText = prompt.interpolate({ tone: 'formal', topic: 'safety' });
     expect(finalText).toBe('Write a formal note about safety.');
   });
+
+  it('tabs handle supports setActive for enabled tabs only', () => {
+    const scope = createConnectionScope('c7');
+    const ui = new UIContext(scope);
+    const tabs = ui.tabs(
+      [
+        { label: 'One', content: (t) => t.text('first') },
+        { label: 'Two', content: (t) => t.text('second'), disabled: true },
+      ],
+      { defaultTab: 'One' },
+    );
+
+    expect(tabs.value).toBe('One');
+
+    tabs.setActive('Two');
+    expect(tabs.value).toBe('One');
+
+    tabs.setActive('One');
+    expect(tabs.value).toBe('One');
+    expect(scope.outbox.filter((message) => message.type === 'FRAGMENT').length).toBeGreaterThan(0);
+  });
 });
