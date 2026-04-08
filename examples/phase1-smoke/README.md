@@ -7,7 +7,6 @@ Minimal Phase 1 app: one text handle and one button handle.
 ```bash
 cd /path/to/lastriko
 npm install
-npm run build
 cd examples/phase1-smoke
 npm install
 npm run dev
@@ -15,9 +14,11 @@ npm run dev
 
 The server starts on `http://127.0.0.1:3500` by default (or the next free port if 3500 is in use).
 
-Clicking **Update text** should replace only the text component via a `FRAGMENT` update.
+`npm run dev` uses `tsx watch`, so editing `demo.ts` restarts the server automatically.
 
-## Why this uses `file:../../packages/core`
+Clicking **Ping** should replace only the text component via a `FRAGMENT` update.
 
-This example is intended to run standalone from inside `examples/phase1-smoke/`, so it depends on the local built package output from `packages/core` instead of workspace protocol links.  
-If you skip the root build step, install will fail because `dist/` is not present yet.
+## Why this imports `../../packages/core/src/index.ts`
+
+This example is intended for fast local iteration and imports core source directly.
+That means you can run the demo without building `packages/core` first.

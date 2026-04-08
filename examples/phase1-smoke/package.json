@@ -3,11 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "tsx demo.ts",
-    "link:local": "npm install ../../packages/core && npm install"
-  },
-  "dependencies": {
-    "lastriko": "file:../../packages/core"
+    "dev": "tsx watch demo.ts",
+    "dev:once": "tsx demo.ts"
   },
   "devDependencies": {
     "tsx": "^4.20.6"

@@ -1,8 +1,10 @@
 /**
  * From this folder: `npm install` then `npm run dev`.
  * Open the URL printed by the server; each Ping updates the text with a new timestamp (FRAGMENT proof).
+ *
+ * This demo imports core source directly so it works without building packages/core first.
  */
-import { app } from 'lastriko'
+import { app } from '../../packages/core/src/index.ts'
 
 function fragmentTimestampLabel(): string {
   const d = new Date()
