@@ -16,6 +16,7 @@ import type {
   NumberInputHandle,
   SliderHandle,
 } from '../components/types';
+import { renderMarkdownToSafeHtml } from './markdown';
 
 export function escapeHtml(input: string): string {
   return input
@@ -182,7 +183,7 @@ function renderFileUpload(handle: FileUploadHandle): string {
 }
 
 function renderMarkdown(handle: ComponentHandle<{ content: string }>): string {
-  const html = escapeHtml(handle.props.content).replaceAll('\n', '<br />');
+  const html = renderMarkdownToSafeHtml(handle.props.content);
   return `<div class="lk-markdown" data-lk-id="${handle.id}">${html}</div>`;
 }
 
@@ -282,7 +283,10 @@ function renderTabs(handle: ComponentHandle<Record<string, unknown>, string>, by
     active: string;
   };
   const active = props.active;
-  const nav = props.tabs.map((tab) => `<button class="lk-tab${tab.label === active ? ' is-active' : ''}" type="button" disabled="${tab.disabled ? 'disabled' : ''}" data-lk-tab-target="${escapeHtml(tab.label)}">${escapeHtml(tab.label)}</button>`).join('');
+  const nav = props.tabs.map((tab) => {
+    const disabledAttr = tab.disabled ? ' disabled' : '';
+    return `<button class="lk-tab${tab.label === active ? ' is-active' : ''}" type="button"${disabledAttr} data-lk-tab-target="${escapeHtml(tab.label)}">${escapeHtml(tab.label)}</button>`;
+  }).join('');
   const bodies = props.tabs.map((tab) => {
     const hidden = tab.label === active ? '' : 'hidden';
     const content = tab.ids.map((id) => byId.get(id)).filter(Boolean).map((child) => renderComponent(child as AnyComponentHandle, byId)).join('');

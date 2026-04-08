@@ -4,6 +4,11 @@ export interface EventChannel {
   send: (message: ClientToServerMessage) => void;
 }
 
+function isDebugWs(): boolean {
+  return typeof window !== 'undefined'
+    && Boolean((window as Window & { __LK_DEBUG_WS__?: boolean }).__LK_DEBUG_WS__);
+}
+
 function coerceValue(target: EventTarget | null): unknown {
   if (!(target instanceof HTMLElement))
     return undefined;
@@ -28,6 +33,30 @@ function resolveComponentId(target: EventTarget | null): string | null {
 }
 
 export function bindEventDelegation(root: Document, channel: EventChannel): void {
+  root.addEventListener('click', (event) => {
+    if (!(event.target instanceof Element))
+      return;
+    const tabBtn = event.target.closest<HTMLButtonElement>('.lk-tab[data-lk-tab-target]');
+    if (tabBtn && !tabBtn.disabled) {
+      const tabsRoot = tabBtn.closest('.lk-tabs');
+      const target = tabBtn.dataset.lkTabTarget;
+      if (tabsRoot && target) {
+        for (const b of Array.from(tabsRoot.querySelectorAll<HTMLButtonElement>('.lk-tab[data-lk-tab-target]'))) {
+          b.classList.toggle('is-active', b.dataset.lkTabTarget === target);
+        }
+        for (const panel of Array.from(tabsRoot.querySelectorAll<HTMLElement>('.lk-tab-panel'))) {
+          const match = panel.dataset.lkTabPanel === target;
+          if (match) {
+            panel.removeAttribute('hidden');
+          }
+          else {
+            panel.setAttribute('hidden', '');
+          }
+        }
+      }
+    }
+  });
+
   root.addEventListener('click', (event) => {
     if (!(event.target instanceof Element))
       return;
@@ -93,7 +122,14 @@ export function bindEventDelegation(root: Document, channel: EventChannel): void
     try {
       const connectionId = String(window.localStorage.getItem('lk-connection-id') ?? '');
       const search = connectionId ? `?connectionId=${encodeURIComponent(connectionId)}` : '';
-      const response = await fetch(`/upload${search}`, { method: 'POST', body: formData });
+      const uploadUrl = `/upload${search}`;
+      if (isDebugWs()) {
+        console.debug('[lastriko] fetch →', uploadUrl, 'POST', '(multipart)');
+      }
+      const response = await fetch(uploadUrl, { method: 'POST', body: formData });
+      if (isDebugWs()) {
+        console.debug('[lastriko] fetch ←', uploadUrl, response.status, response.statusText);
+      }
       if (!response.ok) {
         return;
       }
