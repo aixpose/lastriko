@@ -2,7 +2,7 @@
 
 > **The TypeScript UI Toolkit for AI Demos & Rapid Prototyping**
 >
-> Version 0.1.3 — April 2026
+> Version 0.1.4 — April 2026
 > AIXPOSE OÜ
 
 ---
@@ -73,6 +73,7 @@ See [`.cursor/rules/`](.cursor/rules/) for the enforced Cursor rules that implem
 | 2026-04-07 | 0.1.1 | Architecture rewritten: app()-once + handle-based updates + HTML fragments | Owner decisions |
 | 2026-04-07 | 0.1.2 | Layout system (shell+grid), CSS self-contained, plugin isolation, all decisions resolved | Owner decisions |
 | 2026-04-07 | 0.1.3 | Full consistency audit: ComponentHandle rename, TableHandle+onRowClick, MetricHandle, TextHandle, STREAM_ERROR, hot reload preservation model | Owner decisions |
+| 2026-04-07 | 0.1.4 | All Phase 3 decisions resolved: lazy loading, no session persistence, parameterPanel custom schema, multi-page deferred | Owner decisions |
 
 > **When updating:** Add a row to this table for every meaningful change to this document. Include what section changed and why.
 
@@ -1043,18 +1044,18 @@ E2E and visual tests live in `tests/` at the repo root.
 
 ## 18. Open Questions & Pending Decisions
 
-All Phase 1 and Phase 2 blocking decisions are resolved. **4 items remain open** and must be decided before Phase 3 implementation begins. 2 Phase 6 items are deferred pending separate business decisions.
+All Phase 1, 2, and 3 blocking decisions are resolved. No open items remain before implementation begins.
 
-### Phase 3 — Must Decide Before Implementation
+### Resolved — Phase 3 Decisions
 
-| # | Question | Decision needed |
-|---|----------|----------------|
-| 1 | Image/video optimization strategy | Client-side lazy loading vs. server-side proxy |
-| 2 | State persistence across sessions | opt-in `localStorage` for input values (default: none) |
-| 3 | `parameterPanel` schema format | Custom Lastriko typed object (recommended) |
-| 4 | Multi-page support model (`ui.page()`) | How page switching interacts with `app()`-once model |
+| # | Question | Decision | Date |
+|---|----------|----------|------|
+| 1 | Image/video optimization | **Client-side lazy loading** — `loading="lazy"` on all `<img>` and `<video>` elements. No server proxy. | 2026-04-07 |
+| 2 | State persistence across sessions | **No persistence** — every page refresh starts fresh. Default stays as-is. Developers handle persistence in their own backend if needed. | 2026-04-07 |
+| 3 | `parameterPanel` schema format | **Custom Lastriko typed object** — `{ key: { type, label, min, max, step, options, default } }`. No Zod dependency. | 2026-04-07 |
+| 4 | Multi-page support (`ui.page()`) | **Deferred — `ui.tabs()` covers the use case.** No multi-page routing in Phase 3. Revisit post-Phase 5 if needed. | 2026-04-07 |
 
-### Phase 6 — Deferred (require separate business specification)
+### Deferred — Phase 6 (require separate business specification)
 
 | # | Question | Why deferred |
 |---|----------|-------------|
