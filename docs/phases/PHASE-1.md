@@ -1,7 +1,7 @@
 # Phase 1 — Infrastructure & Foundation
 
 > **Back to:** [MANIFEST.md](../../MANIFEST.md)
-> **Status:** Not Started
+> **Status:** Complete (see [MANIFEST.md changelog](../../MANIFEST.md#changelog) for foundation milestone entries)
 > **Target version:** `0.0.1` (internal, Bun-only, not published)
 
 ---

@@ -2,7 +2,7 @@
 
 > **The TypeScript UI Toolkit for AI Demos & Rapid Prototyping**
 >
-> Version 0.1.0 — AIXPOSE OÜ
+> Version 0.1.7 — AIXPOSE OÜ
 
 ---
 
@@ -41,9 +41,9 @@ Run `bun demo.ts` — a browser opens with a live, structured, interactive page.
 
 ## Status
 
-This repository contains the project specification and the active Phase 1 foundation implementation.
+This repository contains the project specification, the `lastriko` core package, and the active **MVP Components** roadmap phase.
 
-**Current phase:** Phase 1 — Infrastructure & Foundation (In Progress)
+**Current phase:** [MVP Components](docs/phases/PHASE-2.md) (see [MANIFEST.md](MANIFEST.md#11-development-phases--roadmap))
 
 ---
 
@@ -59,8 +59,8 @@ This repository contains the project specification and the active Phase 1 founda
 
 | Phase | Document | Status |
 |-------|----------|--------|
-| 1 | [Infrastructure & Foundation](docs/phases/PHASE-1.md) | Not Started |
-| 2 | [MVP Components](docs/phases/PHASE-2.md) | Not Started |
+| 1 | [Infrastructure & Foundation](docs/phases/PHASE-1.md) | Complete |
+| 2 | [MVP Components](docs/phases/PHASE-2.md) | In Progress |
 | 3 | [Advanced Components & Polish](docs/phases/PHASE-3.md) | Not Started |
 | 4 | [Plugin Ecosystem](docs/phases/PHASE-4.md) | Not Started |
 | 5 | [Desktop & Distribution](docs/phases/PHASE-5.md) | Not Started |
@@ -121,7 +121,7 @@ This repository contains the project specification and the active Phase 1 founda
 This project follows a **manifesto-first development process**:
 
 1. Before writing any code, the relevant section of `MANIFEST.md` must already describe it.
-2. Any unresolved questions must be answered in `MANIFEST.md §18` before coding begins.
+2. Any unresolved questions must be answered in the manifesto (and linked docs) before coding begins.
 3. Code must only implement what is scoped to the current active phase.
 4. Every code change ships with tests in the same PR.
 

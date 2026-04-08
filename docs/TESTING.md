@@ -2,7 +2,7 @@
 
 > **Back to:** [MANIFEST.md](../MANIFEST.md#14-testing-strategy)
 > **Cursor rule:** [`.cursor/rules/test-coverage.mdc`](../.cursor/rules/test-coverage.mdc)
-> **Phase:** 1 (unit + integration foundation), 2 (E2E + visual), 3+ (maintained and extended)
+> **Phases:** Foundation shipped unit + integration tests; MVP Components adds E2E + visual; later phases extend coverage.
 
 ---
 
@@ -213,70 +213,16 @@ test('slider value updates metric in real time', async ({ page }) => {
 
 ## CI Pipeline
 
-Every pull request runs:
+The repository ships [`.github/workflows/ci.yml`](../.github/workflows/ci.yml). On every push and pull request to `main`, a single **quality** job runs on Ubuntu with **Node.js 22**:
 
-```yaml
-# .github/workflows/ci.yml
+1. `npm ci`
+2. `npm run typecheck`
+3. `npm run lint`
+4. `npm run test` — Turbo runs `build` before `test`, so the client bundle exists for HTTP handler tests
+5. `npm run test:integration`
+6. `npm run check:bundle` — fails if the core client bundle exceeds the gzip limit in `scripts/check-client-size.mjs`
 
-jobs:
-  quality:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        runtime: ['bun', 'node']
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: '1.1.x'
-          
-      - name: Setup Node (for matrix)
-        if: matrix.runtime == 'node'
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      
-      - name: Install dependencies
-        run: bun install
-        
-      - name: Type check
-        run: bun run typecheck  # tsc --noEmit
-        
-      - name: Lint
-        run: bun run lint       # eslint .
-        
-      - name: Unit tests
-        run: bun test           # or 'node --test' for Node matrix
-        
-      - name: Build
-        run: bun run build      # turbo build
-        
-      - name: Bundle size check
-        run: bun run check-size # Fails if core > 50KB gzip
-
-  integration:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Integration tests
-        run: bun run test:integration
-
-  e2e:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Install Playwright
-        run: bunx playwright install --with-deps chromium
-        
-      - name: E2E tests
-        run: bun run test:e2e
-
-  visual:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Visual regression
-        run: bun run test:visual
-```
+**Phase 2** extends this workflow with a Bun matrix, Node 20 coverage, and Playwright E2E/visual jobs as those scripts land in the repo.
 
 ---
 
