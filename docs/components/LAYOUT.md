@@ -122,13 +122,13 @@ Handles declared in any region can be read or updated from any callback. This is
 ```typescript
 ui.shell({
   header: (h) => {
-    const tokenCount = h.metric('Tokens', 0)  // declared in header
+    const tokenCount = h.metric('Tokens', '0')  // declared in header; metric values are strings
   },
   main: (m) => {
     m.button('Run', async () => {
       // tokenCount is in scope — closes over the outer variable
       for await (const chunk of stream) {
-        tokenCount.update(chunk.total)  // updates header region
+        tokenCount.update(String(chunk.total))  // updates header region
       }
     })
   },
@@ -227,7 +227,7 @@ Grid cells are full `UIContext` instances — you can nest grids, tabs, and card
 m.grid([
   (left) => {
     left.tabs([
-      { label: 'Metrics',  content: (t) => { t.metric('F1', 0.92) } },
+      { label: 'Metrics',  content: (t) => { t.metric('F1', '0.92') } },
       { label: 'Raw JSON', content: (t) => { t.json(rawData) } },
     ])
   },

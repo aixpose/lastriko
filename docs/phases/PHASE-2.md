@@ -33,7 +33,7 @@ app('Experiment Lab', (ui) => {
   ui.shell({
     header: (h) => {
       h.text('**Experiment Lab**')
-      const runCount = h.metric('Runs', 0)
+      const runCount = h.metric('Runs', '0')
     },
     sidebar: (s) => {
       const model = s.select('Model', ['gpt-4o', 'claude-3.5', 'llama-3.1'])
@@ -51,7 +51,7 @@ app('Experiment Lab', (ui) => {
         }
         output.done()
         row.update({ status: 'done', score: '94.2%' })
-        runCount.update(queue.rowCount)
+        runCount.update(String(queue.rowCount))
         btn.setLoading(false)
       })
     },
