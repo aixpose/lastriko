@@ -221,8 +221,9 @@ The repository ships [`.github/workflows/ci.yml`](../.github/workflows/ci.yml). 
 |-----|-----------|
 | Node 22 (npm) | `npm ci`, then `npm run` typecheck, lint, test, test:integration, check:bundle |
 | Node 24 (npm) | Same as Node 22 |
-| Node 26 (npm) | Same as Node 22 |
 | 22 (bun) | `npm ci` for a single lockfile, then `bun run` for the same scripts (validates the Bun primary runtime alongside Node) |
+
+Node 26 is not in the matrix until it is available on GitHub-hosted runners.
 
 Turbo runs `build` before `test` / `test:integration`, so the client bundle exists for HTTP handler tests. `check:bundle` fails if the core client bundle exceeds the gzip limit in `scripts/check-client-size.mjs`.
 

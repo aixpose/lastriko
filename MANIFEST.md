@@ -2,7 +2,7 @@
 
 > **The TypeScript UI Toolkit for AI Demos & Rapid Prototyping**
 >
-> Version 0.1.10 — April 2026
+> Version 0.1.11 — April 2026
 > AIXPOSE OÜ
 
 ---
@@ -79,6 +79,7 @@ See [`.cursor/rules/`](.cursor/rules/) for the enforced Cursor rules that implem
 | 2026-04-08 | 0.1.8 | Retired standalone PHASE-1.md; foundation summary and pre–Phase 2 decision status consolidated under §11; removed manifest §19 | Cloud Agent |
 | 2026-04-08 | 0.1.9 | §11.1 Phase 2 line-count aligned with PHASE-2 (60 lines); §14 + docs/TESTING.md: Vitest, integration naming, CI matrix (Node + Bun) | Cloud Agent |
 | 2026-04-08 | 0.1.10 | Node.js baseline **22+**; CI matrix Node **22 / 24 / 26** (npm) + Bun on Node 22; `engines` on root + `lastriko` package | Cloud Agent |
+| 2026-04-08 | 0.1.11 | CI matrix Node **22 / 24** only (26 not yet on runners); `examples/component-gallery` replaces phase1-smoke; export `TableRow` type | Cloud Agent |
 
 > **When updating:** Add a row to this table for every meaningful change to this document. Include what section changed and why.
 
@@ -623,6 +624,7 @@ lastriko/
 │   ├── plugin-neutralino/     # @lastriko/plugin-neutralino  (Phase 5)
 │   └── create-lastriko/       # CLI scaffolding tool
 ├── examples/
+│   ├── component-gallery/     # Phase 1–2 component showcase (shell, inputs, AI widgets)
 │   ├── image-viewer/          # Simple image review demo
 │   └── experiment-monitor/    # Complex ML dashboard demo
 ├── tests/
@@ -961,7 +963,7 @@ Every pull request must pass the **quality** matrix in [`.github/workflows/ci.ym
 4. **Integration tests** — `npm run test:integration` / `bun run test:integration`
 5. **Bundle size** — `check:bundle` — client ≤ 15KB gzip, core ≤ 50KB gzip (hard fail)
 
-**Matrix:** Node.js **22, 24, and 26** (npm), plus **Bun** on Node 22 (`npm ci` then `bun run` for the same scripts). E2E and visual Playwright jobs are added in Phase 2 when those suites exist.
+**Matrix:** Node.js **22 and 24** (npm), plus **Bun** on Node 22 (`npm ci` then `bun run` for the same scripts). Node 26 is omitted until it is available on CI runners. E2E and visual Playwright jobs are added in Phase 2 when those suites exist.
 
 A PR that skips or disables any of these steps will not be merged.
 
@@ -1098,7 +1100,7 @@ import {
   
   // Types
   type ComponentHandle, type InputHandle, type ButtonHandle,
-  type TableHandle, type RowHandle, type TextHandle,
+  type TableHandle, type TableRow, type RowHandle, type TextHandle,
   type MetricHandle, type ProgressHandle, type StreamHandle,
   type LastrikoPlugin, type PluginContext, type UIContext,
   type ShellRegions, type ShellOpts, type GridOpts,
@@ -1107,4 +1109,4 @@ import {
 
 ---
 
-*End of Manifesto — LASTRIKO v0.1.10*
+*End of Manifesto — LASTRIKO v0.1.11*

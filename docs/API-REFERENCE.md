@@ -538,7 +538,7 @@ import type {
   ComponentHandle,        // Base handle type
   InputHandle,            // Input component handles
   ButtonHandle,
-  TableHandle, RowHandle,
+  TableHandle, TableRow, RowHandle,
   TextHandle, MetricHandle, ProgressHandle, StreamHandle,
   LastrikoPlugin,         // Plugin interface
   PluginContext,          // Plugin setup context
