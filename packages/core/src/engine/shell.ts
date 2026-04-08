@@ -21,6 +21,19 @@ export function createHtmlShell(input: {
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>${escapeHtml(input.title)}</title>
     <link rel="stylesheet" href="/style.css" />
+    <script>
+      (function () {
+        try {
+          var q = new URLSearchParams(window.location.search);
+          if (q.get('debug') === '1') {
+            sessionStorage.setItem('lk-debug-ws', '1');
+          }
+          if (sessionStorage.getItem('lk-debug-ws') === '1') {
+            window.__LK_DEBUG_WS__ = true;
+          }
+        } catch (e) {}
+      })();
+    </script>
     <script type="module" src="${escapeHtml(input.clientScriptPath)}"></script>
   </head>
   <body>

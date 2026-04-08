@@ -2,7 +2,7 @@
 
 > **The TypeScript UI Toolkit for AI Demos & Rapid Prototyping**
 >
-> Version 0.1.12 — AIXPOSE OÜ
+> Version 0.1.13 — AIXPOSE OÜ
 
 ---
 

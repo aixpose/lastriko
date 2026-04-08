@@ -2,7 +2,7 @@
 
 > **The TypeScript UI Toolkit for AI Demos & Rapid Prototyping**
 >
-> Version 0.1.12 — April 2026
+> Version 0.1.13 — April 2026
 > AIXPOSE OÜ
 
 ---
@@ -81,6 +81,7 @@ See [`.cursor/rules/`](.cursor/rules/) for the enforced Cursor rules that implem
 | 2026-04-08 | 0.1.10 | Node.js baseline **22+**; CI matrix Node **22 / 24 / 26** (npm) + Bun on Node 22; `engines` on root + `lastriko` package | Cloud Agent |
 | 2026-04-08 | 0.1.11 | CI matrix Node **22 / 24** only (26 not yet on runners); `examples/component-gallery` replaces phase1-smoke; export `TableRow` type | Cloud Agent |
 | 2026-04-08 | 0.1.12 | `lastriko` **0.1.0** publish metadata (`package.json`: `exports`, `prepack`, README); CI runs `test:coverage` with Vitest thresholds on server/renderer stack; PHASE-2.md exit criteria clarified (E2E/visual deferred) | Cloud Agent |
+| 2026-04-08 | 0.1.13 | MVP CSS for shell/grid/tabs/table/metrics/etc.; `ui.markdown()` uses **marked** + **sanitize-html** (DISPLAY.md); tab `disabled` HTML fix + client tab switching; optional `?debug=1` WebSocket `console.debug`; §10.2 deps | Cloud Agent |
 
 > **When updating:** Add a row to this table for every meaningful change to this document. Include what section changed and why.
 
@@ -101,7 +102,7 @@ Streamlit proved that a declarative, script-to-UI paradigm is incredibly powerfu
 | # | Principle | Description |
 |---|-----------|-------------|
 | 1 | **Zero-config start** | One import, one function call, a running UI. |
-| 2 | **Minimal dependencies** | Core ships under 50KB gzipped. Self-contained `lastriko.css` (~8KB). Reactivity via Nanostores (~1KB, server-only). |
+| 2 | **Minimal dependencies** | Client bundle stays small (see §13). Server `lastriko` ships self-contained `lastriko.css` + Nanostores; Markdown uses `marked` + `sanitize-html` on the server only (§10.2). |
 | 3 | **TypeScript-first** | Full type inference, autocomplete, and compile-time safety for every component. |
 | 4 | **Bun-native, Node-compatible** | Optimized for Bun (52K req/s, 5ms startup), but runs on **Node.js 22+** with no code changes. |
 | 5 | **Plugin architecture** | LLM connectors, media renderers, and export targets are plugins, not core dependencies. |
@@ -762,10 +763,12 @@ If two plugins need shared behaviour, that behaviour belongs in core (`PluginCon
 |---------|------------|---------|-------------|
 | `nanostores` | ~286 bytes | Server-side reactive state atoms per connection | No — core to architecture |
 | `ws` (Node only) | ~3KB | WebSocket server for Node.js fallback | Not needed on Bun |
+| `marked` | ~12KB | Server-side Markdown → HTML for `ui.markdown()` | Yes — swap parser if API stays sanitized |
+| `sanitize-html` | ~8KB | Tag-allowlist sanitization after Markdown parse | Yes — must preserve XSS safety |
 
-**No CSS framework dependency.** Lastriko ships its own `lastriko.css` (~8KB uncompressed, ~2KB gzip). No CDN, no Pico.css, no external CSS.
+**No CSS framework dependency.** Lastriko ships its own `lastriko.css` (MVP layout + components; target still **≤ 10KB uncompressed** where practical; grow file as Phase 2 CSS completes). No CDN, no Pico.css, no external CSS.
 
-Total production dependency footprint for core: **< 5KB gzip** (server-side only).
+Total production dependency footprint for core: **server-side Markdown stack ~20KB gzip** plus `nanostores` + `ws` (not shipped to browser).
 - Core server module target: **≤ 35KB gzip**
 - Client bundle target: **≤ 15KB gzip**
 - Lastriko CSS target: **≤ 10KB uncompressed**
@@ -1112,4 +1115,4 @@ import {
 
 ---
 
-*End of Manifesto — LASTRIKO v0.1.12*
+*End of Manifesto — LASTRIKO v0.1.13*

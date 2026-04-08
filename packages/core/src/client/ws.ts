@@ -23,8 +23,17 @@ function getDefaultWsUrl(): string {
   return `${protocol}//${window.location.host}${DEFAULT_URL_PATH}`;
 }
 
+function isDebugWs(): boolean {
+  return typeof window !== 'undefined'
+    && Boolean((window as Window & { __LK_DEBUG_WS__?: boolean }).__LK_DEBUG_WS__);
+}
+
 function sendMessage(ws: WSLike, message: ClientMessage): void {
-  ws.send(JSON.stringify(message));
+  const raw = JSON.stringify(message);
+  if (isDebugWs()) {
+    console.debug('[lastriko] →', message.type, message);
+  }
+  ws.send(raw);
 }
 
 export function createWSManager(opts: WSManagerOptions = {}): WSManager {
@@ -73,6 +82,13 @@ export function createWSManager(opts: WSManagerOptions = {}): WSManager {
         parsed = JSON.parse(String(event.data)) as ServerMessage;
       } catch {
         return;
+      }
+
+      if (isDebugWs()) {
+        const preview = String(event.data).length > 500
+          ? `${String(event.data).slice(0, 500)}…`
+          : String(event.data);
+        console.debug('[lastriko] ←', parsed.type, preview);
       }
 
       switch (parsed.type) {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { renderComponent, renderPage } from './renderer';
-import type { AnyComponentHandle, TextHandle } from '../components/types';
+import type { AnyComponentHandle, ComponentHandle, TextHandle } from '../components/types';
 
 function textHandle(content: string): TextHandle {
   return {
@@ -60,6 +60,46 @@ describe('renderer', () => {
     expect(html).toContain('data-lk-id="textInput-1"');
     expect(html).toContain('data-lk-stream-body');
     expect(html).toContain('data-lk-stream-cursor');
+  });
+
+  it('renders markdown with parsed bold (not literal asterisks)', () => {
+    const md: AnyComponentHandle = {
+      id: 'markdown-1',
+      type: 'markdown',
+      props: { content: '**x**' },
+      value: undefined,
+      update: () => {},
+    } as AnyComponentHandle;
+    const html = renderComponent(md);
+    expect(html).toContain('<strong>x</strong>');
+    expect(html).not.toContain('**x**');
+  });
+
+  it('tab buttons omit disabled attribute when tab is enabled', () => {
+    const handles: AnyComponentHandle[] = [
+      textHandle('a'),
+      textHandle('b'),
+      {
+        id: 'tabs-1',
+        type: 'tabs',
+        props: {
+          active: 'One',
+          tabs: [
+            { label: 'One', disabled: false, ids: ['text-1'] },
+            { label: 'Two', disabled: true, ids: ['text-2'] },
+          ],
+        },
+        get value() {
+          return 'One';
+        },
+        update: () => {},
+      } as ComponentHandle<Record<string, unknown>, string>,
+    ];
+    const html = renderPage(handles);
+    const oneOpen = html.match(/<button[^>]*data-lk-tab-target="One"[^>]*>/)?.[0] ?? '';
+    const twoOpen = html.match(/<button[^>]*data-lk-tab-target="Two"[^>]*>/)?.[0] ?? '';
+    expect(oneOpen).not.toContain('disabled');
+    expect(twoOpen).toContain('disabled');
   });
 
   it('renders shell composition containing child content', () => {

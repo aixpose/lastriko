@@ -14,6 +14,8 @@ npm run dev
 
 Open the URL printed in the terminal (default port **3500**). The dev script rebuilds `packages/core` once, then watches `demo.ts`.
 
+**WebSocket / protocol debugging:** append `?debug=1` to the URL once (e.g. `http://127.0.0.1:3500/?debug=1`). The session then logs outbound and inbound messages with `console.debug` in DevTools. Clear with `sessionStorage.removeItem('lk-debug-ws')` or a fresh session without the query param.
+
 ## What it shows
 
 - **Shell + grid**: page structure (header, sidebar, main).
