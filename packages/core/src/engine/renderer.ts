@@ -5,16 +5,16 @@ import type {
   ComponentHandle,
   FileUploadHandle,
   MetricHandle,
+  NumberInputHandle,
   ProgressHandle,
   PromptEditorHandle,
   SelectHandle,
+  SliderHandle,
   StreamHandle,
   TableHandle,
   TextHandle,
   TextInputHandle,
   ToggleHandle,
-  NumberInputHandle,
-  SliderHandle,
 } from '../components/types';
 import { renderMarkdownToSafeHtml } from './markdown';
 import { renderCodeHtml } from './code-highlight';
@@ -61,6 +61,7 @@ function renderButton(handle: ButtonHandle): string {
     'disabled': handle.props.loading || handle.props.disabled,
     'aria-busy': handle.props.loading ? 'true' : undefined,
     'type': 'button',
+    'aria-label': handle.props.label,
   });
   const spinner = handle.props.loading ? '<span class="lk-spinner" aria-hidden="true"></span>' : '';
   return `<button${attrs}>${spinner}<span>${escapeHtml(handle.props.label)}</span></button>`;
@@ -185,6 +186,50 @@ function renderFileUpload(handle: FileUploadHandle): string {
   return `<div class="lk-field lk-file-upload" data-lk-id="${handle.id}" data-lk-kind="fileUpload"${maxSizeAttr}>${renderInputLabel(label, helperText)}<input${attrs} /><div class="lk-file-upload-value">${escapeHtml(valueLabel)}</div></div>`;
 }
 
+function renderMultiSelect(handle: ComponentHandle<{ label: string; options: Array<{ label: string; value: string; disabled?: boolean }>; value: string[]; disabled?: boolean; helperText?: string }>): string {
+  const selected = new Set(handle.props.value);
+  const options = handle.props.options.map((option, index) => {
+    const checked = selected.has(option.value);
+    const attrs = renderAttributes({
+      'type': 'checkbox',
+      'value': option.value,
+      checked,
+      'disabled': handle.props.disabled || option.disabled,
+      'data-lk-event': 'change',
+      'aria-label': option.label,
+    });
+    return `<label class="lk-multi-option"><input${attrs} /><span>${escapeHtml(option.label)}</span></label>`;
+  }).join('');
+  const helper = handle.props.helperText ? `<div class="lk-helper">${escapeHtml(handle.props.helperText)}</div>` : '';
+  return `<fieldset class="lk-field lk-multi" data-lk-id="${handle.id}" data-lk-kind="multiSelect"><legend class="lk-label">${escapeHtml(handle.props.label)}</legend>${helper}<div class="lk-multi-options">${options}</div></fieldset>`;
+}
+
+function renderColorPicker(handle: ComponentHandle<{ label: string; value: string; format?: string; disabled?: boolean; helperText?: string; swatches?: string[] }>): string {
+  const attrs = renderAttributes({
+    'type': 'color',
+    'value': handle.props.value,
+    'disabled': handle.props.disabled,
+    'data-lk-event': 'change',
+    'aria-label': handle.props.label,
+  });
+  const swatches = (handle.props.swatches ?? []).map((swatch) => `<button class="lk-color-swatch" type="button" data-lk-event="pick-swatch" data-lk-swatch="${escapeHtml(swatch)}" style="background:${escapeHtml(swatch)}" aria-label="Use ${escapeHtml(swatch)}"></button>`).join('');
+  const swatchWrap = swatches ? `<div class="lk-color-swatches">${swatches}</div>` : '';
+  return `<div class="lk-field lk-color" data-lk-id="${handle.id}" data-lk-kind="colorPicker">${renderInputLabel(handle.props.label, handle.props.helperText ?? '')}<div class="lk-color-row"><input${attrs} /><code class="lk-color-value">${escapeHtml(handle.props.value)}</code></div>${swatchWrap}</div>`;
+}
+
+function renderDateInput(handle: ComponentHandle<{ label: string; value: string; type?: string; min?: string; max?: string; disabled?: boolean; helperText?: string }>): string {
+  const attrs = renderAttributes({
+    'type': handle.props.type ?? 'date',
+    'value': handle.props.value,
+    'min': handle.props.min,
+    'max': handle.props.max,
+    'disabled': handle.props.disabled,
+    'data-lk-event': 'change',
+    'aria-label': handle.props.label,
+  });
+  return `<div class="lk-field lk-date" data-lk-id="${handle.id}">${renderInputLabel(handle.props.label, handle.props.helperText ?? '')}<input${attrs} /></div>`;
+}
+
 function renderMarkdown(handle: ComponentHandle<{ content: string }>): string {
   const html = renderMarkdownToSafeHtml(handle.props.content);
   return `<div class="lk-markdown" data-lk-id="${handle.id}">${html}</div>`;
@@ -215,6 +260,32 @@ function renderImageGrid(handle: ComponentHandle<{ items: Array<{ src: string; a
   return `<div class="lk-image-grid" data-lk-id="${handle.id}" ${style}>${items}</div>`;
 }
 
+function renderVideo(handle: ComponentHandle<{ src: string; controls?: boolean; autoplay?: boolean; muted?: boolean; loop?: boolean; poster?: string; width?: string; caption?: string }>): string {
+  const attrs = renderAttributes({
+    src: handle.props.src,
+    controls: handle.props.controls ?? true,
+    autoplay: handle.props.autoplay,
+    muted: handle.props.muted,
+    loop: handle.props.loop,
+    poster: handle.props.poster,
+    width: handle.props.width ?? '100%',
+    loading: 'lazy',
+  });
+  const caption = handle.props.caption ? `<figcaption>${escapeHtml(handle.props.caption)}</figcaption>` : '';
+  return `<figure class="lk-video" data-lk-id="${handle.id}"><video${attrs}></video>${caption}</figure>`;
+}
+
+function renderAudio(handle: ComponentHandle<{ src: string; controls?: boolean; autoplay?: boolean; loop?: boolean; label?: string }>): string {
+  const attrs = renderAttributes({
+    'src': handle.props.src,
+    'controls': handle.props.controls ?? true,
+    'autoplay': handle.props.autoplay,
+    'loop': handle.props.loop,
+    'aria-label': handle.props.label ?? 'Audio player',
+  });
+  return `<div class="lk-audio" data-lk-id="${handle.id}"><audio${attrs}></audio></div>`;
+}
+
 function renderCode(handle: ComponentHandle<{ content: string; lang?: string }>): string {
   const lang = handle.props.lang ?? 'text';
   const highlighted = renderCodeHtml(handle.props.content, lang);
@@ -228,16 +299,52 @@ function renderJson(handle: ComponentHandle<{ label?: string; data: unknown }>):
   return `<div class="lk-json" data-lk-id="${handle.id}">${label}<details class="lk-json-details" open><summary>JSON</summary><pre>${json}</pre></details></div>`;
 }
 
+function renderDiff(handle: ComponentHandle<{ before: string; after: string; mode?: 'split' | 'unified'; beforeLabel?: string; afterLabel?: string }>): string {
+  const beforeLines = handle.props.before.split('\n');
+  const afterLines = handle.props.after.split('\n');
+  const max = Math.max(beforeLines.length, afterLines.length);
+  const rows: string[] = [];
+  for (let i = 0; i < max; i += 1) {
+    const left = beforeLines[i] ?? '';
+    const right = afterLines[i] ?? '';
+    const same = left === right;
+    const leftCls = same ? 'ctx' : (left ? 'removed lk-diff-line--removed' : 'ctx');
+    const rightCls = same ? 'ctx' : (right ? 'added lk-diff-line--added' : 'ctx');
+    if (handle.props.mode === 'unified') {
+      if (!same && left) {
+        rows.push(`<div class="lk-diff-line removed lk-diff-line--removed">- ${escapeHtml(left)}</div>`);
+      }
+      if (!same && right) {
+        rows.push(`<div class="lk-diff-line added lk-diff-line--added">+ ${escapeHtml(right)}</div>`);
+      }
+      if (same) {
+        rows.push(`<div class="lk-diff-line ctx">  ${escapeHtml(left)}</div>`);
+      }
+    } else {
+      rows.push(`<div class="lk-diff-row"><div class="lk-diff-line ${leftCls}">${escapeHtml(left)}</div><div class="lk-diff-line ${rightCls}">${escapeHtml(right)}</div></div>`);
+    }
+  }
+  if (handle.props.mode === 'unified') {
+    return `<section class="lk-diff lk-diff--unified" data-lk-id="${handle.id}"><header class="lk-diff-header"><span>${escapeHtml(handle.props.beforeLabel ?? 'Before')}</span><span>${escapeHtml(handle.props.afterLabel ?? 'After')}</span></header><div class="lk-diff-body">${rows.join('')}</div></section>`;
+  }
+  return `<section class="lk-diff lk-diff--split" data-lk-id="${handle.id}"><header class="lk-diff-header"><span>${escapeHtml(handle.props.beforeLabel ?? 'Before')}</span><span>${escapeHtml(handle.props.afterLabel ?? 'After')}</span></header><div class="lk-diff-body">${rows.join('')}</div></section>`;
+}
+
 function renderTable(handle: TableHandle): string {
   const head = handle.props.columns.map((column) => `<th>${escapeHtml(column)}</th>`).join('');
-  const body = handle.props.rows.length > 0
-    ? handle.props.rows.map((row) => {
+  const isVirtualized = handle.props.rows.length > 100;
+  const rowsToRender = isVirtualized ? handle.props.rows.slice(0, 40) : handle.props.rows;
+  const body = rowsToRender.length > 0
+    ? rowsToRender.map((row) => {
         const cells = handle.props.columns.map((column) => `<td>${escapeHtml(String(row.data[column] ?? ''))}</td>`).join('');
         return `<tr data-lk-table-row-id="${row.id}">${cells}</tr>`;
       }).join('')
     : `<tr><td colspan="${Math.max(1, handle.props.columns.length)}">${escapeHtml(handle.props.emptyMessage ?? 'No data')}</td></tr>`;
   const style = handle.props.maxHeight ? `style="max-height:${handle.props.maxHeight}px;overflow:auto;display:block;"` : '';
-  return `<div class="lk-table-wrap" data-lk-id="${handle.id}" data-lk-kind="table" ${style}><table class="lk-table${handle.props.striped ? ' lk-table--striped' : ''}"><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>`;
+  const virtualAttrs = isVirtualized
+    ? ` data-lk-virtualized="true" data-lk-table-rows="${escapeHtml(JSON.stringify(handle.props.rows))}" data-lk-table-columns="${escapeHtml(JSON.stringify(handle.props.columns))}"`
+    : '';
+  return `<div class="lk-table-wrap" data-lk-id="${handle.id}" data-lk-kind="table"${virtualAttrs} ${style}><table class="lk-table${handle.props.striped ? ' lk-table--striped' : ''}"><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>`;
 }
 
 function renderMetric(handle: MetricHandle): string {
@@ -315,9 +422,69 @@ function renderTabs(handle: ComponentHandle<Record<string, unknown>, string>, by
   const bodies = props.tabs.map((tab) => {
     const hidden = tab.label === active ? '' : 'hidden';
     const content = tab.ids.map((id) => byId.get(id)).filter(Boolean).map((child) => renderComponent(child as AnyComponentHandle, byId)).join('');
-    return `<section class="lk-tab-panel" data-lk-tab-panel="${escapeHtml(tab.label)}" ${hidden}>${content}</section>`;
+    return `<section class="lk-tab-panel" role="tabpanel" data-lk-tab-panel="${escapeHtml(tab.label)}" ${hidden}>${content}</section>`;
   }).join('');
-  return `<div class="lk-tabs" data-lk-id="${handle.id}"><nav class="lk-tab-nav">${nav}</nav>${bodies}</div>`;
+  return `<div class="lk-tabs" data-lk-id="${handle.id}"><nav class="lk-tab-nav" role="tablist">${nav}</nav>${bodies}</div>`;
+}
+
+function renderAccordion(handle: ComponentHandle<{ sections: Array<{ label: string; defaultOpen: boolean; ids: string[] }>; opts: { allowMultiple: boolean } }>, byId: Map<string, AnyComponentHandle>): string {
+  const sections = handle.props.sections.map((section, index) => {
+    const body = section.ids.map((id) => byId.get(id)).filter(Boolean).map((child) => renderComponent(child as AnyComponentHandle, byId)).join('');
+    const openAttr = section.defaultOpen ? ' open' : '';
+    return `<details class="lk-accordion-item"${openAttr} data-lk-accordion-item="${index}"><summary>${escapeHtml(section.label)}</summary><div class="lk-accordion-body">${body}</div></details>`;
+  }).join('');
+  return `<section class="lk-accordion" data-lk-id="${handle.id}" data-lk-allow-multiple="${handle.props.opts.allowMultiple ? 'true' : 'false'}">${sections}</section>`;
+}
+
+function renderFullscreen(handle: ComponentHandle<{ ids: string[]; trigger: 'button' | 'manual'; label: string; open: boolean }>, byId: Map<string, AnyComponentHandle>): string {
+  const content = handle.props.ids.map((id) => byId.get(id)).filter(Boolean).map((child) => renderComponent(child as AnyComponentHandle, byId)).join('');
+  const openClass = handle.props.open ? ' is-open' : '';
+  const trigger = handle.props.trigger === 'button'
+    ? `<button type="button" class="lk-fullscreen-open" data-lk-event="fullscreen-open" aria-label="${escapeHtml(handle.props.label)}">${escapeHtml(handle.props.label)}</button>`
+    : '';
+  return `<section class="lk-fullscreen${openClass}" data-lk-id="${handle.id}">${trigger}<div class="lk-fullscreen-overlay" ${handle.props.open ? '' : 'hidden'}><button type="button" class="lk-fullscreen-close" data-lk-event="fullscreen-close" aria-label="Close fullscreen">Close</button><div class="lk-fullscreen-content">${content}</div></div></section>`;
+}
+
+function renderModelCompare(handle: ComponentHandle<{ models: Array<{ label: string; model: string; provider: string; color?: string }>; value: { results: Record<string, string>; isStreaming: Record<string, boolean>; errors: Record<string, string | null>; latencies: Record<string, number> } }>): string {
+  const columns = handle.props.models.map((model) => {
+    const result = handle.props.value.results[model.label] ?? '';
+    const err = handle.props.value.errors[model.label];
+    const latency = handle.props.value.latencies[model.label] ?? 0;
+    const body = err ? `<div class="lk-model-error">${escapeHtml(err)}</div>` : `<pre class="lk-model-result">${escapeHtml(result)}</pre>`;
+    return `<article class="lk-model-col" style="${model.color ? `--lk-model-color:${escapeHtml(model.color)};` : ''}"><header><strong>${escapeHtml(model.label)}</strong><span>${escapeHtml(model.provider)} / ${escapeHtml(model.model)}</span></header>${body}<footer>${latency}ms</footer></article>`;
+  }).join('');
+  return `<section class="lk-model-compare" data-lk-id="${handle.id}">${columns}</section>`;
+}
+
+function renderParameterPanel(handle: ComponentHandle<{ title?: string; collapsible?: boolean; ids: string[] }>, byId: Map<string, AnyComponentHandle>): string {
+  const body = handle.props.ids.map((id) => byId.get(id)).filter(Boolean).map((child) => renderComponent(child as AnyComponentHandle, byId)).join('');
+  const title = handle.props.title ? `<header class="lk-parameter-title">${escapeHtml(handle.props.title)}</header>` : '';
+  if (handle.props.collapsible) {
+    return `<section class="lk-parameter-panel" data-lk-id="${handle.id}"><details open><summary>${escapeHtml(handle.props.title ?? 'Parameters')}</summary><div class="lk-parameter-body">${body}</div></details></section>`;
+  }
+  return `<section class="lk-parameter-panel" data-lk-id="${handle.id}">${title}<div class="lk-parameter-body">${body}</div></section>`;
+}
+
+function renderFilmStrip(handle: ComponentHandle<{ images: Array<{ src: string; alt?: string; caption?: string; thumbnail?: string }>; height?: number; selectedIndex?: number; showCaptions?: boolean }>): string {
+  const items = handle.props.images.map((image, index) => {
+    const src = image.thumbnail ?? image.src;
+    const selected = index === (handle.props.selectedIndex ?? 0);
+    const caption = image.caption && handle.props.showCaptions ? `<span class="lk-film-caption">${escapeHtml(image.caption)}</span>` : '';
+    return `<button type="button" class="lk-film-item${selected ? ' is-selected' : ''}" data-lk-event="filmstrip-select" data-lk-index="${index}" aria-label="Select image ${index + 1}"><img src="${escapeHtml(src)}" alt="${escapeHtml(image.alt ?? 'Image')}" loading="lazy" style="height:${handle.props.height ?? 120}px" />${caption}</button>`;
+  }).join('');
+  const selected = handle.props.images[handle.props.selectedIndex ?? 0];
+  const selectedHtml = selected ? `<figure class="lk-film-preview"><img src="${escapeHtml(selected.src)}" alt="${escapeHtml(selected.alt ?? 'Image')}" loading="lazy" /></figure>` : '';
+  return `<section class="lk-film-strip" data-lk-id="${handle.id}">${selectedHtml}<div class="lk-film-row">${items}</div></section>`;
+}
+
+function renderBeforeAfter(handle: ComponentHandle<{ before: string; after: string; beforeLabel?: string; afterLabel?: string; initialPosition?: number; orientation?: 'horizontal' | 'vertical' }>): string {
+  const pos = Math.max(0, Math.min(100, Number(handle.props.initialPosition ?? 50)));
+  return `<section class="lk-before-after" data-lk-id="${handle.id}" data-lk-kind="beforeAfter" data-lk-position="${pos}" data-lk-orientation="${escapeHtml(handle.props.orientation ?? 'horizontal')}">
+    <figure class="lk-before"><img src="${escapeHtml(handle.props.before)}" alt="${escapeHtml(handle.props.beforeLabel ?? 'Before')}" loading="lazy" /></figure>
+    <figure class="lk-after" style="clip-path: inset(0 ${100 - pos}% 0 0);"><img src="${escapeHtml(handle.props.after)}" alt="${escapeHtml(handle.props.afterLabel ?? 'After')}" loading="lazy" /></figure>
+    <button type="button" class="lk-before-after-handle" data-lk-before-after-handle data-lk-event="before-after-drag" aria-label="Adjust comparison"></button>
+    <div class="lk-before-after-labels"><span>${escapeHtml(handle.props.beforeLabel ?? 'Before')}</span><span>${escapeHtml(handle.props.afterLabel ?? 'After')}</span></div>
+  </section>`;
 }
 
 function renderCard(handle: ComponentHandle<{ title?: string; ids: string[] }>, byId: Map<string, AnyComponentHandle>): string {
@@ -384,6 +551,12 @@ export function renderComponent(handle: AnyComponentHandle, byId?: Map<string, A
       return renderToggle(handle as ToggleHandle);
     case 'select':
       return renderSelect(handle as SelectHandle);
+    case 'multiSelect':
+      return renderMultiSelect(handle as ComponentHandle<{ label: string; options: Array<{ label: string; value: string; disabled?: boolean }>; value: string[]; disabled?: boolean; helperText?: string }>);
+    case 'colorPicker':
+      return renderColorPicker(handle as ComponentHandle<{ label: string; value: string; format?: string; disabled?: boolean; helperText?: string; swatches?: string[] }>);
+    case 'dateInput':
+      return renderDateInput(handle as ComponentHandle<{ label: string; value: string; type?: string; min?: string; max?: string; disabled?: boolean; helperText?: string }>);
     case 'fileUpload':
       return renderFileUpload(handle as FileUploadHandle);
     case 'promptEditor':
@@ -394,10 +567,16 @@ export function renderComponent(handle: AnyComponentHandle, byId?: Map<string, A
       return renderImage(handle as ComponentHandle<{ src: string | null | undefined; alt: string; caption?: string; width?: string | number; height?: string | number }>);
     case 'imageGrid':
       return renderImageGrid(handle as ComponentHandle<{ items: Array<{ src: string; alt: string; caption?: string }>; cols?: number | 'auto'; gap?: number; minWidth?: number }>);
+    case 'video':
+      return renderVideo(handle as ComponentHandle<{ src: string; controls?: boolean; autoplay?: boolean; muted?: boolean; loop?: boolean; poster?: string; width?: string; caption?: string }>);
+    case 'audio':
+      return renderAudio(handle as ComponentHandle<{ src: string; controls?: boolean; autoplay?: boolean; loop?: boolean; label?: string }>);
     case 'code':
       return renderCode(handle as ComponentHandle<{ content: string; lang?: string }>);
     case 'json':
       return renderJson(handle as ComponentHandle<{ label?: string; data: unknown }>);
+    case 'diff':
+      return renderDiff(handle as ComponentHandle<{ before: string; after: string; mode?: 'split' | 'unified'; beforeLabel?: string; afterLabel?: string }>);
     case 'table':
       return renderTable(handle as TableHandle);
     case 'metric':
@@ -410,6 +589,18 @@ export function renderComponent(handle: AnyComponentHandle, byId?: Map<string, A
       return renderGrid(handle as ComponentHandle<{ cells: string[][]; opts: { cols?: number | string[]; rows?: number | string[]; gap?: number; minWidth?: number } }>, byId ?? new Map());
     case 'tabs':
       return renderTabs(handle as ComponentHandle<Record<string, unknown>, string>, byId ?? new Map());
+    case 'accordion':
+      return renderAccordion(handle as ComponentHandle<{ sections: Array<{ label: string; defaultOpen: boolean; ids: string[] }>; opts: { allowMultiple: boolean } }>, byId ?? new Map());
+    case 'fullscreen':
+      return renderFullscreen(handle as ComponentHandle<{ ids: string[]; trigger: 'button' | 'manual'; label: string; open: boolean }>, byId ?? new Map());
+    case 'modelCompare':
+      return renderModelCompare(handle as ComponentHandle<{ models: Array<{ label: string; model: string; provider: string; color?: string }>; value: { results: Record<string, string>; isStreaming: Record<string, boolean>; errors: Record<string, string | null>; latencies: Record<string, number> } }>);
+    case 'parameterPanel':
+      return renderParameterPanel(handle as ComponentHandle<{ title?: string; collapsible?: boolean; ids: string[] }>, byId ?? new Map());
+    case 'filmStrip':
+      return renderFilmStrip(handle as ComponentHandle<{ images: Array<{ src: string; alt?: string; caption?: string; thumbnail?: string }>; height?: number; selectedIndex?: number; showCaptions?: boolean }>);
+    case 'beforeAfter':
+      return renderBeforeAfter(handle as ComponentHandle<{ before: string; after: string; beforeLabel?: string; afterLabel?: string; initialPosition?: number; orientation?: 'horizontal' | 'vertical' }>);
     case 'card':
       return renderCard(handle as ComponentHandle<{ title?: string; ids: string[] }>, byId ?? new Map());
     case 'divider':
@@ -447,7 +638,6 @@ export function renderPage(components: AnyComponentHandle[]): string {
       }
       continue;
     }
-
     if (component.type === 'grid') {
       const gridProps = component.props as { cells: string[][] };
       for (const cell of gridProps.cells) {
@@ -457,7 +647,6 @@ export function renderPage(components: AnyComponentHandle[]): string {
       }
       continue;
     }
-
     if (component.type === 'tabs') {
       const tabsProps = component.props as { tabs: Array<{ ids: string[] }> };
       for (const tab of tabsProps.tabs) {
@@ -467,7 +656,29 @@ export function renderPage(components: AnyComponentHandle[]): string {
       }
       continue;
     }
-
+    if (component.type === 'accordion') {
+      const props = component.props as { sections: Array<{ ids: string[] }> };
+      for (const section of props.sections) {
+        for (const id of section.ids) {
+          ownedByContainer.add(id);
+        }
+      }
+      continue;
+    }
+    if (component.type === 'fullscreen') {
+      const props = component.props as { ids: string[] };
+      for (const id of props.ids) {
+        ownedByContainer.add(id);
+      }
+      continue;
+    }
+    if (component.type === 'parameterPanel') {
+      const props = component.props as { ids: string[] };
+      for (const id of props.ids) {
+        ownedByContainer.add(id);
+      }
+      continue;
+    }
     if (component.type === 'card') {
       const cardProps = component.props as { ids: string[] };
       for (const id of cardProps.ids) {
@@ -480,13 +691,10 @@ export function renderPage(components: AnyComponentHandle[]): string {
     if (consumed.has(component.id)) {
       continue;
     }
-
-    // Components owned by shell/grid/tabs/card are rendered by their parent container.
     if (ownedByContainer.has(component.id)) {
       consumed.add(component.id);
       continue;
     }
-
     output.push(renderComponent(component, byId));
     consumed.add(component.id);
   }

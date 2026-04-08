@@ -23,7 +23,7 @@ export class WebSocketHub {
 
   addConnection(socket: WebSocketLike): ConnectionScope {
     const scope = createConnectionScope(undefined, {
-      send: (message: Parameters<typeof serializeServerMessage>[0]) => this.send(socket, message),
+      send: (message) => this.send(socket, message),
     });
     this.send(socket, {
       type: 'TOAST',
@@ -66,7 +66,6 @@ export class WebSocketHub {
         type: 'TOAST',
         payload: { message: 'Reloading...', type: 'info', duration: 1200 },
       });
-      scope.clearTransientState();
       const result = executeApp(this.appDef, scope, this.currentTheme);
       if (!result.ok) {
         this.send(socket, {

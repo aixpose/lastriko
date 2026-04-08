@@ -2,7 +2,9 @@ import { UIContext } from '../components/context';
 import type {
   AppCallback,
   ButtonHandle,
+  FullscreenHandle,
   ConnectionScope,
+  ParameterPanelHandle,
   TableHandle,
   TabsHandle,
 } from '../components/types';
@@ -49,6 +51,12 @@ export function handleClientEvent(scope: ConnectionScope, payload: ClientEventPa
       return;
     }
 
+    if (handle.type === 'parameterPanel') {
+      const panel = handle as ParameterPanelHandle;
+      panel.update({});
+      return;
+    }
+
     scope.pushFragment(handle);
     return;
   }
@@ -74,6 +82,13 @@ export function handleClientEvent(scope: ConnectionScope, payload: ClientEventPa
         },
       });
     });
+    return;
+  }
+
+  if (handle.type === 'fullscreen') {
+    const fullscreen = handle as FullscreenHandle;
+    const current = fullscreen.value;
+    fullscreen.update({ value: !current });
     return;
   }
 

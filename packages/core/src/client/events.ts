@@ -21,10 +21,19 @@ function coerceValue(target: EventTarget | null): unknown {
       return Number(target.value);
     return target.value;
   }
-  if (target instanceof HTMLSelectElement || target instanceof HTMLTextAreaElement) {
+  if (target instanceof HTMLSelectElement || target instanceof HTMLTextAreaElement)
     return target.value;
-  }
   return undefined;
+}
+
+function coerceMultiSelectValue(root: HTMLElement): string[] {
+  const values: string[] = [];
+  for (const box of Array.from(root.querySelectorAll<HTMLInputElement>('input[type="checkbox"][data-lk-multi-option]'))) {
+    if (box.checked) {
+      values.push(box.value);
+    }
+  }
+  return values;
 }
 
 function resolveComponentId(target: EventTarget | null): string | null {
@@ -53,50 +62,47 @@ function closestWithEventToken(target: EventTarget | null, token: string): Eleme
   return null;
 }
 
-export function bindEventDelegation(root: Document, channel: EventChannel): void {
+function sendEvent(channel: EventChannel, id: string, event: 'click' | 'change' | 'blur' | 'focus', value?: unknown): void {
+  channel.send({
+    type: 'EVENT',
+    payload: { id, event, value },
+  });
+}
+
+function bindTabs(root: Document, channel: EventChannel): void {
   root.addEventListener('click', (event) => {
     if (!(event.target instanceof Element))
       return;
     const tabBtn = event.target.closest<HTMLButtonElement>('.lk-tab[data-lk-tab-target]');
-    if (tabBtn && !tabBtn.disabled) {
-      const tabsRoot = tabBtn.closest('.lk-tabs');
-      const target = tabBtn.dataset.lkTabTarget;
-      if (tabsRoot && target) {
-        for (const b of Array.from(tabsRoot.querySelectorAll<HTMLButtonElement>('.lk-tab[data-lk-tab-target]'))) {
-          b.classList.toggle('is-active', b.dataset.lkTabTarget === target);
-        }
-        for (const panel of Array.from(tabsRoot.querySelectorAll<HTMLElement>('.lk-tab-panel'))) {
-          const match = panel.dataset.lkTabPanel === target;
-          if (match) {
-            panel.removeAttribute('hidden');
-          }
-          else {
-            panel.setAttribute('hidden', '');
-          }
-        }
-        const id = resolveComponentId(tabsRoot);
-        if (id) {
-          channel.send({
-            type: 'EVENT',
-            payload: { id, event: 'change', value: target },
-          });
-        }
+    if (!tabBtn || tabBtn.disabled)
+      return;
+    const tabsRoot = tabBtn.closest('.lk-tabs');
+    const target = tabBtn.dataset.lkTabTarget;
+    if (!tabsRoot || !target)
+      return;
+
+    for (const b of Array.from(tabsRoot.querySelectorAll<HTMLButtonElement>('.lk-tab[data-lk-tab-target]'))) {
+      const active = b.dataset.lkTabTarget === target;
+      b.classList.toggle('is-active', active);
+      b.setAttribute('aria-selected', active ? 'true' : 'false');
+      b.tabIndex = active ? 0 : -1;
+    }
+    for (const panel of Array.from(tabsRoot.querySelectorAll<HTMLElement>('.lk-tab-panel'))) {
+      const match = panel.dataset.lkTabPanel === target;
+      if (match) {
+        panel.removeAttribute('hidden');
+      } else {
+        panel.setAttribute('hidden', '');
       }
     }
-  });
-
-  root.addEventListener('click', (event) => {
-    if (!(event.target instanceof Element))
-      return;
-    const clickable = closestWithEventToken(event.target, 'click');
-    if (!clickable)
-      return;
-    const id = resolveComponentId(clickable);
+    const id = resolveComponentId(tabsRoot);
     if (!id)
       return;
-    channel.send({ type: 'EVENT', payload: { id, event: 'click' } });
+    sendEvent(channel, id, 'change', target);
   });
+}
 
+function bindTableClicks(root: Document, channel: EventChannel): void {
   root.addEventListener('click', (event) => {
     if (!(event.target instanceof Element))
       return;
@@ -108,9 +114,25 @@ export function bindEventDelegation(root: Document, channel: EventChannel): void
     const rowId = tableRow.dataset.lkTableRowId;
     if (!id || !rowId)
       return;
-    channel.send({ type: 'EVENT', payload: { id, event: 'click', value: rowId } });
+    sendEvent(channel, id, 'click', rowId);
   });
+}
 
+function bindGenericClicks(root: Document, channel: EventChannel): void {
+  root.addEventListener('click', (event) => {
+    if (!(event.target instanceof Element))
+      return;
+    const clickable = closestWithEventToken(event.target, 'click');
+    if (!clickable)
+      return;
+    const id = resolveComponentId(clickable);
+    if (!id)
+      return;
+    sendEvent(channel, id, 'click');
+  });
+}
+
+function bindChanges(root: Document, channel: EventChannel): void {
   root.addEventListener('change', (event) => {
     if (!(event.target instanceof Element))
       return;
@@ -120,12 +142,18 @@ export function bindEventDelegation(root: Document, channel: EventChannel): void
     const id = resolveComponentId(changeable);
     if (!id)
       return;
-    channel.send({
-      type: 'EVENT',
-      payload: { id, event: 'change', value: coerceValue(event.target) },
-    });
-  });
 
+    const holder = changeable.closest<HTMLElement>('[data-lk-kind="multiSelect"]');
+    if (holder) {
+      sendEvent(channel, id, 'change', coerceMultiSelectValue(holder));
+      return;
+    }
+
+    sendEvent(channel, id, 'change', coerceValue(event.target));
+  });
+}
+
+function bindLiveInput(root: Document, channel: EventChannel): void {
   root.addEventListener('input', (event) => {
     if (!(event.target instanceof Element))
       return;
@@ -137,12 +165,11 @@ export function bindEventDelegation(root: Document, channel: EventChannel): void
     const id = resolveComponentId(liveInput);
     if (!id)
       return;
-    channel.send({
-      type: 'EVENT',
-      payload: { id, event: 'change', value: coerceValue(event.target) },
-    });
+    sendEvent(channel, id, 'change', coerceValue(event.target));
   });
+}
 
+function bindNumberClamp(root: Document, channel: EventChannel): void {
   root.addEventListener('blur', (event) => {
     if (!(event.target instanceof HTMLInputElement))
       return;
@@ -165,12 +192,11 @@ export function bindEventDelegation(root: Document, channel: EventChannel): void
     const id = resolveComponentId(clamped);
     if (!id)
       return;
-    channel.send({
-      type: 'EVENT',
-      payload: { id, event: 'change', value: next },
-    });
+    sendEvent(channel, id, 'change', next);
   }, true);
+}
 
+function bindCopyCode(root: Document): void {
   root.addEventListener('click', async (event) => {
     if (!(event.target instanceof Element))
       return;
@@ -194,12 +220,15 @@ export function bindEventDelegation(root: Document, channel: EventChannel): void
       // ignore clipboard errors in unsupported contexts
     }
   });
+}
 
+function bindFileUpload(root: Document, channel: EventChannel): void {
   root.addEventListener('change', async (event) => {
     if (!(event.target instanceof HTMLInputElement))
       return;
     if (event.target.type !== 'file')
       return;
+
     const holder = event.target.closest<HTMLElement>('[data-lk-id][data-lk-kind="fileUpload"]');
     const id = holder?.dataset.lkId;
     if (!id)
@@ -207,7 +236,7 @@ export function bindEventDelegation(root: Document, channel: EventChannel): void
 
     const files = event.target.files ? Array.from(event.target.files) : [];
     if (files.length === 0) {
-      channel.send({ type: 'EVENT', payload: { id, event: 'change', value: null } });
+      sendEvent(channel, id, 'change', null);
       return;
     }
 
@@ -232,25 +261,26 @@ export function bindEventDelegation(root: Document, channel: EventChannel): void
       if (isDebugWs()) {
         console.debug('[lastriko] fetch ←', uploadUrl, response.status, response.statusText);
       }
-      if (!response.ok) {
+      if (!response.ok)
         return;
-      }
+
       const payload = await response.json() as unknown;
-      const uploaded = Array.isArray(payload)
-        ? payload
-        : payload;
-      channel.send({
-        type: 'EVENT',
-        payload: {
-          id,
-          event: 'change',
-          value: uploaded ?? null,
-        },
-      });
+      sendEvent(channel, id, 'change', payload ?? null);
     } catch {
       // best effort
     }
   });
+}
+
+export function bindEventDelegation(root: Document, channel: EventChannel): void {
+  bindTabs(root, channel);
+  bindGenericClicks(root, channel);
+  bindTableClicks(root, channel);
+  bindChanges(root, channel);
+  bindLiveInput(root, channel);
+  bindNumberClamp(root, channel);
+  bindCopyCode(root);
+  bindFileUpload(root, channel);
 }
 
 export function bindThemeToggle(root: Document, channel: EventChannel): void {

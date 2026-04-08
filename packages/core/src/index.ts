@@ -6,11 +6,13 @@ import type { AppCallback } from './components/types';
 export interface AppConfig extends RuntimeConfig {
   plugins?: LastrikoPlugin[];
   toolbar?: boolean;
+  hotReloadPreserve?: boolean;
 }
 
 export interface AppOptions {
   plugins?: LastrikoPlugin[];
   server?: RuntimeConfig;
+  hotReloadPreserve?: boolean;
 }
 
 export interface RunningApp {
@@ -29,6 +31,7 @@ export async function app(title: string, callback: AppCallback, opts: AppOptions
     plugins,
     app: callback,
     ...(opts.server ?? {}),
+    hotReloadPreserve: opts.hotReloadPreserve ?? true,
   });
   if (process.env.NODE_ENV !== 'test') {
     console.info(`[lastriko] Ready at http://${server.host}:${server.port}`);
@@ -54,6 +57,9 @@ export type {
   SliderHandle,
   ToggleHandle,
   SelectHandle,
+  MultiSelectHandle,
+  ColorPickerHandle,
+  DateInputHandle,
   FileUploadHandle,
   UploadedFile,
   SelectOption,
@@ -63,7 +69,17 @@ export type {
   SliderOpts,
   ToggleOpts,
   SelectOpts,
+  MultiSelectOpts,
+  ColorPickerOpts,
+  DateInputOpts,
   FileUploadOpts,
+  VideoProps,
+  AudioProps,
+  DiffProps,
+  AccordionSection,
+  AccordionOpts,
+  FullscreenHandle,
+  FullscreenOpts,
   TableHandle,
   TableRow,
   TableRowHandle as RowHandle,
@@ -77,6 +93,17 @@ export type {
   ChatUIOptions,
   PromptEditorHandle,
   PromptEditorOpts,
+  ModelSpec,
+  ModelCompareOpts,
+  ModelCompareResults,
+  ModelCompareHandle,
+  ParameterDef,
+  ParameterSchema,
+  ParameterPanelOpts,
+  ParameterPanelHandle,
+  FilmStripItem,
+  FilmStripOpts,
+  BeforeAfterOpts,
   ShellRegions,
   ShellOpts,
   GridOpts,
