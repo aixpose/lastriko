@@ -162,11 +162,73 @@ describe('http handler resilience', () => {
       form.append('file', new Blob(['hello world'], { type: 'text/plain' }), 'hello.txt');
       const res = await fetch(`${base}/upload?connectionId=scope-test`, { method: 'POST', body: form });
       expect(res.status).toBe(200);
-      const payload = await res.json() as { file: { name: string; path: string; size: number; type: string } };
-      expect(payload.file.name).toBe('hello.txt');
-      expect(payload.file.path).toContain('scope-test');
-      expect(payload.file.size).toBeGreaterThan(0);
-      expect(payload.file.type).toContain('text/plain');
+      const payload = await res.json() as { name: string; path: string; size: number; type: string };
+      expect(payload.name).toBe('hello.txt');
+      expect(payload.path).toContain('scope-test');
+      expect(payload.size).toBeGreaterThan(0);
+      expect(payload.type).toContain('text/plain');
+    });
+  });
+
+  it('rejects uploads above default 10MB limit', async () => {
+    const handler = __internal.createHttpHandler({
+      title: 't',
+      toolbar: false,
+      getTheme: () => 'light',
+      themeCssPath: resolveThemeCssPath(process.cwd()),
+      clientRootPath: clientRoot,
+      uploadDirRoot: join(tmpdir(), 'lastriko-upload-test'),
+    });
+
+    await withHttpHandler(handler, async (base) => {
+      const boundary = '----lastriko-test-boundary';
+      const overLimit = 10 * 1024 * 1024 + 1;
+      const fileBody = 'a'.repeat(overLimit);
+      const multipart = `--${boundary}\r\n`
+        + 'Content-Disposition: form-data; name="file"; filename="big.txt"\r\n'
+        + 'Content-Type: text/plain\r\n\r\n'
+        + `${fileBody}\r\n`
+        + `--${boundary}--\r\n`;
+      const res = await fetch(`${base}/upload?connectionId=scope-test`, {
+        method: 'POST',
+        headers: { 'content-type': `multipart/form-data; boundary=${boundary}` },
+        body: multipart,
+      });
+      expect(res.status).toBe(413);
+      const payload = await res.json() as { error: string };
+      expect(payload.error).toContain('File too large');
+    });
+  });
+
+  it('enforces per-component upload max size from header', async () => {
+    const handler = __internal.createHttpHandler({
+      title: 't',
+      toolbar: false,
+      getTheme: () => 'light',
+      themeCssPath: resolveThemeCssPath(process.cwd()),
+      clientRootPath: clientRoot,
+      uploadDirRoot: join(tmpdir(), 'lastriko-upload-test'),
+    });
+
+    await withHttpHandler(handler, async (base) => {
+      const boundary = '----lastriko-small-limit';
+      const oversizedBody = 'a'.repeat(2 * 1024);
+      const multipart = `--${boundary}\r\n`
+        + 'Content-Disposition: form-data; name="file"; filename="small.txt"\r\n'
+        + 'Content-Type: text/plain\r\n\r\n'
+        + `${oversizedBody}\r\n`
+        + `--${boundary}--\r\n`;
+      const res = await fetch(`${base}/upload?connectionId=scope-test`, {
+        method: 'POST',
+        headers: {
+          'content-type': `multipart/form-data; boundary=${boundary}`,
+          'x-lastriko-upload-max-size': '1024',
+        },
+        body: multipart,
+      });
+      expect(res.status).toBe(413);
+      const payload = await res.json() as { error: string };
+      expect(payload.error).toContain('File too large');
     });
   });
 

@@ -169,6 +169,7 @@ function renderFileUpload(handle: FileUploadHandle): string {
     'data-lk-event': 'change',
     'aria-label': handle.props.label,
   });
+  const maxSize = Number(handle.props.maxSize);
   const valueLabel = (() => {
     if (!handle.props.value) {
       return 'No file selected';
@@ -180,7 +181,8 @@ function renderFileUpload(handle: FileUploadHandle): string {
   })();
   const label = String(handle.props.label ?? '');
   const helperText = String(handle.props.helperText ?? '');
-  return `<div class="lk-field lk-file-upload" data-lk-id="${handle.id}" data-lk-kind="fileUpload">${renderInputLabel(label, helperText)}<input${attrs} /><div class="lk-file-upload-value">${escapeHtml(valueLabel)}</div></div>`;
+  const maxSizeAttr = Number.isFinite(maxSize) && maxSize > 0 ? ` data-lk-max-size="${String(maxSize)}"` : '';
+  return `<div class="lk-field lk-file-upload" data-lk-id="${handle.id}" data-lk-kind="fileUpload"${maxSizeAttr}>${renderInputLabel(label, helperText)}<input${attrs} /><div class="lk-file-upload-value">${escapeHtml(valueLabel)}</div></div>`;
 }
 
 function renderMarkdown(handle: ComponentHandle<{ content: string }>): string {

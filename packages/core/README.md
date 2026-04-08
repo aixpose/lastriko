@@ -35,7 +35,7 @@ Run with `tsx` or `bun`; open the URL printed in the console (default port **350
 
 - [Project manifest & roadmap](https://github.com/aixpose/lastriko/blob/main/MANIFEST.md)
 - [API reference](https://github.com/aixpose/lastriko/blob/main/docs/API-REFERENCE.md)
-- [Phase 2 (MVP) scope](https://github.com/aixpose/lastriko/blob/main/docs/phases/PHASE-2.md)
+- [Current phase plan (Phase 3)](https://github.com/aixpose/lastriko/blob/main/docs/phases/PHASE-3.md)
 
 ## Examples in this repo
 

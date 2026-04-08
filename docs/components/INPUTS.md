@@ -243,7 +243,6 @@ interface UploadedFile {
   path: string;             // Server-side temp path
   size: number;             // Bytes
   type: string;             // MIME type
-  lastModified: number;     // Timestamp
 }
 
 interface FileUploadComponent extends InputHandle<UploadedFile | UploadedFile[] | null> {

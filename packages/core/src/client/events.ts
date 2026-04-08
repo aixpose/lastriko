@@ -218,12 +218,17 @@ export function bindEventDelegation(root: Document, channel: EventChannel): void
 
     try {
       const connectionId = String(window.localStorage.getItem('lk-connection-id') ?? '');
+      const maxSize = holder.dataset.lkMaxSize;
       const search = connectionId ? `?connectionId=${encodeURIComponent(connectionId)}` : '';
       const uploadUrl = `/upload${search}`;
       if (isDebugWs()) {
         console.debug('[lastriko] fetch →', uploadUrl, 'POST', '(multipart)');
       }
-      const response = await fetch(uploadUrl, { method: 'POST', body: formData });
+      const headers = new Headers();
+      if (maxSize) {
+        headers.set('x-lastriko-upload-max-size', maxSize);
+      }
+      const response = await fetch(uploadUrl, { method: 'POST', body: formData, headers });
       if (isDebugWs()) {
         console.debug('[lastriko] fetch ←', uploadUrl, response.status, response.statusText);
       }
@@ -233,7 +238,7 @@ export function bindEventDelegation(root: Document, channel: EventChannel): void
       const payload = await response.json() as unknown;
       const uploaded = Array.isArray(payload)
         ? payload
-        : (payload as { file?: unknown }).file;
+        : payload;
       channel.send({
         type: 'EVENT',
         payload: {

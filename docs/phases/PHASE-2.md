@@ -1,7 +1,7 @@
 # Phase 2 — MVP Components
 
 > **Back to:** [MANIFEST.md](../../MANIFEST.md)
-> **Status:** In Progress
+> **Status:** Complete
 > **Target version:** `0.1.0` (first public npm publish)
 
 ---
@@ -94,7 +94,7 @@ All Phase 2 blocking decisions are resolved. See [MANIFEST.md §11.1](../../MANI
 | `slider` | `InputHandle<number>` | Always shows current value |
 | `toggle` | `InputHandle<boolean>` | CSS switch — not bare checkbox |
 | `select` | `InputHandle<string>` | String array shorthand |
-| `fileUpload` | `InputHandle<UploadedFile\|null>` | HTTP POST `/upload`, not WebSocket |
+| `fileUpload` | `InputHandle<UploadedFile\|UploadedFile[]\|null>` | HTTP POST `/upload`, not WebSocket |
 
 Full specs: [INPUTS.md](../components/INPUTS.md)
 
@@ -191,12 +191,12 @@ Full specs: [AI.md](../components/AI.md)
 ### 10. npm Publish — `lastriko` v0.1.0
 
 **Pre-publish checklist:**
-- [ ] npm name **`lastriko`** (unscoped) available on the registry
-- [ ] `packages/core/package.json` has **`version`**, `exports` (including `import`), `types`, `prepack`, `files`, `license`, `repository`
-- [ ] `packages/core/README.md` present (npm package page)
-- [ ] Optional: root `CHANGELOG.md` or Changesets — not required to cut the first release
-- [ ] All CI checks pass (Bun + Node.js matrix)
-- [ ] Bundle size: client ≤ 15KB gzip, core ≤ 50KB gzip
+- [x] npm name **`lastriko`** (unscoped) available on the registry
+- [x] `packages/core/package.json` has **`version`**, `exports` (including `import`), `types`, `prepack`, `files`, `license`, `repository`
+- [x] `packages/core/README.md` present (npm package page)
+- [x] Optional: root `CHANGELOG.md` or Changesets — not required to cut the first release
+- [x] All CI checks pass (Bun + Node.js matrix)
+- [x] Bundle size: client ≤ 15KB gzip, core ≤ 50KB gzip
 
 ---
 

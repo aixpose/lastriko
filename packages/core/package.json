@@ -53,6 +53,7 @@
   "dependencies": {
     "@shikijs/langs": "^4.0.2",
     "@shikijs/themes": "^4.0.2",
+    "chokidar": "^5.0.0",
     "marked": "^18.0.0",
     "nanostores": "^1.1.0",
     "sanitize-html": "^2.17.2",
