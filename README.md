@@ -109,7 +109,7 @@ This repository contains the project specification, the `lastriko` core package,
 1. **Zero-config start** — One import, one function call, a running UI.
 2. **Minimal dependencies** — Core ships under 50KB gzipped.
 3. **TypeScript-first** — Full type inference and compile-time safety.
-4. **Bun-native, Node-compatible** — Runs on Bun (sub-50ms cold start) or Node.js 20+.
+4. **Bun-native, Node-compatible** — Runs on Bun (sub-50ms cold start) or Node.js 22+.
 5. **Plugin architecture** — LLM connectors and export targets are plugins, not core.
 6. **Desktop-exportable** — Neutralino.js integration for lightweight desktop distribution.
 7. **Tests are not optional** — Every piece of code ships with tests. Coverage gates enforced in CI.

@@ -34,7 +34,7 @@ Use these tables to determine which phase owns a given piece of work:
 - `toast`, `alert`, `loading`, `streamText`
 - `chatUI`, `promptEditor`
 - Complete theme (all tokens, toolbar toggle)
-- Node.js 20+ support (alongside Bun)
+- Node.js 22+ support (alongside Bun)
 - npm publish: lastriko v0.1.0
 
 **Phase 3 (Advanced):**

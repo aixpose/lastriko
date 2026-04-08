@@ -213,7 +213,7 @@ test('slider value updates metric in real time', async ({ page }) => {
 
 ## CI Pipeline
 
-The repository ships [`.github/workflows/ci.yml`](../.github/workflows/ci.yml). On every push and pull request to `main`, a single **quality** job runs on Ubuntu with **Node.js 22**:
+The repository ships [`.github/workflows/ci.yml`](../.github/workflows/ci.yml). On every push and pull request to `main`, a **quality** matrix runs on Ubuntu for **Node.js 22, 24, and 26** (same steps on each):
 
 1. `npm ci`
 2. `npm run typecheck`
@@ -222,7 +222,7 @@ The repository ships [`.github/workflows/ci.yml`](../.github/workflows/ci.yml). 
 5. `npm run test:integration`
 6. `npm run check:bundle` — fails if the core client bundle exceeds the gzip limit in `scripts/check-client-size.mjs`
 
-**Phase 2** extends this workflow with a Bun matrix, Node 20 coverage, and Playwright E2E/visual jobs as those scripts land in the repo.
+**Phase 2** extends this workflow with a Bun job or matrix and Playwright E2E/visual jobs as those scripts land in the repo. The published package requires **Node.js 22+** (`engines` in root and `packages/core/package.json`).
 
 ---
 
