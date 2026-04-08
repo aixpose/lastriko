@@ -206,7 +206,7 @@ ui.parameterPanel(
   opts?: ParameterPanelOpts
 ): ParameterPanelComponent
 
-// Option A: Simple object schema (Lastriko-native format)
+// Lastriko native schema — the only supported format
 type ParameterSchema = Record<string, ParameterDef>
 
 interface ParameterDef {

@@ -12,14 +12,16 @@ Before implementing code that depends on an unresolved design decision, check [M
 
 All Phase 1 and Phase 2 blocking decisions are **resolved**. The remaining open items are Phase 3 scope:
 
-## Remaining Open Questions (Phase 3 Blockers)
+## All Decisions Resolved Through Phase 3
 
-| # | Question | Impacts |
+There are no remaining open questions before Phase 3 implementation. The 4 Phase 3 items were resolved:
+
+| # | Decision | Outcome |
 |---|----------|---------|
-| 1 | Image/video optimization strategy | `image`, `imageGrid`, `video` lazy loading |
-| 2 | State persistence across sessions (localStorage opt-in) | `defineConfig({ persistence })` |
-| 3 | `parameterPanel` schema format | `parameterPanel` component |
-| 4 | Multi-page support model (`ui.page()`) | `ui.page()`, `ui.navigate()` |
+| 1 | Image/video optimization | `loading="lazy"` on all `<img>` and `<video>` — client-side, no proxy |
+| 2 | State persistence | No persistence — every refresh starts fresh |
+| 3 | `parameterPanel` schema | Custom Lastriko typed object only (no Zod) |
+| 4 | Multi-page support | Deferred — `ui.tabs()` covers the use case |
 
 ## All Phase 1 + 2 Decisions — Locked
 

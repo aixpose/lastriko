@@ -29,11 +29,11 @@ This phase makes Lastriko a **complete** prototyping toolkit, not just a minimal
 
 | # | Question | Ref |
 |---|----------|-----|
-| Multi-page support model | Must define `ui.page()` behaviour within `app()`-once model before implementing | Open — decide at Phase 3 start |
-| `modelCompare` parallel async | Resolved: parallel `Promise.all`, independent `StreamHandle` per column | ✅ Resolved |
-| `parameterPanel` schema format | Resolved: custom Lastriko typed-object `{ key: { type, min, max, default } }` | ✅ Resolved |
-| Image/video optimization | Client-side lazy load (`loading="lazy"`) vs server-side proxy | Open — decide at Phase 3 start |
-| State persistence across sessions | opt-in `localStorage` for input values (`defineConfig({ persistence: 'localStorage' })`) | Open — decide at Phase 3 start |
+| `modelCompare` parallel async | Parallel `Promise.all`, independent `StreamHandle` per column | ✅ Resolved |
+| `parameterPanel` schema format | Custom Lastriko typed-object `{ key: { type, label, min, max, step, options, default } }` | ✅ Resolved |
+| Image/video optimization | Client-side lazy loading — `loading="lazy"` on all `<img>` and `<video>` | ✅ Resolved |
+| State persistence across sessions | No persistence — every refresh starts fresh | ✅ Resolved |
+| Multi-page support (`ui.page()`) | Deferred — `ui.tabs()` covers the use case; no `ui.page()` in Phase 3 | ✅ Resolved |
 
 ---
 

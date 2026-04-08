@@ -92,7 +92,7 @@ interface ImageOpts {
 }
 ```
 
-**Renders as:** `<figure>` + `<img>` + optional `<figcaption>`.
+**Renders as:** `<figure>` + `<img loading="lazy">` + optional `<figcaption>`. All images use native browser lazy loading by default — off-screen images are not fetched until scrolled into view.
 
 **Null handling:** If `src` is `null`, `undefined`, or empty string: renders a grey placeholder box with the alt text.
 
@@ -156,7 +156,7 @@ interface VideoOpts {
 }
 ```
 
-**Renders as:** `<figure>` + `<video>` + optional `<figcaption>`.
+**Renders as:** `<figure>` + `<video loading="lazy">` + optional `<figcaption>`. Uses native lazy loading where supported.
 
 **Note:** Browser security policies require `muted: true` for `autoplay: true` to work. Lastriko will auto-set `muted: true` if `autoplay: true` is set, with a warning to the developer.
 
