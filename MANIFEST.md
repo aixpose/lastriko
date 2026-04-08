@@ -73,6 +73,7 @@ See [`.cursor/rules/`](.cursor/rules/) for the enforced Cursor rules that implem
 | 2026-04-07 | 0.1.1 | Architecture rewritten: app()-once + handle-based updates + HTML fragments | Owner decisions |
 | 2026-04-07 | 0.1.2 | Layout system (shell+grid), CSS self-contained, plugin isolation, all decisions resolved | Owner decisions |
 | 2026-04-07 | 0.1.3 | Full consistency audit: ComponentHandle rename, TableHandle+onRowClick, MetricHandle, TextHandle, STREAM_ERROR, hot reload preservation model | Owner decisions |
+| 2026-04-08 | 0.1.4 | Phase 1 implementation kickoff: status moved to In Progress, monorepo/package structure now active | Cloud Agent |
 
 > **When updating:** Add a row to this table for every meaningful change to this document. Include what section changed and why.
 
@@ -801,7 +802,7 @@ Each phase produces a usable, publishable npm package. **Ship early, iterate fas
 
 | Phase | Name | Key Deliverable | Status |
 |-------|------|----------------|--------|
-| 1 | Infrastructure & Foundation | Working skeleton: serve a page, sync state, render basic components | Not Started |
+| 1 | Infrastructure & Foundation | Working skeleton: serve a page, sync state, render basic components | In Progress |
 | 2 | MVP Components | v0.1.0: enough components to build a real AI demo | Not Started |
 | 3 | Advanced Components & Polish | Feature parity with full component table | Not Started |
 | 4 | Plugin Ecosystem | First official plugins (OpenAI, Anthropic, Ollama, Neutralino) | Not Started |
