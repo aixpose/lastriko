@@ -2,7 +2,7 @@
 
 > **The TypeScript UI Toolkit for AI Demos & Rapid Prototyping**
 >
-> Version 0.1.8 — April 2026
+> Version 0.1.9 — April 2026
 > AIXPOSE OÜ
 
 ---
@@ -77,6 +77,7 @@ See [`.cursor/rules/`](.cursor/rules/) for the enforced Cursor rules that implem
 | 2026-04-08 | 0.1.6 | HTTP server: default port **3500**, EADDRINUSE port hop (up to 64 tries), `/style.css` resolves theme from package or `LASTRIKO_THEME_CSS`, request handler errors return 500 without crashing the process | Cloud Agent |
 | 2026-04-08 | 0.1.7 | Foundation milestone complete: roadmap marks MVP Components as active; §8 project structure reflects implemented monorepo; tests run after build; CI workflow added | Cloud Agent |
 | 2026-04-08 | 0.1.8 | Retired standalone PHASE-1.md; foundation summary and pre–Phase 2 decision status consolidated under §11; removed manifest §19 | Cloud Agent |
+| 2026-04-08 | 0.1.9 | §11.1 Phase 2 line-count aligned with PHASE-2 (60 lines); §14 + docs/TESTING.md: Vitest, integration naming, CI matrix (Node 20/22 + Bun) | Cloud Agent |
 
 > **When updating:** Add a row to this table for every meaningful change to this document. Include what section changed and why.
 
@@ -771,7 +772,7 @@ Total production dependency footprint for core: **< 5KB gzip** (server-side only
 |---------|---------|
 | `typescript` | Type checking (Bun handles transpilation natively) |
 | `bun-types` | Bun API type definitions |
-| `vitest` or `bun:test` | Test runner |
+| `vitest` | Test runner (same suite under `npm run test` and `bun run test`) |
 | `turborepo` | Monorepo build orchestration + caching |
 | `changesets` | Version management and changelog generation |
 | `prettier` | Code formatting |
@@ -817,7 +818,7 @@ Each phase produces a usable, publishable npm package. **Ship early, iterate fas
 
 **Before Phase 2 (MVP Components):** There are **no unresolved design questions** blocking implementation. Locked decisions through early MVP scope are summarized in [`.cursor/rules/open-questions-check.mdc`](.cursor/rules/open-questions-check.mdc). If a new fork appears (for example, choosing between two libraries), resolve it in the relevant `docs/` spec and add a row to the [changelog](#changelog) **before** writing code.
 
-**Phase 2 Exit Criteria:** A developer can build and share a working AI chat demo with streaming output, image display, parameter controls, and dark mode in under 50 lines of code.
+**Phase 2 Exit Criteria:** A developer can build and share a working AI chat demo with streaming output, image display, parameter controls, and dark mode in under 60 lines of code (see [PHASE-2.md](docs/phases/PHASE-2.md#exit-criteria)).
 
 ---
 
@@ -932,11 +933,11 @@ The rule is enforced by the `.cursor/rules/test-coverage.mdc` Cursor rule and by
 
 | Level | Tool | Coverage Target | What It Tests |
 |-------|------|----------------|---------------|
-| Unit | `bun:test` | **90%+** | Component renderers, handle mutation, state atoms, HTML escaping, ID generation |
-| Integration | `bun:test` + in-process WS client | **80%+** | READY→RENDER, EVENT→FRAGMENT, STREAM_CHUNK, file upload, hot reload |
+| Unit | Vitest | **90%+** | Component renderers, handle mutation, state atoms, HTML escaping, ID generation |
+| Integration | Vitest + in-process WS client | **80%+** | READY→RENDER, EVENT→FRAGMENT, STREAM_CHUNK, file upload, hot reload |
 | E2E | Playwright | All user-facing flows | Full demo in browser: shell, grid, table updates, streaming, theme toggle |
 | Visual | Playwright screenshots | All components | Pixel-level regression for light + dark mode |
-| Performance | `bun:test` benchmarks | Per target in §13 | Cold start, render time, bundle size, memory |
+| Performance | Vitest / runtime benchmarks | Per target in §13 | Cold start, render time, bundle size, memory |
 
 ### 14.2 Coverage Gates (CI-enforced)
 
@@ -947,20 +948,19 @@ The rule is enforced by the `.cursor/rules/test-coverage.mdc` Cursor rule and by
 | `packages/core/src/client/` | ≥ 80% | ≥ 75% |
 | `packages/plugin-*/src/` | ≥ 85% | ≥ 80% |
 
-CI fails the PR if any gate is not met. Coverage is measured by `bun:test --coverage`.
+CI fails the PR if any gate is not met. Coverage is measured with Vitest (`vitest run --coverage`) when coverage is enabled for a job.
 
 ### 14.3 CI Pipeline
 
-Every pull request must pass all of the following — **in this order**:
+Every pull request must pass the **quality** matrix in [`.github/workflows/ci.yml`](.github/workflows/ci.yml):
 
-1. **Type check** — `tsc --noEmit` (zero errors)
-2. **Lint** — `eslint .` (zero warnings in `packages/`)
-3. **Unit tests** — `bun test` (100% pass, coverage gates met)
-4. **Integration tests** — `bun test:integration`
-5. **Bundle size** — client ≤ 15KB gzip, core ≤ 50KB gzip (hard fail)
-6. **E2E tests** — Playwright on Chromium
-7. **Visual regression** — Playwright screenshot diff (no unexpected changes)
-8. **Cross-runtime** — full test suite on Bun 1.1+ **and** Node.js 20+
+1. **Type check** — `npm run typecheck` / `bun run typecheck` (zero errors)
+2. **Lint** — `npm run lint` / `bun run lint`
+3. **Unit tests** — `npm run test` / `bun run test` (integration files excluded; see [docs/TESTING.md](docs/TESTING.md))
+4. **Integration tests** — `npm run test:integration` / `bun run test:integration`
+5. **Bundle size** — `check:bundle` — client ≤ 15KB gzip, core ≤ 50KB gzip (hard fail)
+
+**Matrix:** Node.js **20** and **22** (npm), plus **Bun** on Node 22 (same scripts after `npm ci`). E2E and visual Playwright jobs are added in Phase 2 when those suites exist.
 
 A PR that skips or disables any of these steps will not be merged.
 
@@ -979,9 +979,8 @@ packages/core/src/
 │   ├── table.ts
 │   └── table.test.ts
 └── __tests__/
-    └── integration/          ← integration tests (require a running server)
-        ├── render-cycle.test.ts
-        └── streaming.test.ts
+    └── integration/          ← integration tests (require a running server); use *.integration.test.ts
+        └── ws-flow.integration.test.ts
 ```
 
 E2E and visual tests live in `tests/` at the repo root.
@@ -1107,4 +1106,4 @@ import {
 
 ---
 
-*End of Manifesto — LASTRIKO v0.1.8*
+*End of Manifesto — LASTRIKO v0.1.9*
