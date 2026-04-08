@@ -2,6 +2,7 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import process from 'node:process'
+import { fileURLToPath } from 'node:url'
 
 const projectName = process.argv[2]
 
@@ -12,7 +13,7 @@ if (!projectName) {
 
 const targetDir = path.resolve(process.cwd(), projectName)
 const templateDir = path.resolve(
-  path.dirname(new URL(import.meta.url).pathname),
+  path.dirname(fileURLToPath(import.meta.url)),
   '../templates/minimal',
 )
 
