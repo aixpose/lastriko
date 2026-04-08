@@ -35,6 +35,24 @@ export interface ThemeMessage {
   };
 }
 
+export interface StreamChunkMessage {
+  type: 'STREAM_CHUNK';
+  payload: {
+    id: string;
+    chunk: string;
+    done: boolean;
+    format: 'plain' | 'markdown';
+  };
+}
+
+export interface StreamErrorMessage {
+  type: 'STREAM_ERROR';
+  payload: {
+    id: string;
+    error: string;
+  };
+}
+
 export interface ErrorMessage {
   type: 'ERROR';
   payload: {
@@ -48,6 +66,8 @@ export type ServerMessage
     | FragmentMessage
     | ToastMessage
     | ThemeMessage
+    | StreamChunkMessage
+    | StreamErrorMessage
     | ErrorMessage;
 export type ServerToClientMessage = ServerMessage;
 

@@ -1,7 +1,9 @@
 import { UIContext } from '../components/context';
 import type {
   AppCallback,
+  ButtonHandle,
   ConnectionScope,
+  TableHandle,
 } from '../components/types';
 import type { ClientEventPayload, ThemeMode } from './messages';
 import { renderPage } from './renderer';
@@ -28,8 +30,19 @@ export function runAppForScope(
 }
 
 export function handleClientEvent(scope: ConnectionScope, payload: ClientEventPayload): void {
+  const handle = scope.getHandle(payload.id);
+  if (!handle) {
+    return;
+  }
+
   if (payload.event === 'change') {
     scope.setValue(payload.id, payload.value);
+
+    if (handle.type === 'table') {
+      return;
+    }
+
+    scope.pushFragment(handle);
     return;
   }
 
@@ -37,26 +50,47 @@ export function handleClientEvent(scope: ConnectionScope, payload: ClientEventPa
     return;
   }
 
-  const handle = scope.getHandle(payload.id);
-  if (!handle || handle.type !== 'button') {
+  if (handle.type === 'button') {
+    const buttonHandle = handle as ButtonHandle;
+    const callbackHandle = {
+      setLoading(loading: boolean): void {
+        buttonHandle.setLoading(loading);
+      },
+    };
+
+    Promise.resolve(buttonHandle.props.onClick(callbackHandle)).catch((error) => {
+      scope.send({
+        type: 'TOAST',
+        payload: {
+          type: 'error',
+          message: error instanceof Error ? error.message : String(error),
+        },
+      });
+    });
     return;
   }
 
-  const callbackHandle = {
-    setLoading(loading: boolean): void {
-      handle.setLoading(loading);
-    },
-  };
+  if (handle.type === 'table' && typeof payload.value === 'string') {
+    const tableHandle = handle as TableHandle;
+    const row = tableHandle.props.rows.find((entry) => entry.id === payload.value);
+    if (!row) {
+      return;
+    }
+    const clickHandler = tableHandle.props.getOnRowClick?.();
+    if (!clickHandler) {
+      return;
+    }
 
-  Promise.resolve(handle.props.onClick(callbackHandle)).catch((error) => {
-    scope.send({
-      type: 'TOAST',
-      payload: {
-        type: 'error',
-        message: error instanceof Error ? error.message : String(error),
-      },
+    Promise.resolve(clickHandler(row.data)).catch((error) => {
+      scope.send({
+        type: 'TOAST',
+        payload: {
+          type: 'error',
+          message: error instanceof Error ? error.message : String(error),
+        },
+      });
     });
-  });
+  }
 }
 
 export function executeApp(

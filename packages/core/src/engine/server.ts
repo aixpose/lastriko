@@ -8,6 +8,8 @@ import {
 import { dirname, join } from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { WebSocketServer, type RawData, type WebSocket } from 'ws';
 import { createHtmlShell } from './shell';
 import { resolveThemeCssPath } from './theme-path';
@@ -94,6 +96,56 @@ function rewriteClientEntryImports(source: string): string {
     .replaceAll('import "./', 'import "/client/');
 }
 
+function parseBoundary(contentType: string | undefined): string | null {
+  if (!contentType) {
+    return null;
+  }
+  const match = /boundary=([^;]+)/i.exec(contentType);
+  return match ? match[1].trim() : null;
+}
+
+function parseMultipartBody(buffer: Buffer, boundary: string): Array<{
+  filename: string;
+  contentType: string;
+  content: Buffer;
+}> {
+  const marker = `--${boundary}`;
+  const source = buffer.toString('binary');
+  const segments = source.split(marker);
+  const files: Array<{ filename: string; contentType: string; content: Buffer }> = [];
+  for (const segment of segments) {
+    const part = segment.trim();
+    if (!part || part === '--') {
+      continue;
+    }
+    const sepIdx = part.indexOf('\r\n\r\n');
+    if (sepIdx < 0) {
+      continue;
+    }
+    const rawHeaders = part.slice(0, sepIdx);
+    const bodyBinary = part.slice(sepIdx + 4).replace(/\r\n--$/, '').replace(/\r\n$/, '');
+    const filenameMatch = /filename="([^"]+)"/i.exec(rawHeaders);
+    if (!filenameMatch) {
+      continue;
+    }
+    const typeMatch = /content-type:\s*([^\r\n]+)/i.exec(rawHeaders);
+    const filename = filenameMatch[1];
+    const contentType = typeMatch ? typeMatch[1].trim() : 'application/octet-stream';
+    const content = Buffer.from(bodyBinary, 'binary');
+    files.push({ filename, contentType, content });
+  }
+  return files;
+}
+
+function collectBody(req: IncomingMessage): Promise<Buffer> {
+  return new Promise((resolve, reject) => {
+    const chunks: Buffer[] = [];
+    req.on('data', (chunk: Buffer) => chunks.push(chunk));
+    req.on('end', () => resolve(Buffer.concat(chunks)));
+    req.on('error', reject);
+  });
+}
+
 async function listenWithPortHop(
   server: ReturnType<typeof createHttpServer>,
   initialPort: number,
@@ -162,8 +214,9 @@ function createHttpHandler(opts: {
   getTheme: () => 'light' | 'dark';
   toolbar: boolean;
   themeCssPath: string | null;
+  uploadDirRoot: string;
 }) {
-  return (
+  return async (
     req: IncomingMessage,
     res: ServerResponse<IncomingMessage>,
   ) => {
@@ -213,6 +266,47 @@ function createHttpHandler(opts: {
           res.setHeader('content-type', 'text/plain; charset=utf-8');
           res.end(`Failed to read theme CSS: ${msg}`);
         }
+        return;
+      }
+
+      if (pathname === '/upload' && req.method === 'POST') {
+        const boundary = parseBoundary(req.headers['content-type']);
+        if (!boundary) {
+          res.statusCode = 400;
+          res.setHeader('content-type', 'application/json; charset=utf-8');
+          res.end(JSON.stringify({ error: 'Missing multipart boundary' }));
+          return;
+        }
+        const body = await collectBody(req);
+        const parts = parseMultipartBody(body, boundary);
+        if (parts.length === 0) {
+          res.statusCode = 400;
+          res.setHeader('content-type', 'application/json; charset=utf-8');
+          res.end(JSON.stringify({ error: 'No file part' }));
+          return;
+        }
+        const scopeDirName = new URL(`http://localhost${req.url}`).searchParams.get('connectionId')
+          ?? req.headers['x-lastriko-connection']
+          ?? req.headers['x-lastriko-connection-id']
+          ?? 'shared';
+        const safeScopeDir = String(scopeDirName).replaceAll(/[^a-zA-Z0-9._-]/g, '_').slice(0, 120) || 'shared';
+        const uploadDir = join(opts.uploadDirRoot, safeScopeDir);
+        mkdirSync(uploadDir, { recursive: true });
+        const saved = parts.map((part, index) => {
+          const name = `${Date.now()}-${index}-${part.filename}`;
+          const path = join(uploadDir, name);
+          writeFileSync(path, part.content);
+          return {
+            name: part.filename,
+            path,
+            size: part.content.byteLength,
+            type: part.contentType,
+            lastModified: Date.now(),
+          };
+        });
+        res.statusCode = 200;
+        res.setHeader('content-type', 'application/json; charset=utf-8');
+        res.end(JSON.stringify(saved.length === 1 ? { file: saved[0] } : saved));
         return;
       }
 
@@ -315,6 +409,7 @@ export async function startServer(
       getTheme: () => config.theme ?? 'light',
       themeCssPath,
       clientRootPath,
+      uploadDirRoot: join(tmpdir(), 'lastriko-uploads'),
     }),
   );
   const wsServer = new WebSocketServer({ noServer: true });

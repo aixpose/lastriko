@@ -1,10 +1,13 @@
 import { createServer as createHttpServer } from 'node:http';
 import { dirname, join } from 'node:path';
 import process from 'node:process';
+import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { resolveThemeCssPath } from './theme-path';
 import { __internal, startServer } from './server';
+
+const uploadDirRoot = '/tmp/lastriko-upload-tests';
 
 async function withHttpHandler(
   handler: ReturnType<typeof __internal.createHttpHandler>,
@@ -82,6 +85,7 @@ describe('http handler resilience', () => {
       getTheme: () => 'light',
       themeCssPath: null,
       clientRootPath: null,
+      uploadDirRoot,
     });
     await withHttpHandler(handler, async (base) => {
       const res = await fetch(`${base}/style.css`);
@@ -100,6 +104,7 @@ describe('http handler resilience', () => {
       getTheme: () => 'light',
       themeCssPath: cssPath,
       clientRootPath: null,
+      uploadDirRoot,
     });
     await withHttpHandler(handler, async (base) => {
       const res = await fetch(`${base}/style.css`);
@@ -116,6 +121,7 @@ describe('http handler resilience', () => {
       getTheme: () => 'light',
       themeCssPath: resolveThemeCssPath(process.cwd()),
       clientRootPath: clientRoot,
+      uploadDirRoot,
     });
     await withHttpHandler(handler, async (base) => {
       const res = await fetch(`${base}/client/index.js`);
@@ -132,10 +138,34 @@ describe('http handler resilience', () => {
       getTheme: () => 'light',
       themeCssPath: resolveThemeCssPath(process.cwd()),
       clientRootPath: clientRoot,
+      uploadDirRoot,
     });
     await withHttpHandler(handler, async (base) => {
       const res = await fetch(`${base}/client/nope.js`);
       expect(res.status).toBe(404);
+    });
+  });
+
+  it('accepts multipart upload and returns uploaded file metadata', async () => {
+    const handler = __internal.createHttpHandler({
+      title: 't',
+      toolbar: false,
+      getTheme: () => 'light',
+      themeCssPath: resolveThemeCssPath(process.cwd()),
+      clientRootPath: clientRoot,
+      uploadDirRoot: join(tmpdir(), 'lastriko-upload-test'),
+    });
+
+    await withHttpHandler(handler, async (base) => {
+      const form = new FormData();
+      form.append('file', new Blob(['hello world'], { type: 'text/plain' }), 'hello.txt');
+      const res = await fetch(`${base}/upload?connectionId=scope-test`, { method: 'POST', body: form });
+      expect(res.status).toBe(200);
+      const payload = await res.json() as { file: { name: string; path: string; size: number; type: string } };
+      expect(payload.file.name).toBe('hello.txt');
+      expect(payload.file.path).toContain('scope-test');
+      expect(payload.file.size).toBeGreaterThan(0);
+      expect(payload.file.type).toContain('text/plain');
     });
   });
 });

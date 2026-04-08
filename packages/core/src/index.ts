@@ -3,6 +3,11 @@ import type { LastrikoPlugin } from './plugins/types';
 import { createServer, type RuntimeConfig, type RunningServer } from './engine/server';
 import type { AppCallback } from './components/types';
 
+export interface AppConfig extends RuntimeConfig {
+  plugins?: LastrikoPlugin[];
+  toolbar?: boolean;
+}
+
 export interface AppOptions {
   plugins?: LastrikoPlugin[];
   server?: RuntimeConfig;
@@ -11,6 +16,10 @@ export interface AppOptions {
 export interface RunningApp {
   stop: () => Promise<void>;
   server: RunningServer;
+}
+
+export function defineConfig(config: AppConfig): AppConfig {
+  return config;
 }
 
 export async function app(title: string, callback: AppCallback, opts: AppOptions = {}): Promise<RunningApp> {
@@ -38,7 +47,43 @@ export type {
   ComponentHandle,
   ButtonHandle,
   ButtonCallbackHandle,
+  InputHandle,
   TextHandle,
+  TextInputHandle,
+  NumberInputHandle,
+  SliderHandle,
+  ToggleHandle,
+  SelectHandle,
+  FileUploadHandle,
+  UploadedFile,
+  SelectOption,
+  ButtonOpts,
+  TextInputOpts,
+  NumberInputOpts,
+  SliderOpts,
+  ToggleOpts,
+  SelectOpts,
+  FileUploadOpts,
+  TableHandle,
+  TableRowHandle as RowHandle,
+  MetricHandle,
+  MetricOpts,
+  ProgressHandle,
+  ProgressOpts,
+  StreamHandle,
+  StreamTextOpts,
+  ChatHandle,
+  ChatUIOptions,
+  PromptEditorHandle,
+  PromptEditorOpts,
+  ShellRegions,
+  ShellOpts,
+  GridOpts,
+  TabsOpts,
+  TabDef,
+  ToastOpts,
+  AlertOpts,
+  LoadingOpts,
   UIContext,
   AppCallback,
 } from './components/types';
