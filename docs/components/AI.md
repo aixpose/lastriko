@@ -20,7 +20,7 @@ AI-specific components are the differentiating feature of Lastriko versus genera
 
 ## `chatUI`
 
-> **⚠ History management design requires a decision from** [QUESTIONS.md#3.4](../../QUESTIONS.md#34-chatui-history-management).
+> **Resolved:** History stored in a connection-scoped Nanostores atom. Developer calls `.addMessage()` imperatively. History resets on page refresh (new WebSocket connection).
 
 **API:**
 ```typescript
@@ -77,7 +77,7 @@ interface ChatUIComponent extends ComponentHandle<ChatUIProps, Message[]> {
 
 **Without a plugin:** Renders the chat UI interface but the send button shows "No LLM plugin configured" as a toast when clicked. The developer can still use `addMessage()` programmatically to populate it with mock data.
 
-**History management (proposed resolution for QUESTIONS.md#3.4):**
+**History management:**
 - History is stored in a Nanostores atom scoped to the connection (NOT inside the component tree).
 - The atom key is the component's stable ID.
 - This means history survives re-renders (the `app()` callback re-runs, but the atom retains its value).
@@ -142,7 +142,7 @@ ui.button('Generate', async () => {
 
 ## `modelCompare` (Phase 3)
 
-> **⚠ Parallel async execution model requires a decision from** [QUESTIONS.md#2.5](../../QUESTIONS.md#25-the-modelcompare-component-implies-parallel-async-execution).
+> **Resolved:** All model calls are initiated in parallel. Each column has an independent `StreamHandle`. One model erroring does not affect others.
 
 **API:**
 ```typescript
@@ -197,7 +197,7 @@ interface ModelCompareComponent extends ComponentHandle<ModelCompareProps, Model
 
 ## `parameterPanel` (Phase 3)
 
-> **⚠ Schema format requires a decision from** [QUESTIONS.md#3.5](../../QUESTIONS.md#35-parameterpanel-schema-format).
+> **Resolved:** Custom Lastriko typed-object schema (not JSON Schema, not Zod). See API below.
 
 **API:**
 ```typescript

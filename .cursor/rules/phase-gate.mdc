@@ -67,7 +67,8 @@ Use these tables to determine which phase owns a given piece of work:
 **Phase 6 (Ecosystem):**
 - Templates gallery
 - Community plugin scaffolding
-- Additional official plugins (huggingface, replicate, generic-llm)
+- Community plugin scaffolding and templates gallery
+- Note: huggingface/replicate/generic-llm are Phase 4–5 stretch goals, not Phase 6
 
 ## Violation Examples
 
