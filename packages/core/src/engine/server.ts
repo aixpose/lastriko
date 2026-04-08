@@ -35,6 +35,70 @@ export interface RunningServer {
 
 const cssPath = resolve(process.cwd(), 'packages/core/src/theme/lastriko.css');
 
+const DEFAULT_PORT = 3000;
+/** Max extra ports to try after the first (inclusive of first = maxAttempts tries). */
+const PORT_HOP_MAX_ATTEMPTS = 64;
+
+async function listenWithPortHop(
+  server: ReturnType<typeof createHttpServer>,
+  initialPort: number,
+  host: string,
+): Promise<number> {
+  if (initialPort === 0) {
+    await new Promise<void>((resolveListen, rejectListen) => {
+      const onError = (err: NodeJS.ErrnoException) => {
+        server.off('error', onError);
+        rejectListen(err);
+      };
+      server.once('error', onError);
+      server.listen(0, host, () => {
+        server.off('error', onError);
+        resolveListen();
+      });
+    });
+    const addr = server.address();
+    if (addr && typeof addr === 'object')
+      return addr.port;
+    throw new Error('Could not determine ephemeral listen port');
+  }
+
+  const start = Math.max(1, Math.min(initialPort, 65535));
+  const end = Math.min(start + PORT_HOP_MAX_ATTEMPTS - 1, 65535);
+
+  async function tryPort(port: number): Promise<number> {
+    await new Promise<void>((resolveListen, rejectListen) => {
+      const onError = (err: NodeJS.ErrnoException) => {
+        server.off('error', onError);
+        rejectListen(err);
+      };
+      server.once('error', onError);
+      server.listen(port, host, () => {
+        server.off('error', onError);
+        resolveListen();
+      });
+    });
+    return port;
+  }
+
+  return await (async function hop(from: number): Promise<number> {
+    try {
+      return await tryPort(from);
+    }
+    catch (err) {
+      const e = err as NodeJS.ErrnoException;
+      if (e.code !== 'EADDRINUSE' || from >= end) {
+        throw err;
+      }
+      if (from < end && process.env.NODE_ENV !== 'test') {
+        console.error(
+          `[lastriko] Port ${from} is in use, trying ${from + 1}…`,
+        );
+      }
+      return hop(from + 1);
+    }
+  })(start);
+}
+
 function createHttpHandler(opts: {
   title: string;
   clientPath?: string;
@@ -102,13 +166,11 @@ export async function startServer(
     }),
   );
 
-  await new Promise<void>((resolveListen, rejectListen) => {
-    server.once('error', rejectListen);
-    server.listen(config.port ?? 3000, config.host ?? '127.0.0.1', () => resolveListen());
-  });
+  const host = config.host ?? '127.0.0.1';
+  const boundPort = await listenWithPortHop(server, config.port ?? DEFAULT_PORT, host);
   return {
-    port: (config.port ?? 3000),
-    host: config.host ?? '127.0.0.1',
+    port: boundPort,
+    host,
     server,
     stop: async () => {
       await new Promise<void>((resolveClose, rejectClose) => {
