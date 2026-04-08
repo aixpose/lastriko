@@ -29,11 +29,11 @@ This phase makes Lastriko a **complete** prototyping toolkit, not just a minimal
 
 | # | Question | Ref |
 |---|----------|-----|
-| 2.3 | Multi-page support model | [QUESTIONS.md#23](../../QUESTIONS.md#23-multi-page-support-vs-app-re-runs) |
-| 2.5 | `modelCompare` parallel async model | [QUESTIONS.md#25](../../QUESTIONS.md#25-the-modelcompare-component-implies-parallel-async-execution) |
-| 3.5 | `parameterPanel` schema format | [QUESTIONS.md#35](../../QUESTIONS.md#35-parameterpanel-schema-format) |
-| 7 | Image/video optimization approach | [QUESTIONS.md#7](../../QUESTIONS.md) |
-| 8 | State persistence across sessions | [QUESTIONS.md#8](../../QUESTIONS.md) |
+| Multi-page support model | Must define `ui.page()` behaviour within `app()`-once model before implementing | Open — decide at Phase 3 start |
+| `modelCompare` parallel async | Resolved: parallel `Promise.all`, independent `StreamHandle` per column | ✅ Resolved |
+| `parameterPanel` schema format | Resolved: custom Lastriko typed-object `{ key: { type, min, max, default } }` | ✅ Resolved |
+| Image/video optimization | Client-side lazy load (`loading="lazy"`) vs server-side proxy | Open — decide at Phase 3 start |
+| State persistence across sessions | opt-in `localStorage` for input values (`defineConfig({ persistence: 'localStorage' })`) | Open — decide at Phase 3 start |
 
 ---
 
@@ -78,8 +78,8 @@ Full specs: [docs/components/LAYOUT.md](../components/LAYOUT.md)
 
 | Component | Notes |
 |-----------|-------|
-| `modelCompare` | N-column layout, one per model. Each column streams independently. Depends on decision from QUESTIONS.md#2.5. |
-| `parameterPanel` | Auto-generates sliders/toggles/selects from schema. Schema format decided in QUESTIONS.md#3.5. |
+| `modelCompare` | N-column layout via `grid()`, one `StreamHandle` per model. All models called in parallel; one erroring does not affect others. |
+| `parameterPanel` | Auto-generates sliders/toggles/selects from custom typed-object schema: `{ key: { type, min, max, default } }`. |
 | `filmStrip` | Horizontal scroll. Click to expand. Thumbnail generation for video sources. |
 | `beforeAfter` | CSS clip-path-based slider. Drag handle between two images. |
 
@@ -143,7 +143,7 @@ Every component must meet WCAG 2.1 AA standards:
 
 ### 8. Multi-Page Support
 
-**API (to be confirmed via QUESTIONS.md#2.3):**
+**API:**
 
 ```typescript
 app('Multi Demo', (ui) => {

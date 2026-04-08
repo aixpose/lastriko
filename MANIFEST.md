@@ -2,7 +2,7 @@
 
 > **The TypeScript UI Toolkit for AI Demos & Rapid Prototyping**
 >
-> Version 0.1.0 — April 2026
+> Version 0.1.3 — April 2026
 > AIXPOSE OÜ
 
 ---
@@ -38,7 +38,7 @@ See [`.cursor/rules/`](.cursor/rules/) for the enforced Cursor rules that implem
 17. [Competitive Positioning](#17-competitive-positioning)
 18. [Open Questions & Pending Decisions](#18-open-questions--pending-decisions)
 19. [Success Metrics](#19-success-metrics)
-20. [Full API Quick Reference](#appendix-a-full-api-quick-reference)
+20. [Appendix A — Full API Quick Reference](#appendix-a-full-api-quick-reference)
 
 **Sub-documents:**
 
@@ -515,8 +515,8 @@ interface PluginContext {
 | `@lastriko/plugin-openai` | OpenAI API (GPT-4o, DALL-E, etc.) | 4 |
 | `@lastriko/plugin-anthropic` | Anthropic API (Claude models) | 4 |
 | `@lastriko/plugin-ollama` | Local Ollama models | 4 |
-| `@lastriko/plugin-huggingface` | HuggingFace Inference API | 4 |
-| `@lastriko/plugin-replicate` | Replicate hosted models | 4 |
+| `@lastriko/plugin-huggingface` | HuggingFace Inference API — stretch goal, ships in Phase 4 or 5 | 4–5 |
+| `@lastriko/plugin-replicate` | Replicate hosted models — stretch goal, ships in Phase 4 or 5 | 4–5 |
 | `@lastriko/plugin-generic-llm` | Any OpenAI-compatible endpoint | 4 |
 
 **Media Plugins**
@@ -532,7 +532,7 @@ interface PluginContext {
 
 | Package | Description | Phase |
 |---------|-------------|-------|
-| `@lastriko/plugin-neutralino` | Desktop export via Neutralino.js | 5 |
+| `@lastriko/plugin-neutralino` | Desktop export via Neutralino.js — stub ships in Phase 4 to unblock Phase 5; full implementation in Phase 5 | 4 (stub) / 5 (full) |
 | `@lastriko/plugin-static` | Export as static HTML (no server needed) | 5 |
 | `@lastriko/plugin-docker` | Auto-generate Dockerfile for deployment | 5 |
 | `@lastriko/plugin-share` | Generate shareable link (tunneling) | 5 |
@@ -568,7 +568,7 @@ app('My Demo', {
 
 ### 7.1 Why Neutralino
 
-Neutralino.js produces ~2MB desktop binaries compared to Electron's ~150MB. It uses the system's native webview (WebView2 on Windows, WebKit on macOS/Linux) instead of bundling Chromium. At v6.4 (current as of April 2026), Neutralino supports single-executable distribution, system tray, native dialogs, filesystem access, and window management.
+Neutralino.js produces ~2MB runtime binaries compared to Electron's ~150MB (which bundles Chromium). It uses the system's native webview instead. The total Lastriko desktop export — Neutralino binary + compiled server + bundled client assets — targets **< 10MB per platform** (the performance target in §13). The `~5MB` figure cited in examples reflects a typical simple demo; the `< 10MB` cap is the hard limit enforced by CI.
 
 ### 7.2 Export Flow
 
@@ -594,32 +594,39 @@ Available through `@lastriko/plugin-neutralino`, gracefully degrading to no-ops 
 
 ## 8. Project Structure
 
+> **Note:** The structure below is the target layout established in Phase 1. The current repository contains only the `docs/`, `examples/`, and `.cursor/` directories — code packages are created during Phase 1 implementation.
+
+**Target monorepo structure (Phase 1 deliverable):**
+
 ```
 lastriko/
 ├── packages/
 │   ├── core/                  # Main npm package: 'lastriko'
 │   │   ├── src/
 │   │   │   ├── engine/        # Server, WebSocket, lifecycle
-│   │   │   ├── components/    # Built-in component definitions
-│   │   │   ├── client/        # Browser-side bundle source
-│   │   │   ├── theme/         # lastriko.css — self-contained stylesheet + CSS tokens
-│   │   │   ├── plugins/       # Plugin system interfaces
+│   │   │   ├── components/    # Component handles + renderers
+│   │   │   ├── client/        # Browser-side bundle (WS + outerHTML swap)
+│   │   │   ├── theme/         # lastriko.css — self-contained stylesheet
+│   │   │   ├── plugins/       # Plugin system interfaces + registry
 │   │   │   ├── utils/         # Shared helpers
 │   │   │   └── index.ts       # Public API exports
 │   │   ├── package.json
 │   │   └── tsconfig.json
-│   ├── plugin-openai/         # @lastriko/plugin-openai
-│   ├── plugin-anthropic/      # @lastriko/plugin-anthropic
-│   ├── plugin-neutralino/     # @lastriko/plugin-neutralino
-│   └── create-lastriko/       # CLI scaffolding tool
+│   ├── plugin-openai/         # @lastriko/plugin-openai  (Phase 4)
+│   ├── plugin-anthropic/      # @lastriko/plugin-anthropic  (Phase 4)
+│   ├── plugin-neutralino/     # @lastriko/plugin-neutralino  (Phase 5)
+│   └── create-lastriko/       # CLI scaffolding tool (Phase 1)
 ├── examples/
-│   ├── hello-world/
-│   ├── image-generator/
-│   ├── chat-comparison/
-│   └── video-showcase/
+│   ├── image-viewer/          # Simple image review demo
+│   └── experiment-monitor/    # Complex ML dashboard demo
+├── tests/
+│   ├── e2e/                   # Playwright E2E tests
+│   └── visual/                # Playwright visual regression tests
 ├── docs/                      # This documentation set
 ├── turbo.json                 # Turborepo config
-└── package.json               # Workspace root
+├── package.json               # Workspace root
+└── LICENSE
+
 ```
 
 The project uses a monorepo managed by Turborepo with Bun workspaces. Each plugin is a separate publishable package under the `@lastriko` scope.
@@ -866,7 +873,7 @@ async function monitorExperiment(row: RowHandle, jobId: string) {
 
 - If a plugin is missing, the component it provides renders a helpful placeholder instead of crashing.
 - If a WebSocket connection drops, the client automatically reconnects. The server calls `app()` again for the new connection — fresh state.
-- If a button `onClick` throws, only that operation fails. The engine sends an error `FRAGMENT` for the button's result area and a `TOAST`. The rest of the UI is unaffected.
+- If a button `onClick` throws an unhandled error, the engine sends a `TOAST` with `type: 'error'` and restores the button to normal state. The rest of the UI is unaffected. The `ERROR` message (full-page overlay) is reserved for failures in the initial `app()` render only.
 - If an image URL fails to load, the image component shows a fallback with the error message.
 
 ---
@@ -885,7 +892,7 @@ async function monitorExperiment(row: RowHandle, jobId: string) {
 | Client bundle size | < 15KB gzip | Total JS sent to browser (CSS served separately) |
 | Core package size | < 50KB gzip | npm package install size |
 | Memory (100 components) | < 30MB | Server memory with 100 active components |
-| Desktop binary | < 10MB | Neutralino export total size |
+| Desktop binary | < 10MB | Total export size: Neutralino runtime (~2MB) + compiled server + client bundle |
 
 ---
 

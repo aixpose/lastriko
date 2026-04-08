@@ -19,17 +19,24 @@
 
 ## `button`
 
-> **⚠ This component was missing from the original spec.** Added here after challenge in [QUESTIONS.md#2.2](../../QUESTIONS.md#22-the-button-component-is-absent-from-the-component-tables).
+> Added in Phase 2 alongside the other input components.
 
 **API:**
 ```typescript
-ui.button(label: string, onClick: () => void | Promise<void>, opts?: ButtonOpts): ButtonComponent
+ui.button(
+  label: string,
+  onClick: (btn: ButtonCallbackHandle) => void | Promise<void>,
+  opts?: ButtonOpts
+): ButtonHandle
+
+// The `btn` argument is passed by the engine — use it to control loading state
+interface ButtonCallbackHandle {
+  setLoading(loading: boolean): void  // Disables button + shows spinner when true
+}
 
 interface ButtonOpts {
-  variant?: 'primary' | 'secondary' | 'danger' | 'ghost';  // Default: 'primary'
-  disabled?: boolean;
-  loading?: boolean;  // Show loading spinner inside button
-  icon?: string;      // Optional icon name (Phase 3 stretch)
+  variant?: 'primary' | 'secondary' | 'danger' | 'ghost'  // Default: 'primary'
+  disabled?: boolean
 }
 
 interface ButtonHandle extends ComponentHandle<ButtonProps, void> {
@@ -40,10 +47,26 @@ interface ButtonHandle extends ComponentHandle<ButtonProps, void> {
 
 **Renders as:** `<button type="button">` styled via `.lk-btn` and variant modifier classes in `lastriko.css`.
 
-**Behavior:**
-- While `onClick` is executing (Promise in flight): button shows loading state, is disabled to prevent double-clicks.
-- If `onClick` throws: engine sends `ERROR` message. Button returns to normal state.
-- `variant: 'danger'` renders in red (`--lk-error` color) with a confirmation tooltip (Phase 3 stretch).
+**Error behavior:**
+- If `onClick` throws an unhandled error, the engine sends a `TOAST` with `type: 'error'` and restores the button to its normal state. The error is also logged to the terminal.
+- Use `try/catch` inside the callback for expected errors (e.g. API failures) and handle them gracefully.
+
+**Usage pattern:**
+```typescript
+ui.button('Run', async (btn) => {
+  btn.setLoading(true)
+  try {
+    const result = await doWork()
+    output.update(result)
+  } catch (err) {
+    ui.toast(`Failed: ${String(err)}`, { type: 'error' })
+  } finally {
+    btn.setLoading(false)
+  }
+})
+```
+
+- `variant: 'danger'` renders in `--lk-error` color (confirmation dialog — Phase 3 stretch).
 
 **Phase:** 2
 
@@ -200,7 +223,7 @@ interface SelectComponent extends InputHandle<string> {
 
 ## `fileUpload`
 
-> **⚠ The file transport mechanism requires a decision from** [QUESTIONS.md#3.3](../../QUESTIONS.md#33-fileupload-lifecycle--what-does-the-developer-receive).
+> **Resolved:** Files are uploaded via HTTP POST `/upload`, not WebSocket. See API below.
 
 **API:**
 ```typescript

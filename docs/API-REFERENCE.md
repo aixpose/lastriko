@@ -81,7 +81,14 @@ The `ui` parameter in the `app()` callback. All methods below are available on `
 #### `ui.button()` ✅
 
 ```typescript
-ui.button(label: string, onClick: () => void | Promise<void>, opts?: ButtonOpts): ButtonComponent
+ui.button(
+  label: string,
+  onClick: (btn: ButtonCallbackHandle) => void | Promise<void>,
+  opts?: ButtonOpts
+): ButtonHandle
+
+// btn.setLoading(true) disables the button and shows a spinner
+// btn.setLoading(false) restores normal state
 ```
 See [docs/components/INPUTS.md](components/INPUTS.md#button)
 

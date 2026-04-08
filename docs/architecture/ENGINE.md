@@ -153,9 +153,8 @@ async function invokeCallback(
   try {
     await handle.props.onClick(createButtonCallbackHandle(handle));
   } catch (err) {
-    // Button callback threw — send error fragment + toast
-    const errorHtml = renderErrorState(handle, err);
-    scope.connection.send({ type: 'FRAGMENT', payload: { id: handle.id, html: errorHtml } });
+    // Button callback threw — send TOAST only; button returns to normal state
+    // ERROR (full-page overlay) is reserved for app() initial render failures
     scope.connection.send({ type: 'TOAST', payload: { message: String(err), type: 'error' } });
   }
 }
@@ -310,7 +309,7 @@ This flag gates all Bun-native API usage. Node.js fallbacks are always available
 | Scenario | Behavior |
 |---------|---------|
 | `app()` throws during initial render | Send `ERROR` message → browser shows full-page error overlay. Server continues watching files. |
-| Button `onClick` throws | Send `FRAGMENT` with error state for button's output area + `TOAST` with error message. Other UI is unaffected. |
+| Button `onClick` throws | Send `TOAST` with `type: 'error'`; button returns to normal state. Other UI is unaffected. `ERROR` message is NOT sent — that is reserved for `app()` failures. |
 | WebSocket send fails (connection dropped) | Log error silently, mark connection as dead, call `scope.destroy()`. |
 | Plugin `setup()` throws | Log warning, disable the plugin, continue without it. |
 | Background watcher calls `.update()` after disconnect | `FRAGMENT` send fails silently — no-op. |
