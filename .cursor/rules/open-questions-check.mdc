@@ -1,5 +1,5 @@
 ---
-description: Open questions check — before implementing anything that touches an unresolved design decision, verify the question is resolved in MANIFEST.md §18. Always apply.
+description: Open questions check — before implementing anything that touches an unresolved design decision, verify the question is resolved (manifest §11.1 + relevant docs). Always apply.
 globs:
 alwaysApply: true
 ---
@@ -8,9 +8,9 @@ alwaysApply: true
 
 ## The Rule
 
-Before implementing code that depends on an unresolved design decision, check [MANIFEST.md §18](../../MANIFEST.md#18-open-questions--pending-decisions) to ensure the relevant question is resolved.
+Before implementing code that depends on an unresolved design decision, confirm [MANIFEST.md §11.1](../../MANIFEST.md#111-foundation-milestone-complete) (no blocking questions before Phase 2) and that the choice is recorded in the relevant `docs/` spec and [changelog](../../MANIFEST.md#changelog) if it is a new fork.
 
-All Phase 1 and Phase 2 blocking decisions are **resolved**. The remaining open items are Phase 3 scope:
+All foundation and Phase 2 blocking decisions are **resolved**. The remaining open items are Phase 3 scope:
 
 ## All Decisions Resolved Through Phase 3
 
@@ -23,7 +23,7 @@ There are no remaining open questions before Phase 3 implementation. The 4 Phase
 | 3 | `parameterPanel` schema | Custom Lastriko typed object only (no Zod) |
 | 4 | Multi-page support | Deferred — `ui.tabs()` covers the use case |
 
-## All Phase 1 + 2 Decisions — Locked
+## All Foundation + Phase 2 Decisions — Locked
 
 These are **resolved** and must not be re-opened without updating MANIFEST.md:
 
@@ -40,13 +40,13 @@ These are **resolved** and must not be re-opened without updating MANIFEST.md:
 | table | `TableHandle` with `.prepend/.append/.remove/.onRowClick`; `RowHandle.update()` |
 | metric | `MetricHandle`; value is always `string`; `.update(value, opts?)` |
 | text | `TextHandle`; `.update(content)` pushes `FRAGMENT` |
-| Hot reload | Phase 1–2: full reset. Phase 3+: `hotReloadPreserve: true` (default) preserves inputs, scroll, active tabs |
+| Hot reload | Through Phase 2: full reset. Phase 3+: `hotReloadPreserve: true` (default) preserves inputs, scroll, active tabs |
 | Button lock | `btn.setLoading(true/false)` |
 
 ## How to Resolve a Question
 
 1. Make a decision
-2. Add a row to MANIFEST.md §18 changing status from ⏳ to ✅
+2. Add a row to the MANIFEST.md [changelog](../../MANIFEST.md#changelog) and update the relevant spec in `docs/`
 3. Update the relevant component spec doc
 4. Update MANIFEST.md changelog
 5. Commit manifesto update separately from the code change

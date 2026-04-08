@@ -1,6 +1,6 @@
-# Phase 1 Smoke Example
+# Foundation smoke example
 
-Minimal Phase 1 app: one text handle and one button handle.
+Minimal app: one text handle and one button handle (baseline engine + `FRAGMENT` flow).
 
 ## Run
 

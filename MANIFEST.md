@@ -2,7 +2,7 @@
 
 > **The TypeScript UI Toolkit for AI Demos & Rapid Prototyping**
 >
-> Version 0.1.4 — April 2026
+> Version 0.1.8 — April 2026
 > AIXPOSE OÜ
 
 ---
@@ -42,7 +42,6 @@ See [`.cursor/rules/`](.cursor/rules/) for the enforced Cursor rules that implem
 
 **Sub-documents:**
 
-- [docs/phases/PHASE-1.md](docs/phases/PHASE-1.md) — Infrastructure & Foundation
 - [docs/phases/PHASE-2.md](docs/phases/PHASE-2.md) — MVP Components
 - [docs/phases/PHASE-3.md](docs/phases/PHASE-3.md) — Advanced Components & Polish
 - [docs/phases/PHASE-4.md](docs/phases/PHASE-4.md) — Plugin Ecosystem
@@ -76,6 +75,8 @@ See [`.cursor/rules/`](.cursor/rules/) for the enforced Cursor rules that implem
 | 2026-04-07 | 0.1.4 | All Phase 3 decisions resolved: lazy loading, no session persistence, parameterPanel custom schema, multi-page deferred | Owner decisions |
 | 2026-04-08 | 0.1.5 | Phase 1 implementation kickoff: status moved to In Progress, monorepo/package structure now active | Cloud Agent |
 | 2026-04-08 | 0.1.6 | HTTP server: default port **3500**, EADDRINUSE port hop (up to 64 tries), `/style.css` resolves theme from package or `LASTRIKO_THEME_CSS`, request handler errors return 500 without crashing the process | Cloud Agent |
+| 2026-04-08 | 0.1.7 | Foundation milestone complete: roadmap marks MVP Components as active; §8 project structure reflects implemented monorepo; tests run after build; CI workflow added | Cloud Agent |
+| 2026-04-08 | 0.1.8 | Retired standalone PHASE-1.md; foundation summary and pre–Phase 2 decision status consolidated under §11; removed manifest §19 | Cloud Agent |
 
 > **When updating:** Add a row to this table for every meaningful change to this document. Include what section changed and why.
 
@@ -337,7 +338,7 @@ When `hotReloadPreserve` is enabled, the following are saved client-side before 
 - `chatUI` history — managed separately (connection-scoped atom, which itself resets on full WS reconnect)
 - Any state that cannot be trivially represented as a serialisable value
 
-**Phase 1–2 behaviour:** `hotReloadPreserve` does not exist yet — hot reload always resets everything. Phase 3 adds this feature.
+**Through Phase 2:** `hotReloadPreserve` does not exist yet — hot reload always resets everything. Phase 3 adds this feature.
 
 The dev experience (Phase 3+): save file → browser updates in < 100ms, input values and scroll position restored.
 
@@ -597,9 +598,9 @@ Available through `@lastriko/plugin-neutralino`, gracefully degrading to no-ops 
 
 ## 8. Project Structure
 
-> **Note:** The structure below is the target layout established in Phase 1. The current repository contains only the `docs/`, `examples/`, and `.cursor/` directories — code packages are created during Phase 1 implementation.
+> **Note:** The layout below matches the implemented monorepo. Plugin packages and some `tests/` subtrees are added in later roadmap phases.
 
-**Target monorepo structure (Phase 1 deliverable):**
+**Monorepo structure:**
 
 ```
 lastriko/
@@ -618,7 +619,7 @@ lastriko/
 │   ├── plugin-openai/         # @lastriko/plugin-openai  (Phase 4)
 │   ├── plugin-anthropic/      # @lastriko/plugin-anthropic  (Phase 4)
 │   ├── plugin-neutralino/     # @lastriko/plugin-neutralino  (Phase 5)
-│   └── create-lastriko/       # CLI scaffolding tool (Phase 1)
+│   └── create-lastriko/       # CLI scaffolding tool
 ├── examples/
 │   ├── image-viewer/          # Simple image review demo
 │   └── experiment-monitor/    # Complex ML dashboard demo
@@ -793,7 +794,6 @@ Plugin dependencies must not appear in the core package. The core never `import`
 ## 11. Development Phases & Roadmap
 
 > Detailed phase docs:
-> - [docs/phases/PHASE-1.md](docs/phases/PHASE-1.md)
 > - [docs/phases/PHASE-2.md](docs/phases/PHASE-2.md)
 > - [docs/phases/PHASE-3.md](docs/phases/PHASE-3.md)
 > - [docs/phases/PHASE-4.md](docs/phases/PHASE-4.md)
@@ -804,14 +804,18 @@ Each phase produces a usable, publishable npm package. **Ship early, iterate fas
 
 | Phase | Name | Key Deliverable | Status |
 |-------|------|----------------|--------|
-| 1 | Infrastructure & Foundation | Working skeleton: serve a page, sync state, render basic components | In Progress |
-| 2 | MVP Components | v0.1.0: enough components to build a real AI demo | Not Started |
+| 1 | Infrastructure & Foundation | Working skeleton: serve a page, sync state, render basic components | Complete |
+| 2 | MVP Components | v0.1.0: enough components to build a real AI demo | In Progress |
 | 3 | Advanced Components & Polish | Feature parity with full component table | Not Started |
 | 4 | Plugin Ecosystem | First official plugins (OpenAI, Anthropic, Ollama, Neutralino) | Not Started |
 | 5 | Desktop & Distribution | One-command desktop export, static export, Docker | Not Started |
 | 6 | Ecosystem & Community | Templates gallery, community plugins, Lastriko Cloud concept | Not Started |
 
-**Phase 1 Exit Criteria:** `bunx create-lastriko hello && cd hello && bun dev` shows a styled page with a title and text paragraph that updates on script change.
+### 11.1 Foundation milestone (complete)
+
+**Phase 1 — Infrastructure & Foundation** is done. The codebase includes: npm workspaces + Turborepo; `lastriko` core with HTTP server (default port **3500**, hop on `EADDRINUSE`), WebSocket at `/ws`, and `app()` invoked once per connection with per-connection scope; `ui.text` / `ui.button` handles, HTML renderer with escaping, client bundle (`outerHTML` swaps, reconnect); self-contained `lastriko.css` at `/style.css`; plugin **types** and registry stubs; `create-lastriko` scaffold. Behaviour and protocol are specified in [§3](#3-core-engine-specification), [§8](#8-project-structure), [ENGINE.md](docs/architecture/ENGINE.md), and [PROTOCOL.md](docs/architecture/PROTOCOL.md).
+
+**Before Phase 2 (MVP Components):** There are **no unresolved design questions** blocking implementation. Locked decisions through early MVP scope are summarized in [`.cursor/rules/open-questions-check.mdc`](.cursor/rules/open-questions-check.mdc). If a new fork appears (for example, choosing between two libraries), resolve it in the relevant `docs/` spec and add a row to the [changelog](#changelog) **before** writing code.
 
 **Phase 2 Exit Criteria:** A developer can build and share a working AI chat demo with streaming output, image display, parameter controls, and dark mode in under 50 lines of code.
 
@@ -1048,10 +1052,10 @@ E2E and visual tests live in `tests/` at the repo root.
 
 | Phase Range | Metric | Target |
 |-------------|--------|--------|
-| Phase 1–2 | npm package published and installable | ✓ |
-| Phase 1–2 | Working example projects in repo | 3 |
-| Phase 1–2 | GitHub stars from external developers | 5+ |
-| Phase 1–2 | Critical bugs in first week post-publish | 0 |
+| Through Phase 2 | npm package published and installable | ✓ |
+| Through Phase 2 | Working example projects in repo | 3 |
+| Through Phase 2 | GitHub stars from external developers | 5+ |
+| Through Phase 2 | Critical bugs in first week post-publish | 0 |
 | Phase 3–4 | npm weekly downloads | 100+ |
 | Phase 3–4 | GitHub stars | 50+ |
 | Phase 3–4 | Community-contributed plugins or examples | 2+ |
@@ -1103,4 +1107,4 @@ import {
 
 ---
 
-*End of Manifesto — LASTRIKO v0.1.0*
+*End of Manifesto — LASTRIKO v0.1.8*

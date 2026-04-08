@@ -1,7 +1,7 @@
 # Phase 2 — MVP Components
 
 > **Back to:** [MANIFEST.md](../../MANIFEST.md)
-> **Status:** Not Started
+> **Status:** In Progress
 > **Target version:** `0.1.0` (first public npm publish)
 
 ---
@@ -68,7 +68,7 @@ The result must:
 
 ## Pre-Phase Decisions — All Resolved
 
-All Phase 2 blocking decisions are resolved. See MANIFEST.md §18 for the 4 remaining Phase 3 items.
+All Phase 2 blocking decisions are resolved. See [MANIFEST.md §11.1](../../MANIFEST.md#111-foundation-milestone-complete) and `.cursor/rules/open-questions-check.mdc` for pre–Phase 2 status and the four Phase 3 items that were resolved ahead of implementation.
 
 ---
 
@@ -265,4 +265,4 @@ Every component added in this phase ships with unit + integration tests. No comp
 
 ---
 
-*[← Phase 1](PHASE-1.md) — Phase 2 of 6 — [Next: Phase 3 →](PHASE-3.md)*
+*[← Foundation (MANIFEST §11.1)](../../MANIFEST.md#111-foundation-milestone-complete) — Phase 2 of 6 — [Next: Phase 3 →](PHASE-3.md)*

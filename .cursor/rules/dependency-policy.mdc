@@ -53,7 +53,7 @@ To add a new production dependency:
    
 2. **Explain the trade-off** — why this dependency vs alternatives? Does it keep us under the bundle size limits in Section 13?
 
-3. **Update MANIFEST.md §18** if the dependency choice is an open decision (e.g., choosing between two markdown renderers)
+3. **Update the relevant `docs/` spec and MANIFEST.md [changelog](../../MANIFEST.md#changelog)** if the dependency choice is an open decision (e.g., choosing between two markdown renderers)
 
 4. **Then** add it to `package.json`
 
