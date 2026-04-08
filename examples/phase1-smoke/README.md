@@ -13,7 +13,7 @@ npm install
 npm run dev
 ```
 
-The server starts on `http://127.0.0.1:3000`.
+The server starts on `http://127.0.0.1:3500` by default (or the next free port if 3500 is in use).
 
 Clicking **Update text** should replace only the text component via a `FRAGMENT` update.
 

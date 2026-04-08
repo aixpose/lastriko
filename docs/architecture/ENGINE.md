@@ -73,7 +73,31 @@ async function bootstrap(config: LastrikoConfig): Promise<void> {
 **Config resolution order (highest priority first):**
 1. CLI flags
 2. `lastriko.config.ts` exports
-3. Built-in defaults (port: 3000, host: 127.0.0.1, theme: auto)
+3. Built-in defaults (port: **3500**, host: 127.0.0.1, theme: auto)
+
+---
+
+### HTTP listen port and port hopping
+
+**Default port:** `3500` (chosen to avoid colliding with common dev servers such as those on 3000).
+
+**Port in use:** When binding fails with `EADDRINUSE`, the engine tries the next port (`port + 1`, then `+2`, …) up to **64** attempts, stopping at 65535. In non-test environments it logs a line to stderr for each hop, for example: `[lastriko] Port 3500 is in use, trying 3501…`.
+
+**Ephemeral port:** Passing `port: 0` binds an OS-assigned ephemeral port; the actual port is read back from the server and exposed on `RunningServer.port`.
+
+**Documented implementation:** Port hopping was introduced in commit `54360b7` (*feat(core): hop to next port on EADDRINUSE*). The default listen port was later changed from 3000 to **3500** in the same Phase 1 hardening pass.
+
+---
+
+### Theme CSS (`GET /style.css`)
+
+The handler must not throw synchronously on missing files (that would crash the Node process for unrelated requests). Resolution order:
+
+1. **`LASTRIKO_THEME_CSS`** — If set, path to a CSS file (absolute, or relative to `process.cwd()`). Used for custom themes or debugging.
+2. **Monorepo dev** — `{cwd}/packages/core/src/theme/lastriko.css` when present (running from repository root).
+3. **Package-relative** — `lastriko.css` next to the compiled engine module (`dist/theme/lastriko.css` after `npm run build` in `packages/core`).
+
+If no file exists, the server responds with **500** and a short plain-text body. Published builds copy `src/theme/lastriko.css` into `dist/` so `file:` / npm installs work when the app’s cwd is an example directory or any project root.
 
 ---
 

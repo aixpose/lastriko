@@ -4,9 +4,9 @@ import {
   type ServerResponse,
   createServer as createHttpServer,
 } from 'node:http';
-import { resolve } from 'node:path';
 import process from 'node:process';
 import { createHtmlShell } from './shell';
+import { resolveThemeCssPath } from './theme-path';
 import type { AppCallback } from '../components/types';
 import type { ThemeMode, Transport } from './messages';
 import type { PluginRegistry } from '../plugins/registry';
@@ -33,9 +33,7 @@ export interface RunningServer {
   stop: () => Promise<void>;
 }
 
-const cssPath = resolve(process.cwd(), 'packages/core/src/theme/lastriko.css');
-
-const DEFAULT_PORT = 3000;
+const DEFAULT_PORT = 3500;
 /** Max extra ports to try after the first (inclusive of first = maxAttempts tries). */
 const PORT_HOP_MAX_ATTEMPTS = 64;
 
@@ -105,48 +103,80 @@ function createHttpHandler(opts: {
   onRoot?: () => void;
   getTheme: () => 'light' | 'dark';
   toolbar: boolean;
+  themeCssPath: string | null;
 }) {
   return (
     req: IncomingMessage,
     res: ServerResponse<IncomingMessage>,
   ) => {
-    if (!req.url) {
+    try {
+      if (!req.url) {
+        res.statusCode = 404;
+        res.end('Not Found');
+        return;
+      }
+
+      if (req.url === '/') {
+        opts.onRoot?.();
+        const html = createHtmlShell({
+          title: opts.title,
+          initialTheme: opts.getTheme(),
+          includeToolbar: opts.toolbar,
+          bodyHtml: '',
+          clientScriptPath: opts.clientPath ?? '/client.js',
+        });
+        res.statusCode = 200;
+        res.setHeader('content-type', 'text/html; charset=utf-8');
+        res.end(html);
+        return;
+      }
+
+      if (req.url === '/style.css') {
+        const cssPath = opts.themeCssPath;
+        if (!cssPath) {
+          res.statusCode = 500;
+          res.setHeader('content-type', 'text/plain; charset=utf-8');
+          res.end(
+            'Lastriko theme CSS not found. Set LASTRIKO_THEME_CSS to an existing file, or install a published lastriko package with dist/theme/lastriko.css.',
+          );
+          return;
+        }
+        try {
+          const css = readFileSync(cssPath, 'utf8');
+          res.statusCode = 200;
+          res.setHeader('content-type', 'text/css; charset=utf-8');
+          res.end(css);
+        }
+        catch (err) {
+          const msg = err instanceof Error ? err.message : String(err);
+          res.statusCode = 500;
+          res.setHeader('content-type', 'text/plain; charset=utf-8');
+          res.end(`Failed to read theme CSS: ${msg}`);
+        }
+        return;
+      }
+
+      if (req.url === '/client.js') {
+        res.statusCode = 200;
+        res.setHeader('content-type', 'application/javascript; charset=utf-8');
+        res.end('// Phase 1 client bundle should be built separately.');
+        return;
+      }
+
       res.statusCode = 404;
       res.end('Not Found');
-      return;
     }
-
-    if (req.url === '/') {
-      opts.onRoot?.();
-      const html = createHtmlShell({
-        title: opts.title,
-        initialTheme: opts.getTheme(),
-        includeToolbar: opts.toolbar,
-        bodyHtml: '',
-        clientScriptPath: opts.clientPath ?? '/client.js',
-      });
-      res.statusCode = 200;
-      res.setHeader('content-type', 'text/html; charset=utf-8');
-      res.end(html);
-      return;
+    catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      if (!res.headersSent) {
+        res.statusCode = 500;
+        res.setHeader('content-type', 'text/plain; charset=utf-8');
+        res.end(`Internal Server Error: ${msg}`);
+      }
+      else {
+        res.destroy();
+      }
     }
-
-    if (req.url === '/style.css') {
-      res.statusCode = 200;
-      res.setHeader('content-type', 'text/css; charset=utf-8');
-      res.end(readFileSync(cssPath, 'utf8'));
-      return;
-    }
-
-    if (req.url === '/client.js') {
-      res.statusCode = 200;
-      res.setHeader('content-type', 'application/javascript; charset=utf-8');
-      res.end('// Phase 1 client bundle should be built separately.');
-      return;
-    }
-
-    res.statusCode = 404;
-    res.end('Not Found');
   };
 }
 
@@ -158,11 +188,14 @@ export async function startServer(
   void transport;
   void definition.callback;
 
+  const themeCssPath = resolveThemeCssPath(process.cwd());
+
   const server = createHttpServer(
     createHttpHandler({
       title: definition.title,
       toolbar: true,
       getTheme: () => config.theme ?? 'light',
+      themeCssPath,
     }),
   );
 
