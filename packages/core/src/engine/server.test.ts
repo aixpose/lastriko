@@ -1,3 +1,4 @@
+import { existsSync, rmSync } from 'node:fs';
 import { createServer as createHttpServer } from 'node:http';
 import { dirname, join } from 'node:path';
 import process from 'node:process';
@@ -167,5 +168,55 @@ describe('http handler resilience', () => {
       expect(payload.file.size).toBeGreaterThan(0);
       expect(payload.file.type).toContain('text/plain');
     });
+  });
+
+  it('maps uploaded connection directory into websocket scope and cleans it on disconnect', async () => {
+    const tempRoot = join(tmpdir(), `lastriko-upload-life-${Date.now()}`);
+    const app = await startServer(
+      {
+        title: 'upload-lifecycle',
+        callback: (ui) => {
+          ui.text('ok');
+        },
+      },
+      { host: '127.0.0.1', port: 0 },
+    );
+
+    try {
+      const scopeId = 'scope-lifecycle-test';
+      const uploadDir = join(tmpdir(), 'lastriko-uploads', scopeId);
+      rmSync(uploadDir, { recursive: true, force: true });
+      const form = new FormData();
+      form.append('file', new Blob(['hello'], { type: 'text/plain' }), 'hello.txt');
+      const uploadRes = await fetch(
+        `http://${app.host}:${app.port}/upload?connectionId=${scopeId}`,
+        { method: 'POST', body: form },
+      );
+      expect(uploadRes.status).toBe(200);
+      expect(existsSync(uploadDir)).toBe(true);
+
+      const { WebSocket } = await import('ws');
+      const ws = new WebSocket(`ws://${app.host}:${app.port}/ws`);
+      const ready = await new Promise<boolean>((resolve) => {
+        let sentReady = false;
+        ws.on('message', (raw) => {
+          const message = JSON.parse(String(raw)) as { type: string; payload?: any };
+          if (message.type === 'TOAST' && typeof message.payload?.message === 'string' && message.payload.message.startsWith('__connection_id__:') && !sentReady) {
+            sentReady = true;
+            ws.send(JSON.stringify({
+              type: 'READY',
+              payload: { viewport: { width: 100, height: 100 }, theme: null },
+            }));
+            resolve(true);
+          }
+        });
+      });
+      expect(ready).toBe(true);
+      ws.close();
+      await new Promise((resolve) => ws.once('close', resolve));
+    } finally {
+      await app.stop();
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
   });
 });

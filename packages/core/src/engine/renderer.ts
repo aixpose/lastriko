@@ -17,6 +17,7 @@ import type {
   SliderHandle,
 } from '../components/types';
 import { renderMarkdownToSafeHtml } from './markdown';
+import { renderCodeHtml } from './code-highlight';
 
 export function escapeHtml(input: string): string {
   return input
@@ -69,7 +70,7 @@ function renderTextInput(handle: TextInputHandle | PromptEditorHandle): string {
   const commonAttrs = renderAttributes({
     'data-lk-id': handle.id,
     'data-lk-kind': handle.type,
-    'data-lk-event': 'change',
+    'data-lk-event': 'change input',
     'disabled': handle.props.disabled,
     'maxlength': handle.props.maxLength,
     'placeholder': handle.props.placeholder,
@@ -96,7 +97,7 @@ function renderNumberInput(handle: NumberInputHandle): string {
     'max': handle.props.max,
     'step': handle.props.step ?? 1,
     'disabled': handle.props.disabled,
-    'data-lk-event': 'change',
+    'data-lk-event': 'change blur-clamp',
     'aria-label': handle.props.label,
   });
   const label = String(handle.props.label ?? '');
@@ -213,13 +214,16 @@ function renderImageGrid(handle: ComponentHandle<{ items: Array<{ src: string; a
 }
 
 function renderCode(handle: ComponentHandle<{ content: string; lang?: string }>): string {
-  return `<pre class="lk-code" data-lk-id="${handle.id}" data-lk-lang="${escapeHtml(handle.props.lang ?? 'text')}"><code>${escapeHtml(handle.props.content)}</code></pre>`;
+  const lang = handle.props.lang ?? 'text';
+  const highlighted = renderCodeHtml(handle.props.content, lang);
+  const codeHtml = highlighted || escapeHtml(handle.props.content);
+  return `<div class="lk-code-wrap" data-lk-id="${handle.id}"><button class="lk-code-copy" type="button" data-lk-event="click copy-code" aria-label="Copy code">Copy</button><pre class="lk-code" data-lk-lang="${escapeHtml(lang)}"><code>${codeHtml}</code></pre><pre class="lk-code-source" hidden>${escapeHtml(handle.props.content)}</pre></div>`;
 }
 
 function renderJson(handle: ComponentHandle<{ label?: string; data: unknown }>): string {
   const label = handle.props.label ? `<div class="lk-json-label">${escapeHtml(handle.props.label)}</div>` : '';
   const json = escapeHtml(JSON.stringify(handle.props.data, null, 2) ?? 'null');
-  return `<div class="lk-json" data-lk-id="${handle.id}">${label}<pre>${json}</pre></div>`;
+  return `<div class="lk-json" data-lk-id="${handle.id}">${label}<details class="lk-json-details" open><summary>JSON</summary><pre>${json}</pre></details></div>`;
 }
 
 function renderTable(handle: TableHandle): string {
@@ -256,11 +260,29 @@ function renderShell(handle: ComponentHandle<{ regions: Record<string, string[]>
   const renderRegion = (ids: string[]) => ids.map((id) => byId.get(id)).filter(Boolean).map((child) => renderComponent(child as AnyComponentHandle, byId)).join('');
   const sidebarPosition = handle.props.opts.sidebarPosition ?? 'left';
   const sidebarWidth = handle.props.opts.sidebarWidth ?? '260px';
+  const hasHeader = handle.props.regions.header.length > 0;
+  const hasSidebar = handle.props.regions.sidebar.length > 0;
+  const toggleId = `${handle.id}-drawer-toggle`;
+  const mobileToggle = hasSidebar
+    ? `<input id="${escapeHtml(toggleId)}" class="lk-shell-mobile-toggle" type="checkbox" />`
+    : '';
+  const mobileButton = hasSidebar && hasHeader
+    ? `<label class="lk-shell-mobile-button" for="${escapeHtml(toggleId)}" aria-label="Toggle navigation">☰</label>`
+    : '';
+  const floatingMobileButton = hasSidebar && !hasHeader
+    ? `<label class="lk-shell-mobile-button lk-shell-mobile-button--floating" for="${escapeHtml(toggleId)}" aria-label="Toggle navigation">☰</label>`
+    : '';
+  const backdrop = hasSidebar
+    ? `<label class="lk-shell-backdrop" for="${escapeHtml(toggleId)}" aria-hidden="true"></label>`
+    : '';
   return `<section class="lk-shell lk-shell--sidebar-${escapeHtml(sidebarPosition)}" data-lk-id="${handle.id}" style="--lk-sidebar-width:${escapeHtml(sidebarWidth)};">
-    ${handle.props.regions.header.length ? `<header class="lk-shell-header">${renderRegion(handle.props.regions.header)}</header>` : ''}
-    ${handle.props.regions.sidebar.length ? `<aside class="lk-shell-sidebar">${renderRegion(handle.props.regions.sidebar)}</aside>` : ''}
+    ${mobileToggle}
+    ${hasHeader ? `<header class="lk-shell-header">${mobileButton}${renderRegion(handle.props.regions.header)}</header>` : ''}
+    ${hasSidebar ? `<aside class="lk-shell-sidebar">${renderRegion(handle.props.regions.sidebar)}</aside>` : ''}
     <main class="lk-shell-main">${renderRegion(handle.props.regions.main)}</main>
     ${handle.props.regions.footer.length ? `<footer class="lk-shell-footer">${renderRegion(handle.props.regions.footer)}</footer>` : ''}
+    ${floatingMobileButton}
+    ${backdrop}
   </section>`;
 }
 
@@ -284,8 +306,9 @@ function renderTabs(handle: ComponentHandle<Record<string, unknown>, string>, by
   };
   const active = props.active;
   const nav = props.tabs.map((tab) => {
+    const isActive = tab.label === active;
     const disabledAttr = tab.disabled ? ' disabled' : '';
-    return `<button class="lk-tab${tab.label === active ? ' is-active' : ''}" type="button"${disabledAttr} data-lk-tab-target="${escapeHtml(tab.label)}">${escapeHtml(tab.label)}</button>`;
+    return `<button class="lk-tab${isActive ? ' is-active' : ''}" type="button"${disabledAttr} role="tab" aria-selected="${isActive ? 'true' : 'false'}" tabindex="${isActive ? '0' : '-1'}" data-lk-tab-target="${escapeHtml(tab.label)}">${escapeHtml(tab.label)}</button>`;
   }).join('');
   const bodies = props.tabs.map((tab) => {
     const hidden = tab.label === active ? '' : 'hidden';

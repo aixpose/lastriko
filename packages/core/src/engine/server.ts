@@ -214,6 +214,7 @@ function createHttpHandler(opts: {
   toolbar: boolean;
   themeCssPath: string | null;
   uploadDirRoot: string;
+  onUploadDirResolved?: (connectionId: string, uploadDir: string) => void;
 }) {
   return async (
     req: IncomingMessage,
@@ -290,6 +291,7 @@ function createHttpHandler(opts: {
           ?? 'shared';
         const safeScopeDir = String(scopeDirName).replaceAll(/[^\w.-]/g, '_').slice(0, 120) || 'shared';
         const uploadDir = join(opts.uploadDirRoot, safeScopeDir);
+        opts.onUploadDirResolved?.(safeScopeDir, uploadDir);
         mkdirSync(uploadDir, { recursive: true });
         const saved = parts.map((part, index) => {
           const name = `${Date.now()}-${index}-${part.filename}`;
@@ -400,6 +402,7 @@ export async function startServer(
     title: definition.title,
     callback: definition.callback,
   });
+  const uploadDirByConnectionId = new Map<string, string>();
 
   const server = createHttpServer(
     createHttpHandler({
@@ -409,25 +412,38 @@ export async function startServer(
       themeCssPath,
       clientRootPath,
       uploadDirRoot: join(tmpdir(), 'lastriko-uploads'),
+      onUploadDirResolved: (connectionId, uploadDir) => {
+        uploadDirByConnectionId.set(connectionId, uploadDir);
+      },
     }),
   );
   const wsServer = new WebSocketServer({ noServer: true });
 
   wsServer.on('connection', (socket: WebSocket) => {
-    wsHub.addConnection(socket);
+    const scope = wsHub.addConnection(socket);
+    const pendingUploadDir = uploadDirByConnectionId.get(scope.id);
+    if (pendingUploadDir) {
+      scope.uploadDir = pendingUploadDir;
+    }
 
     socket.on('message', (data: RawData) => {
       const normalized = normalizeIncomingWsData(data);
       if (normalized === null)
         return;
       wsHub.handleRawMessage(socket, normalized);
+      const maybeCurrent = wsHub.getScopeById(scope.id);
+      if (maybeCurrent?.uploadDir) {
+        uploadDirByConnectionId.set(scope.id, maybeCurrent.uploadDir);
+      }
     });
 
     socket.on('close', () => {
+      uploadDirByConnectionId.delete(scope.id);
       wsHub.removeConnection(socket);
     });
 
     socket.on('error', () => {
+      uploadDirByConnectionId.delete(scope.id);
       wsHub.removeConnection(socket);
     });
   });

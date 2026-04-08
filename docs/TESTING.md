@@ -36,7 +36,7 @@ The practical consequence: if you cannot describe how to test a change, the chan
 
 **Tool:** [Vitest](https://vitest.dev/) — same API as Jest; runs on Node.js and is invoked by **both** `npm` and `bun` in CI (`npm run test` / `bun run test` from the repo root).
 
-**Coverage target:** 90%+ for all code in `packages/core/src/` (north star; see [MANIFEST.md §14.2](../MANIFEST.md#142-coverage-gates-ci-enforced) for current CI-enforced Vitest thresholds).
+**Coverage target:** 90%+ for all code in `packages/core/src/` (north star). Current CI-enforced Vitest thresholds are **70% lines/statements** and **66% branches/functions** in `packages/core/vitest.config.ts` (see [MANIFEST.md §14.2](../MANIFEST.md#142-coverage-gates-ci-enforced)).
 
 **Location:** `packages/core/src/**/*.test.ts` next to source, **excluding** `*.integration.test.ts` (those are integration tests; the core `test` script excludes them so they run only under `test:integration`).
 

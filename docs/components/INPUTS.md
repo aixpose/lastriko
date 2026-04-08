@@ -253,7 +253,7 @@ interface FileUploadComponent extends InputHandle<UploadedFile | UploadedFile[] 
 
 **Renders as:** `<input type="file">` with a styled drag-and-drop zone overlay.
 
-**File transport (pending decision):** Files are uploaded via HTTP POST `/upload`, not over WebSocket. Server writes to temp dir, responds with file metadata, client sends `EVENT` with the metadata.
+**File transport:** Files are uploaded via HTTP POST `/upload`, not over WebSocket. Server writes to temp dir, responds with file metadata, client sends `EVENT` with the metadata.
 
 **Temp file cleanup:** Files in the temp directory are deleted when the WebSocket connection closes. If a demo uses a file after disconnect (e.g., processes it in background), the developer must move it to a permanent location.
 

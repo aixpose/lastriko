@@ -4,6 +4,8 @@ export interface EventChannel {
   send: (message: ClientToServerMessage) => void;
 }
 
+const EVENT_ATTR = 'data-lk-event';
+
 function isDebugWs(): boolean {
   return typeof window !== 'undefined'
     && Boolean((window as Window & { __LK_DEBUG_WS__?: boolean }).__LK_DEBUG_WS__);
@@ -32,6 +34,25 @@ function resolveComponentId(target: EventTarget | null): string | null {
   return holder?.dataset.lkId ?? null;
 }
 
+function hasEventToken(element: Element, token: string): boolean {
+  const raw = element.getAttribute(EVENT_ATTR);
+  if (!raw)
+    return false;
+  return raw.split(/\s+/).includes(token);
+}
+
+function closestWithEventToken(target: EventTarget | null, token: string): Element | null {
+  if (!(target instanceof Element))
+    return null;
+  let node: Element | null = target;
+  while (node) {
+    if (hasEventToken(node, token))
+      return node;
+    node = node.parentElement;
+  }
+  return null;
+}
+
 export function bindEventDelegation(root: Document, channel: EventChannel): void {
   root.addEventListener('click', (event) => {
     if (!(event.target instanceof Element))
@@ -53,6 +74,13 @@ export function bindEventDelegation(root: Document, channel: EventChannel): void
             panel.setAttribute('hidden', '');
           }
         }
+        const id = resolveComponentId(tabsRoot);
+        if (id) {
+          channel.send({
+            type: 'EVENT',
+            payload: { id, event: 'change', value: target },
+          });
+        }
       }
     }
   });
@@ -60,7 +88,7 @@ export function bindEventDelegation(root: Document, channel: EventChannel): void
   root.addEventListener('click', (event) => {
     if (!(event.target instanceof Element))
       return;
-    const clickable = event.target.closest('[data-lk-event="click"]');
+    const clickable = closestWithEventToken(event.target, 'click');
     if (!clickable)
       return;
     const id = resolveComponentId(clickable);
@@ -86,7 +114,7 @@ export function bindEventDelegation(root: Document, channel: EventChannel): void
   root.addEventListener('change', (event) => {
     if (!(event.target instanceof Element))
       return;
-    const changeable = event.target.closest('[data-lk-event="change"]');
+    const changeable = closestWithEventToken(event.target, 'change');
     if (!changeable)
       return;
     const id = resolveComponentId(changeable);
@@ -96,6 +124,75 @@ export function bindEventDelegation(root: Document, channel: EventChannel): void
       type: 'EVENT',
       payload: { id, event: 'change', value: coerceValue(event.target) },
     });
+  });
+
+  root.addEventListener('input', (event) => {
+    if (!(event.target instanceof Element))
+      return;
+    const liveInput = closestWithEventToken(event.target, 'input');
+    if (!liveInput)
+      return;
+    if (event.target instanceof HTMLInputElement && event.target.type === 'number')
+      return;
+    const id = resolveComponentId(liveInput);
+    if (!id)
+      return;
+    channel.send({
+      type: 'EVENT',
+      payload: { id, event: 'change', value: coerceValue(event.target) },
+    });
+  });
+
+  root.addEventListener('blur', (event) => {
+    if (!(event.target instanceof HTMLInputElement))
+      return;
+    const clamped = closestWithEventToken(event.target, 'blur-clamp');
+    if (!clamped || event.target.type !== 'number')
+      return;
+    const minAttr = event.target.getAttribute('min');
+    const maxAttr = event.target.getAttribute('max');
+    const min = minAttr == null || minAttr === '' ? null : Number(minAttr);
+    const max = maxAttr == null || maxAttr === '' ? null : Number(maxAttr);
+    if (Number.isNaN(event.target.valueAsNumber))
+      return;
+    let next = event.target.valueAsNumber;
+    if (min !== null && Number.isFinite(min))
+      next = Math.max(min, next);
+    if (max !== null && Number.isFinite(max))
+      next = Math.min(max, next);
+    if (next !== event.target.valueAsNumber)
+      event.target.value = String(next);
+    const id = resolveComponentId(clamped);
+    if (!id)
+      return;
+    channel.send({
+      type: 'EVENT',
+      payload: { id, event: 'change', value: next },
+    });
+  }, true);
+
+  root.addEventListener('click', async (event) => {
+    if (!(event.target instanceof Element))
+      return;
+    const copyButton = closestWithEventToken(event.target, 'copy-code');
+    if (!copyButton)
+      return;
+    const container = copyButton.closest<HTMLElement>('[data-lk-id]');
+    const source = container?.querySelector<HTMLElement>('.lk-code-source');
+    if (!source)
+      return;
+    try {
+      await navigator.clipboard.writeText(source.textContent ?? '');
+      const button = copyButton as HTMLElement;
+      button.classList.add('is-copied');
+      button.textContent = 'Copied';
+      window.setTimeout(() => {
+        button.classList.remove('is-copied');
+        button.textContent = 'Copy';
+      }, 1000);
+    } catch {
+      // ignore clipboard errors in unsupported contexts
+    }
   });
 
   root.addEventListener('change', async (event) => {

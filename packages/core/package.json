@@ -51,9 +51,12 @@
     "check:bundle": "node ../../scripts/check-client-size.mjs"
   },
   "dependencies": {
+    "@shikijs/langs": "^4.0.2",
+    "@shikijs/themes": "^4.0.2",
     "marked": "^18.0.0",
     "nanostores": "^1.1.0",
     "sanitize-html": "^2.17.2",
+    "shiki": "^4.0.2",
     "ws": "^8.20.0"
   },
   "devDependencies": {
