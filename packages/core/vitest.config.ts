@@ -12,9 +12,8 @@ export default defineConfig({
         'src/**/*.integration.test.ts',
         'src/**/types.ts',
         'src/index.ts',
-        // Browser bundle + dev-only paths; covered by manual/E2E until Playwright lands (PHASE-2.md).
+        // Browser bundle + shell bootstrap are covered by integration/E2E checks.
         'src/client/**',
-        'src/engine/watcher.ts',
         'src/engine/shell.ts',
         'src/engine/index.ts',
       ],

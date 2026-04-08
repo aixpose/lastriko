@@ -115,7 +115,6 @@ export interface UploadedFile {
   path: string;
   size: number;
   type: string;
-  lastModified: number;
 }
 
 export interface TextProps {

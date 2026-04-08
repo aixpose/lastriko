@@ -42,6 +42,7 @@ export interface RunningServer {
 const DEFAULT_PORT = 3500;
 /** Max extra ports to try after the first (inclusive of first = maxAttempts tries). */
 const PORT_HOP_MAX_ATTEMPTS = 64;
+const DEFAULT_UPLOAD_MAX_SIZE = 10 * 1024 * 1024;
 
 function resolveClientRootPath(cwd: string): string | null {
   const monorepoDist = join(cwd, 'packages/core/dist/client');
@@ -136,10 +137,27 @@ function parseMultipartBody(buffer: Buffer, boundary: string): Array<{
   return files;
 }
 
-function collectBody(req: IncomingMessage): Promise<Buffer> {
+function collectBody(req: IncomingMessage, maxBytes: number): Promise<Buffer> {
   return new Promise((resolve, reject) => {
     const chunks: Buffer[] = [];
-    req.on('data', (chunk: Buffer) => chunks.push(chunk));
+    let received = 0;
+    let rejected = false;
+    req.on('data', (chunk: Buffer) => {
+      if (rejected) {
+        return;
+      }
+      received += chunk.byteLength;
+      if (received > maxBytes) {
+        rejected = true;
+        req.removeAllListeners('data');
+        req.removeAllListeners('end');
+        req.removeAllListeners('error');
+        req.resume();
+        reject(new Error('UPLOAD_TOO_LARGE'));
+        return;
+      }
+      chunks.push(chunk);
+    });
     req.on('end', () => resolve(Buffer.concat(chunks)));
     req.on('error', reject);
   });
@@ -277,7 +295,26 @@ function createHttpHandler(opts: {
           res.end(JSON.stringify({ error: 'Missing multipart boundary' }));
           return;
         }
-        const body = await collectBody(req);
+        const maxSizeFromHeader = req.headers['x-lastriko-upload-max-size'];
+        const maxUploadBytes = typeof maxSizeFromHeader === 'string'
+          ? Number(maxSizeFromHeader)
+          : Number.NaN;
+        const uploadMaxSize = Number.isFinite(maxUploadBytes) && maxUploadBytes > 0
+          ? maxUploadBytes
+          : DEFAULT_UPLOAD_MAX_SIZE;
+        let body: Buffer;
+        try {
+          body = await collectBody(req, uploadMaxSize);
+        }
+        catch (err) {
+          if (err instanceof Error && err.message === 'UPLOAD_TOO_LARGE') {
+            res.statusCode = 413;
+            res.setHeader('content-type', 'application/json; charset=utf-8');
+            res.end(JSON.stringify({ error: 'File too large' }));
+            return;
+          }
+          throw err;
+        }
         const parts = parseMultipartBody(body, boundary);
         if (parts.length === 0) {
           res.statusCode = 400;
@@ -302,12 +339,11 @@ function createHttpHandler(opts: {
             path,
             size: part.content.byteLength,
             type: part.contentType,
-            lastModified: Date.now(),
           };
         });
         res.statusCode = 200;
         res.setHeader('content-type', 'application/json; charset=utf-8');
-        res.end(JSON.stringify(saved.length === 1 ? { file: saved[0] } : saved));
+        res.end(JSON.stringify(saved.length === 1 ? saved[0] : saved));
         return;
       }
 
