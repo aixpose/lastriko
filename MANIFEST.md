@@ -42,7 +42,6 @@ See [`.cursor/rules/`](.cursor/rules/) for the enforced Cursor rules that implem
 
 **Sub-documents:**
 
-- [docs/phases/PHASE-2.md](docs/phases/PHASE-2.md) — MVP Components
 - [docs/phases/PHASE-3.md](docs/phases/PHASE-3.md) — Advanced Components & Polish
 - [docs/phases/PHASE-4.md](docs/phases/PHASE-4.md) — Plugin Ecosystem
 - [docs/phases/PHASE-5.md](docs/phases/PHASE-5.md) — Desktop & Distribution
@@ -85,6 +84,7 @@ See [`.cursor/rules/`](.cursor/rules/) for the enforced Cursor rules that implem
 | 2026-04-08 | 0.1.14 | Phase 2 closure pass: `tabs.setActive()`, mobile shell drawer, live `textInput` + blur clamp for `numberInput`, `ui.code()` server-side highlighting + copy button, collapsible `ui.json()`, upload-dir lifecycle wiring, coverage gate alignment to **70/66**; image-viewer Phase-3 usage removed | Cloud Agent |
 | 2026-04-08 | 0.1.15 | Manifest-first dependency alignment: add `chokidar` as approved core production dependency for Node file-watcher fallback in Phase 2 deliverables | Cloud Agent |
 | 2026-04-08 | 0.1.16 | Phase transition: Phase 2 marked Complete, Phase 3 set In Progress; enforced core+client bundle gate, upload 10MB limit+metadata contract, and Node watcher parity completed to close remaining Phase 2 criteria | Cloud Agent |
+| 2026-04-08 | 0.1.17 | Retire PHASE-2 phase doc from forward iteration docs: remove roadmap/index links and Phase-2 file references, keep completion state in MANIFEST roadmap/history | Cloud Agent |
 
 > **When updating:** Add a row to this table for every meaningful change to this document. Include what section changed and why.
 
@@ -806,8 +806,7 @@ Plugin dependencies must not appear in the core package. The core never `import`
 
 ## 11. Development Phases & Roadmap
 
-> Detailed phase docs:
-> - [docs/phases/PHASE-2.md](docs/phases/PHASE-2.md)
+> Active phase docs:
 > - [docs/phases/PHASE-3.md](docs/phases/PHASE-3.md)
 > - [docs/phases/PHASE-4.md](docs/phases/PHASE-4.md)
 > - [docs/phases/PHASE-5.md](docs/phases/PHASE-5.md)
@@ -830,7 +829,7 @@ Each phase produces a usable, publishable npm package. **Ship early, iterate fas
 
 **Before Phase 2 (MVP Components):** There are **no unresolved design questions** blocking implementation. Locked decisions through early MVP scope are summarized in [`.cursor/rules/open-questions-check.mdc`](.cursor/rules/open-questions-check.mdc). If a new fork appears (for example, choosing between two libraries), resolve it in the relevant `docs/` spec and add a row to the [changelog](#changelog) **before** writing code.
 
-**Phase 2 Exit Criteria:** A developer can build and share a working AI chat demo with streaming output, image display, parameter controls, and dark mode in under 60 lines of code (see [PHASE-2.md](docs/phases/PHASE-2.md#exit-criteria)).
+**Phase 2 completion summary:** MVP component surface, upload lifecycle/limits, Node+Bun runtime parity, and CI thresholds were closed before entering Phase 3. Roadmap state in §11 is authoritative.
 
 ---
 
@@ -1120,4 +1119,4 @@ import {
 
 ---
 
-*End of Manifesto — LASTRIKO v0.1.14*
+*End of Manifesto — LASTRIKO v0.1.17*

@@ -60,7 +60,7 @@ This repository contains the project specification, the `lastriko` core package,
 | Phase | Document | Status |
 |-------|----------|--------|
 | 1 | Infrastructure & Foundation — [MANIFEST.md §11.1](MANIFEST.md#111-foundation-milestone-complete) | Complete |
-| 2 | [MVP Components](docs/phases/PHASE-2.md) | Complete |
+| 2 | MVP Components | Complete |
 | 3 | [Advanced Components & Polish](docs/phases/PHASE-3.md) | In Progress |
 | 4 | [Plugin Ecosystem](docs/phases/PHASE-4.md) | Not Started |
 | 5 | [Desktop & Distribution](docs/phases/PHASE-5.md) | Not Started |
