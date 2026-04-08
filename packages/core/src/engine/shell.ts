@@ -21,7 +21,7 @@ export function createHtmlShell(input: {
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>${escapeHtml(input.title)}</title>
     <link rel="stylesheet" href="/style.css" />
-    <script src="${escapeHtml(input.clientScriptPath)}" defer></script>
+    <script type="module" src="${escapeHtml(input.clientScriptPath)}"></script>
   </head>
   <body>
     ${toolbar}

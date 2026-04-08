@@ -23,6 +23,10 @@
     "check:bundle": "node ../../scripts/check-client-size.mjs"
   },
   "dependencies": {
-    "nanostores": "^1.1.0"
+    "nanostores": "^1.1.0",
+    "ws": "^8.20.0"
+  },
+  "devDependencies": {
+    "@types/ws": "^8.18.1"
   }
 }
