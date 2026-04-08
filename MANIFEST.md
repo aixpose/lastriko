@@ -74,7 +74,8 @@ See [`.cursor/rules/`](.cursor/rules/) for the enforced Cursor rules that implem
 | 2026-04-07 | 0.1.2 | Layout system (shell+grid), CSS self-contained, plugin isolation, all decisions resolved | Owner decisions |
 | 2026-04-07 | 0.1.3 | Full consistency audit: ComponentHandle rename, TableHandle+onRowClick, MetricHandle, TextHandle, STREAM_ERROR, hot reload preservation model | Owner decisions |
 | 2026-04-07 | 0.1.4 | All Phase 3 decisions resolved: lazy loading, no session persistence, parameterPanel custom schema, multi-page deferred | Owner decisions |
-| 2026-04-08 | 0.1.5 | Phase 1 implementation kickoff: status moved to In Progress, monorepo/package structure now active | Cloud Agent 
+| 2026-04-08 | 0.1.5 | Phase 1 implementation kickoff: status moved to In Progress, monorepo/package structure now active | Cloud Agent |
+| 2026-04-08 | 0.1.6 | HTTP server: default port **3500**, EADDRINUSE port hop (up to 64 tries), `/style.css` resolves theme from package or `LASTRIKO_THEME_CSS`, request handler errors return 500 without crashing the process | Cloud Agent |
 
 > **When updating:** Add a row to this table for every meaningful change to this document. Include what section changed and why.
 
@@ -219,7 +220,7 @@ No framework. No diffing. No virtual DOM. The client bundle target of **< 15KB g
 | Stage | Name | Description |
 |-------|------|-------------|
 | 1 | **Bootstrap** | Parse CLI args, load `lastriko.config.ts` if present, initialize plugin registry, call `setup()` on all plugins. |
-| 2 | **Server Start** | Launch HTTP server on port (default 3000). Serve the initial HTML shell. Open WebSocket endpoint at `/ws`. Dev mode only: start file watcher. |
+| 2 | **Server Start** | Launch HTTP server on port (default **3500**). If the port is in use (`EADDRINUSE`), try the next port up to 64 times. Serve the initial HTML shell. Open WebSocket endpoint at `/ws`. Dev mode only: start file watcher. Theme CSS for `GET /style.css` is resolved from the installed package, monorepo layout under `cwd`, or `LASTRIKO_THEME_CSS`; missing file yields HTTP 500, not a process crash. |
 | 3 | **Connection** | New WebSocket client connects. Engine creates a `ConnectionScope` (isolated state). Calls `app()` callback once for this connection. Renders full component tree to HTML. Sends `RENDER` message with the full HTML page body. |
 | 4 | **Runtime Loop** | Client sends `EVENT` messages (button clicks, input changes). Engine dispatches to the bound handler for that component. Handler calls `.update()` on handles. Engine re-renders those specific components and sends `FRAGMENT` messages. |
 | 5 | **Disconnect** | WebSocket closes. `ConnectionScope` is destroyed — all atoms, handles, and background callbacks are garbage collected. |
@@ -707,7 +708,7 @@ Optional `lastriko.config.ts` for project-wide settings:
 import { defineConfig } from 'lastriko';
 
 export default defineConfig({
-  port: 3000,
+  port: 3500,
   theme: 'dark',          // 'light' | 'dark' | 'auto'
   title: 'My AI Demo',
   favicon: './favicon.png',

@@ -29,7 +29,7 @@ function app(
 interface AppConfig {
   plugins?: LastrikoPlugin[];
   theme?: 'light' | 'dark' | 'auto';     // Default: 'auto'
-  port?: number;                           // Default: 3000
+  port?: number;                           // Default: 3500 (hops on EADDRINUSE)
   host?: string;                           // Default: '127.0.0.1'
   toolbar?: boolean;                       // Default: true
   openBrowser?: boolean;                   // Default: true
