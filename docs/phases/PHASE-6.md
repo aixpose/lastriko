@@ -18,9 +18,9 @@ Build community momentum, expand capabilities based on real user feedback, and r
 
 > **⚠ Two items from the original spec have been challenged and may be removed:**
 >
-> 1. **"Lastriko Cloud"** — The spec mentions this as a monetization path but provides no technical specification. It implies hosted infrastructure, billing, privacy policy, and significant ongoing operational cost. **This must be defined in a separate business specification document before any technical work begins. It is NOT in scope for the technical spec as written.** See [QUESTIONS.md#5.2](../../QUESTIONS.md#52-lastriko-cloud-and-monetization).
+> 1. **"Lastriko Cloud"** — Requires a separate business specification (infrastructure, billing, privacy policy). Not in scope for this technical spec. Deferred to a separate document before any implementation begins.
 >
-> 2. **"Visual Builder"** — A drag-and-drop code generator fundamentally conflicts with Lastriko's TypeScript-first, code-as-UI philosophy. It would serve a different demographic and require enormous development effort. **Recommend removing from roadmap.** See [QUESTIONS.md#5.3](../../QUESTIONS.md#53-visual-builder-phase-6-conflicts-with-code-first-philosophy).
+> 2. **"Visual Builder"** — Conflicts with Lastriko's TypeScript-first, code-as-UI philosophy. Requires a different user demographic and significant additional effort. Recommended for removal from the roadmap.
 
 ---
 
@@ -137,7 +137,7 @@ These are not committed deliverables but are potential directions after `1.0.0`:
 
 - **Lastriko for CI:** Run a Lastriko demo as part of a CI/CD pipeline to generate visual reports
 - **Notebook integration:** Export a Lastriko demo as a Jupyter-compatible format
-- **Collaborative demos:** Multiple users interacting with the same demo simultaneously (requires the multi-user state model decision from QUESTIONS.md#1.5)
+- **Collaborative demos:** Multiple users interacting with the same demo simultaneously (requires rethinking the per-connection state isolation model)
 
 ---
 

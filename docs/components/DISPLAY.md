@@ -60,7 +60,7 @@ interface MarkdownOpts {
 
 **Security:** HTML output is sanitized by default to prevent XSS. The developer can disable this with `sanitize: false` if they trust the content source.
 
-**Markdown library:** To be decided via [QUESTIONS.md#4.1](../../QUESTIONS.md#41-markdown-renderer-choice). Currently targeting `marked`.
+**Markdown library:** `marked` — server-side rendering with tag-allowlist sanitization. No client bundle weight.
 
 **Supported Markdown features:**
 - Headings (h1–h6)
@@ -201,7 +201,7 @@ interface CodeOpts {
 
 **Renders as:** `<pre><code class="language-${lang}">` + copy button.
 
-**Syntax highlighting:** Lazy-loaded per [QUESTIONS.md#4.2](../../QUESTIONS.md#42-syntax-highlighting-choice). The component renders as styled monospace text immediately, then applies highlighting once the highlight library loads.
+**Syntax highlighting:** `shiki` running server-side. Rendered HTML is sent as part of the `FRAGMENT` — zero client bundle weight, no CDN required.
 
 **Copy button:** Copies the raw (unhighlighted) text to clipboard. Shows "Copied!" for 2 seconds after click.
 

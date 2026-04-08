@@ -2,7 +2,7 @@
 
 > **The TypeScript UI Toolkit for AI Demos & Rapid Prototyping**
 >
-> Version 0.1.0 (in development) — AIXPOSE OÜ
+> Version 0.1.0 — AIXPOSE OÜ
 
 ---
 
@@ -11,24 +11,39 @@
 Lastriko is an open-source npm module that enables developers to build polished demo UIs for AI models, prototypes, and interactive showcases in minutes rather than hours. Think Streamlit, but TypeScript-first, Bun-native, and built for the AI landscape of 2026.
 
 ```typescript
-import { app } from 'lastriko';
+import { app } from 'lastriko'
 
 app('My AI Demo', (ui) => {
-  ui.text('# Welcome');
-  const name = ui.textInput('Your name');
-  ui.text(`Hello, ${name.value || 'stranger'}!`);
-});
+  ui.shell({
+    sidebar: (s) => {
+      const model = s.select('Model', ['gpt-4o', 'claude-3.5'])
+      const temp  = s.slider('Temperature', { min: 0, max: 2, default: 0.7 })
+    },
+    main: (m) => {
+      const prompt = m.textInput('Enter prompt')
+      const output = m.streamText()
+      m.button('Generate', async (btn) => {
+        btn.setLoading(true)
+        for await (const chunk of callModel(model.value, temp.value, prompt.value)) {
+          output.append(chunk)
+        }
+        output.done()
+        btn.setLoading(false)
+      })
+    },
+  })
+})
 ```
 
-Run `bun demo.ts` — a browser opens with a live, styled, interactive page.
+Run `bun demo.ts` — a browser opens with a live, structured, interactive page.
 
 ---
 
 ## Status
 
-This repository is in the **documentation and planning phase**. No code has been written yet. The manifesto, phase plans, and architecture specifications are the current deliverables.
+This repository contains the **complete project specification and architecture documentation**. All architectural decisions are resolved. Implementation has not yet started.
 
-**Current phase:** Pre-Phase 1 (documentation complete, implementation not started)
+**Current phase:** Pre-Phase 1 — documentation complete, ready for implementation
 
 ---
 
@@ -38,8 +53,7 @@ This repository is in the **documentation and planning phase**. No code has been
 
 | Document | Description |
 |----------|-------------|
-| [MANIFEST.md](MANIFEST.md) | **Start here.** The single source of truth for all decisions. |
-| [QUESTIONS.md](QUESTIONS.md) | Open questions, spec challenges, and the decision log. |
+| [MANIFEST.md](MANIFEST.md) | **Start here.** Single source of truth — architecture, components, decisions, phases. |
 
 ### Phase Plans
 
@@ -56,30 +70,37 @@ This repository is in the **documentation and planning phase**. No code has been
 
 | Document | Description |
 |----------|-------------|
-| [ENGINE.md](docs/architecture/ENGINE.md) | Core engine internals: HTTP server, WebSocket, lifecycle |
-| [PROTOCOL.md](docs/architecture/PROTOCOL.md) | WebSocket message protocol specification |
-| [STATE.md](docs/architecture/STATE.md) | State management design (Nanostores, scoping) |
-| [PLUGIN-SYSTEM.md](docs/architecture/PLUGIN-SYSTEM.md) | Plugin architecture and development guide |
+| [ENGINE.md](docs/architecture/ENGINE.md) | Core engine: HTTP server, WebSocket, `app()`-once lifecycle |
+| [PROTOCOL.md](docs/architecture/PROTOCOL.md) | WebSocket message protocol (`RENDER`, `FRAGMENT`, `STREAM_CHUNK`) |
+| [STATE.md](docs/architecture/STATE.md) | State management (`ConnectionScope`, Nanostores server-side) |
+| [PLUGIN-SYSTEM.md](docs/architecture/PLUGIN-SYSTEM.md) | Plugin isolation rule, `PluginContext` API |
 
 ### Component Specifications
 
 | Document | Components Covered |
 |----------|-------------------|
-| [INPUTS.md](docs/components/INPUTS.md) | button, textInput, slider, toggle, select, fileUpload, + Phase 3 inputs |
-| [DISPLAY.md](docs/components/DISPLAY.md) | text, markdown, image, imageGrid, code, json, table, metric, progress, + Phase 3 display |
-| [LAYOUT.md](docs/components/LAYOUT.md) | shell, grid, tabs, card, divider, spacer, + Phase 3 layout |
-| [FEEDBACK.md](docs/components/FEEDBACK.md) | toast, alert, loading, streamText |
-| [AI.md](docs/components/AI.md) | chatUI, promptEditor, + Phase 3 AI components |
+| [INPUTS.md](docs/components/INPUTS.md) | `button`, `textInput`, `numberInput`, `slider`, `toggle`, `select`, `fileUpload` + Phase 3 |
+| [DISPLAY.md](docs/components/DISPLAY.md) | `text`, `markdown`, `image`, `imageGrid`, `code`, `json`, `table`, `metric`, `progress` + Phase 3 |
+| [LAYOUT.md](docs/components/LAYOUT.md) | `shell`, `grid`, `tabs`, `card`, `divider`, `spacer` + Phase 3 |
+| [FEEDBACK.md](docs/components/FEEDBACK.md) | `toast`, `alert`, `loading`, `streamText` |
+| [AI.md](docs/components/AI.md) | `chatUI`, `promptEditor` + Phase 3 AI components |
 
 ### Reference
 
 | Document | Description |
 |----------|-------------|
-| [API-REFERENCE.md](docs/API-REFERENCE.md) | Full public API quick reference |
-| [THEMING.md](docs/THEMING.md) | CSS token system and theming guide |
-| [TESTING.md](docs/TESTING.md) | Testing strategy and CI pipeline |
-| [SECURITY.md](docs/SECURITY.md) | Security model and considerations |
+| [API-REFERENCE.md](docs/API-REFERENCE.md) | Full public API with all handle types and signatures |
+| [THEMING.md](docs/THEMING.md) | `lastriko.css` token system — all `--lk-*` properties |
+| [TESTING.md](docs/TESTING.md) | Testing strategy, coverage gates, CI pipeline |
+| [SECURITY.md](docs/SECURITY.md) | Security model, CSP, rate limiting |
 | [COMPETITIVE.md](docs/COMPETITIVE.md) | Competitive analysis vs Streamlit, Gradio, Backroad |
+
+### Sample Code
+
+| Example | Description |
+|---------|-------------|
+| [image-viewer/](examples/image-viewer/) | Simple image review tool — shell, grid, table row clicks, metric updates |
+| [experiment-monitor/](examples/experiment-monitor/) | Complex ML dashboard — parallel runs, streaming logs, cross-region handles |
 
 ---
 
@@ -90,7 +111,8 @@ This repository is in the **documentation and planning phase**. No code has been
 3. **TypeScript-first** — Full type inference and compile-time safety.
 4. **Bun-native, Node-compatible** — Runs on Bun (sub-50ms cold start) or Node.js 20+.
 5. **Plugin architecture** — LLM connectors and export targets are plugins, not core.
-6. **Desktop-exportable** — Neutralino.js integration for ~5MB desktop binaries.
+6. **Desktop-exportable** — Neutralino.js integration for lightweight desktop distribution.
+7. **Tests are not optional** — Every piece of code ships with tests. Coverage gates enforced in CI.
 
 ---
 
@@ -99,8 +121,9 @@ This repository is in the **documentation and planning phase**. No code has been
 This project follows a **manifesto-first development process**:
 
 1. Before writing any code, the relevant section of `MANIFEST.md` must already describe it.
-2. Open questions in `QUESTIONS.md` must be resolved before coding anything that depends on them.
+2. Any unresolved questions must be answered in `MANIFEST.md §18` before coding begins.
 3. Code must only implement what is scoped to the current active phase.
+4. Every code change ships with tests in the same PR.
 
 See [`.cursor/rules/`](.cursor/rules/) for the Cursor IDE rules that enforce these principles.
 
@@ -108,4 +131,4 @@ See [`.cursor/rules/`](.cursor/rules/) for the Cursor IDE rules that enforce the
 
 ## License
 
-MIT — see [LICENSE](LICENSE) (to be created)
+MIT — see [LICENSE](LICENSE)

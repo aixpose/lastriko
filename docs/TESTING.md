@@ -24,7 +24,7 @@ The practical consequence: if you cannot describe how to test a change, the chan
        ┌┴──────┴┐
        │ Visual  │  Playwright screenshots — Regression
       ┌┴────────┴┐
-      │Integration│  bun:test + puppeteer — WS flow, hot reload
+      │Integration│  bun:test + in-process WS client — WS flow, hot reload
      ┌┴──────────┴┐
      │    Unit     │  bun:test — Component handles, state, HTML rendering, utils
      └────────────┘
