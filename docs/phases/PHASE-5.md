@@ -26,7 +26,7 @@ Polished desktop export experience and multiple deployment options. By the end o
 
 | # | Question | Ref |
 |---|----------|-----|
-| 1.3 | Static export execution model | [QUESTIONS.md#13](../../QUESTIONS.md#13-websocket-only-architecture-limits-static-export) |
+| Static export execution model | Static export = initial render snapshot (HTML only, no interactivity) or client-side re-execution — must decide at Phase 5 start | Open |
 | — | Neutralino.js v6.4 compatibility verified | Check Neutralino.js release notes |
 | — | Tunneling service for `share` command | Decision: use `localtunnel`, `ngrok` API, or self-hosted relay |
 
@@ -118,9 +118,9 @@ Step 4: Output
 
 **Command:** `bunx lastriko export --static`
 
-**The fundamental challenge** (from QUESTIONS.md#1.3): The WebSocket architecture requires a running server. Static export must resolve this.
+**The fundamental challenge:** The WebSocket architecture requires a running server. Static export must resolve this.
 
-**Proposed model** (pending decision from QUESTIONS.md#1.3):
+**Proposed model (to confirm at Phase 5 start):**
 - Static export converts the `app()` callback to run **entirely in the browser** using a client-side re-execution engine
 - Server-side-only operations (filesystem access, `process.env`) are stubbed with a warning
 - LLM plugin calls work if the plugin can operate in browser mode (i.e., direct API calls from browser — requires CORS allowance from provider)

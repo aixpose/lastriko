@@ -38,8 +38,8 @@ Before writing code, confirm ALL of the following:
    - Code for a later phase must not be written until that phase is active
    - "I'll just stub it" is not acceptable — stubs create technical debt and ambiguity
 
-3. **Open questions** — Is there an unresolved question in [QUESTIONS.md](../../QUESTIONS.md) that affects this code?
-   - If yes: the question must be resolved (answered in QUESTIONS.md Decision Log) before coding
+3. **Open questions** — Is there an unresolved question in [MANIFEST.md §18](../../MANIFEST.md#18-open-questions--pending-decisions) that affects this code?
+   - If yes: the question must be resolved and recorded in MANIFEST.md §18 before coding
    - Do not write code that assumes an answer to an open question
 
 4. **Type safety** — Does the code have full TypeScript types?
@@ -58,8 +58,8 @@ When you need to change something not described in the manifesto:
 1. Update the relevant section(s) in MANIFEST.md
 2. Update the relevant sub-document(s) in docs/
 3. Add a row to the MANIFEST.md changelog table
-4. If the change resolves an open question: mark it resolved in QUESTIONS.md Decision Log
-5. If the change introduces a new open question: add it to QUESTIONS.md
+4. If the change resolves an open question: update MANIFEST.md §18 (change status to ✅)
+5. If the change introduces a new open question: add it to MANIFEST.md §18
 6. Commit the manifesto update SEPARATELY from the code change
 
 **Commit message format for manifesto updates:**
