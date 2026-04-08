@@ -123,4 +123,118 @@ describe('renderer', () => {
     expect(html).toContain('class="lk-shell');
     expect(html).toContain('<main class="lk-shell-main"><p class="lk-text"');
   });
+
+  it('does not duplicate shell-owned children even when declared before shell', () => {
+    const handles: AnyComponentHandle[] = [
+      {
+        id: 'text-1',
+        type: 'text',
+        props: { content: 'owned by shell' },
+        get value() {
+          return this.props.content;
+        },
+        update: () => {},
+      } as TextHandle,
+      {
+        id: 'shell-1',
+        type: 'shell',
+        props: {
+          regions: { header: [], sidebar: [], main: ['text-1'], footer: [] },
+          opts: {},
+        },
+        value: undefined,
+        update: () => {},
+      } as AnyComponentHandle,
+    ];
+
+    const html = renderPage(handles);
+    const textIdMatches = html.match(/data-lk-id="text-1"/g) ?? [];
+    expect(textIdMatches).toHaveLength(1);
+  });
+
+  it('does not duplicate tab-owned children when tab appears last', () => {
+    const handles: AnyComponentHandle[] = [
+      {
+        id: 'text-1',
+        type: 'text',
+        props: { content: 'tab A' },
+        get value() {
+          return this.props.content;
+        },
+        update: () => {},
+      } as TextHandle,
+      {
+        id: 'text-2',
+        type: 'text',
+        props: { content: 'tab B' },
+        get value() {
+          return this.props.content;
+        },
+        update: () => {},
+      } as TextHandle,
+      {
+        id: 'tabs-1',
+        type: 'tabs',
+        props: {
+          active: 'A',
+          tabs: [
+            { label: 'A', disabled: false, ids: ['text-1'] },
+            { label: 'B', disabled: false, ids: ['text-2'] },
+          ],
+        },
+        get value() {
+          return 'A';
+        },
+        update: () => {},
+      } as ComponentHandle<Record<string, unknown>, string>,
+    ];
+
+    const html = renderPage(handles);
+    const text1Matches = html.match(/data-lk-id="text-1"/g) ?? [];
+    const text2Matches = html.match(/data-lk-id="text-2"/g) ?? [];
+    expect(text1Matches).toHaveLength(1);
+    expect(text2Matches).toHaveLength(1);
+  });
+
+  it('does not duplicate nested container ownership (shell -> tabs -> text)', () => {
+    const handles: AnyComponentHandle[] = [
+      {
+        id: 'text-1',
+        type: 'text',
+        props: { content: 'nested text' },
+        get value() {
+          return this.props.content;
+        },
+        update: () => {},
+      } as TextHandle,
+      {
+        id: 'tabs-1',
+        type: 'tabs',
+        props: {
+          active: 'Main',
+          tabs: [{ label: 'Main', disabled: false, ids: ['text-1'] }],
+        },
+        get value() {
+          return 'Main';
+        },
+        update: () => {},
+      } as ComponentHandle<Record<string, unknown>, string>,
+      {
+        id: 'shell-1',
+        type: 'shell',
+        props: {
+          regions: { header: [], sidebar: [], main: ['tabs-1'], footer: [] },
+          opts: {},
+        },
+        value: undefined,
+        update: () => {},
+      } as AnyComponentHandle,
+    ];
+
+    const html = renderPage(handles);
+    const textMatches = html.match(/data-lk-id="text-1"/g) ?? [];
+    const tabsMatches = html.match(/data-lk-id="tabs-1"/g) ?? [];
+    expect(textMatches).toHaveLength(1);
+    expect(tabsMatches).toHaveLength(1);
+  });
 });
