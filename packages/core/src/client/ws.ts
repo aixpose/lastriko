@@ -8,6 +8,7 @@ import {
   clearErrorOverlay,
   ensureReconnectBanner,
   hideReconnectBanner,
+  restoreHotReloadSnapshot,
   saveHotReloadSnapshot,
 } from './swap';
 import { bindEventDelegation, bindThemeToggle } from './events';
@@ -241,6 +242,7 @@ function applyMessage(parsed: ServerMessage): void {
   switch (parsed.type) {
     case 'RENDER':
       applyRender(parsed.payload);
+      restoreHotReloadSnapshot();
       clearErrorOverlay();
       initTabState();
       syncShellDrawerButtons(document);
