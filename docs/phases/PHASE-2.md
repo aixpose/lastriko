@@ -33,7 +33,7 @@ app('Experiment Lab', (ui) => {
   ui.shell({
     header: (h) => {
       h.text('**Experiment Lab**')
-      const runCount = h.metric('Runs', 0)
+      const runCount = h.metric('Runs', '0')
     },
     sidebar: (s) => {
       const model = s.select('Model', ['gpt-4o', 'claude-3.5', 'llama-3.1'])
@@ -51,7 +51,7 @@ app('Experiment Lab', (ui) => {
         }
         output.done()
         row.update({ status: 'done', score: '94.2%' })
-        runCount.update(queue.rowCount)
+        runCount.update(String(queue.rowCount))
         btn.setLoading(false)
       })
     },
@@ -80,7 +80,7 @@ All Phase 2 blocking decisions are resolved. See [MANIFEST.md §11.1](../../MANI
 - All Phase 1 features work identically on Node.js 22+
 - Runtime detection: `const isBun = typeof Bun !== 'undefined'`
 - Fallbacks: `ws` for WebSocket, `chokidar` for file watcher
-- CI matrix: Bun 1.1+ **and** Node.js **22, 24, and 26**
+- CI matrix: Node.js **22, 24, and 26** (npm), plus **Bun** (same scripts after `npm ci`; see `.github/workflows/ci.yml`)
 
 ---
 
@@ -250,7 +250,7 @@ Every component added in this phase ships with unit + integration tests. No comp
 | Coverage — `packages/plugin-*/src/` | ≥ 85% lines, ≥ 80% branches |
 | Client bundle | ≤ 15KB gzip |
 | Core package | ≤ 50KB gzip |
-| Runtime matrix | Bun 1.1+ and Node.js 22, 24, 26 |
+| Runtime matrix | Bun 1.1+; Node.js 22, 24, 26 (npm) + Bun job |
 
 ---
 

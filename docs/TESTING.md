@@ -24,9 +24,9 @@ The practical consequence: if you cannot describe how to test a change, the chan
        ┌┴──────┴┐
        │ Visual  │  Playwright screenshots — Regression
       ┌┴────────┴┐
-      │Integration│  bun:test + in-process WS client — WS flow, hot reload
+      │Integration│  Vitest + in-process WS client — WS flow, hot reload
      ┌┴──────────┴┐
-     │    Unit     │  bun:test — Component handles, state, HTML rendering, utils
+     │    Unit     │  Vitest — Component handles, state, HTML rendering, utils
      └────────────┘
 ```
 
@@ -34,11 +34,11 @@ The practical consequence: if you cannot describe how to test a change, the chan
 
 ## Unit Tests
 
-**Tool:** `bun:test` (primary), with `vitest` as a Node.js fallback.
+**Tool:** [Vitest](https://vitest.dev/) — same API as Jest; runs on Node.js and is invoked by **both** `npm` and `bun` in CI (`npm run test` / `bun run test` from the repo root).
 
 **Coverage target:** 90%+ for all code in `packages/core/src/`.
 
-**Location:** `packages/core/src/**/__tests__/*.test.ts` — co-located with source.
+**Location:** `packages/core/src/**/*.test.ts` next to source, **excluding** `*.integration.test.ts` (those are integration tests; the core `test` script excludes them so they run only under `test:integration`).
 
 ### What to Test
 
@@ -61,24 +61,24 @@ Every module in `packages/core/src/` must have a corresponding `.test.ts` file. 
 ### Example Unit Test
 
 ```typescript
-// components/__tests__/renderer.test.ts
-import { test, expect } from 'bun:test';
-import { renderComponent } from '../renderer';
+// components/renderer.test.ts
+import { expect, it } from 'vitest';
+import { renderComponent } from './renderer';
 
-test('rendered HTML includes data-lk-id on root element', () => {
+it('rendered HTML includes data-lk-id on root element', () => {
   const handle = makeTextHandle('text-1', 'hello');
   const html = renderComponent(handle);
   expect(html).toContain('data-lk-id="text-1"');
 });
 
-test('rendered HTML escapes user content', () => {
+it('rendered HTML escapes user content', () => {
   const handle = makeTextHandle('text-1', '<script>alert(1)</script>');
   const html = renderComponent(handle);
   expect(html).not.toContain('<script>');
   expect(html).toContain('&lt;script&gt;');
 });
 
-test('table row update sends FRAGMENT with correct id', async () => {
+it('table row update sends FRAGMENT with correct id', async () => {
   // Integration: prepend a row, call row.update(), verify FRAGMENT message
   const { server, client } = await startTestServer(experimentScript);
   const msgs = await client.collectUntil('FRAGMENT');
@@ -90,11 +90,13 @@ test('table row update sends FRAGMENT with correct id', async () => {
 
 ## Integration Tests
 
-**Tool:** `bun:test` with an in-process WebSocket client.
+**Tool:** Vitest with an in-process WebSocket client.
 
 **Coverage target:** 80%+ for all server-client interaction paths.
 
-**Location:** `packages/core/src/__tests__/integration/*.test.ts`
+**Location:** `packages/core/src/__tests__/integration/*.integration.test.ts`
+
+Run from the repo root: `npm run test:integration` (or `bun run test:integration`). These files are **not** part of the default `npm run test` run, so integration scenarios are not executed twice in CI.
 
 ### Key Integration Scenarios
 
@@ -213,16 +215,20 @@ test('slider value updates metric in real time', async ({ page }) => {
 
 ## CI Pipeline
 
-The repository ships [`.github/workflows/ci.yml`](../.github/workflows/ci.yml). On every push and pull request to `main`, a **quality** matrix runs on Ubuntu for **Node.js 22, 24, and 26** (same steps on each):
+The repository ships [`.github/workflows/ci.yml`](../.github/workflows/ci.yml). On every push and pull request to `main`, a **quality** matrix runs on Ubuntu:
 
-1. `npm ci`
-2. `npm run typecheck`
-3. `npm run lint`
-4. `npm run test` — Turbo runs `build` before `test`, so the client bundle exists for HTTP handler tests
-5. `npm run test:integration`
-6. `npm run check:bundle` — fails if the core client bundle exceeds the gzip limit in `scripts/check-client-size.mjs`
+| Job | What runs |
+|-----|-----------|
+| Node 22 (npm) | `npm ci`, then `npm run` typecheck, lint, test, test:integration, check:bundle |
+| Node 24 (npm) | Same as Node 22 |
+| Node 26 (npm) | Same as Node 22 |
+| 22 (bun) | `npm ci` for a single lockfile, then `bun run` for the same scripts (validates the Bun primary runtime alongside Node) |
 
-**Phase 2** extends this workflow with a Bun job or matrix and Playwright E2E/visual jobs as those scripts land in the repo. The published package requires **Node.js 22+** (`engines` in root and `packages/core/package.json`).
+Turbo runs `build` before `test` / `test:integration`, so the client bundle exists for HTTP handler tests. `check:bundle` fails if the core client bundle exceeds the gzip limit in `scripts/check-client-size.mjs`.
+
+The published package requires **Node.js 22+** (`engines` in root and `packages/core/package.json`).
+
+**Phase 2** adds Playwright E2E and visual jobs when those suites exist under `tests/e2e/` and `tests/visual/`.
 
 ---
 
@@ -257,7 +263,7 @@ for (const [file, limit] of Object.entries(LIMITS)) {
 
 | Type | Location | Pattern |
 |------|----------|---------|
-| Unit | Next to source | `*.test.ts` |
+| Unit | Next to source | `*.test.ts` (not `*.integration.test.ts`) |
 | Integration | `packages/core/src/__tests__/integration/` | `*.integration.test.ts` |
 | E2E | `tests/e2e/` | `*.spec.ts` |
 | Visual | `tests/visual/` | `*.visual.spec.ts` |

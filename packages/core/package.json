@@ -21,7 +21,7 @@
     "build": "tsc -p tsconfig.json && node ./scripts/copy-theme.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint src --ext .ts",
-    "test": "vitest run",
+    "test": "vitest run --exclude '**/*.integration.test.ts'",
     "test:integration": "vitest run src/__tests__/integration",
     "check:bundle": "node ../../scripts/check-client-size.mjs"
   },
