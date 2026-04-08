@@ -1,0 +1,11 @@
+{
+  "name": "lastriko-app",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node demo.ts"
+  },
+  "dependencies": {
+    "lastriko": "workspace:*"
+  }
+}
