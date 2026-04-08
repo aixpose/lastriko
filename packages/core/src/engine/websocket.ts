@@ -24,6 +24,14 @@ export class WebSocketHub {
     const scope = createConnectionScope(undefined, {
       send: (message: Parameters<typeof serializeServerMessage>[0]) => this.send(socket, message),
     });
+    this.send(socket, {
+      type: 'TOAST',
+      payload: {
+        type: 'info',
+        message: `__connection_id__:${scope.id}`,
+        duration: 50,
+      },
+    });
     this.connections.set(socket, { socket, scope });
     return scope;
   }
@@ -77,16 +85,25 @@ export class WebSocketHub {
         break;
       case 'THEME_CHANGE':
         this.currentTheme = message.payload.mode;
+        entry.scope.theme = this.currentTheme;
         this.send(socket, { type: 'THEME', payload: { mode: this.currentTheme } });
         break;
       case 'RESIZE':
-        // Phase 1 does not react to RESIZE yet.
+        entry.scope.viewport = {
+          width: message.payload.width,
+          height: message.payload.height,
+        };
         break;
     }
   }
 
   private handleReady(entry: SocketConnection, message: ReadyMessage): void {
     this.currentTheme = message.payload.theme ?? this.currentTheme;
+    entry.scope.theme = this.currentTheme;
+    entry.scope.viewport = {
+      width: message.payload.viewport.width,
+      height: message.payload.viewport.height,
+    };
     const result = executeApp(this.appDef, entry.scope, this.currentTheme);
     if (!result.ok) {
       this.send(entry.socket, {

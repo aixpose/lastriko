@@ -1,5 +1,5 @@
 import type { ClientMessage, ServerMessage } from '../engine/messages';
-import { applyFragmentSwap, applyRender } from './swap';
+import { applyFragmentSwap, applyRender, applyStreamChunk } from './swap';
 import { bindEventDelegation, bindThemeToggle } from './events';
 
 type WSLike = Pick<WebSocket, 'send' | 'close'>;
@@ -84,9 +84,26 @@ export function createWSManager(opts: WSManagerOptions = {}): WSManager {
           break;
         case 'THEME':
           document.documentElement.setAttribute('data-theme', parsed.payload.mode);
+          window.localStorage.setItem('lk-theme', parsed.payload.mode);
           break;
         case 'TOAST':
-          // Minimal Phase 1 toast transport: no-op display implementation.
+          if (parsed.payload.message.startsWith('__connection_id__:')) {
+            const connectionId = parsed.payload.message.slice('__connection_id__:'.length);
+            window.localStorage.setItem('lk-connection-id', connectionId);
+            break;
+          }
+          // Minimal toast transport: visual UI not implemented yet.
+          break;
+        case 'STREAM_CHUNK':
+          applyStreamChunk(
+            parsed.payload.id,
+            parsed.payload.chunk,
+            parsed.payload.done,
+            parsed.payload.format,
+          );
+          break;
+        case 'STREAM_ERROR':
+          console.error(parsed.payload.error);
           break;
         case 'ERROR':
           console.error(parsed.payload.message);
