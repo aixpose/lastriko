@@ -205,6 +205,102 @@ describe('websocket integration flow', () => {
     expect(themeMsg?.payload.mode).toBe('light');
   });
 
+  it('numberInput and toggle change EVENT update values and emit FRAGMENT', () => {
+    const { socket, sent } = createSocket();
+    const runtime = createWebSocketHub({
+      title: 'More inputs',
+      callback: (ui) => {
+        ui.numberInput('N', { default: 1 });
+        ui.toggle('T', { default: false });
+      },
+    });
+
+    runtime.addConnection(socket);
+    runtime.handleRawMessage(
+      socket,
+      JSON.stringify({
+        type: 'READY',
+        payload: { viewport: { width: 100, height: 100 }, theme: null },
+      }),
+    );
+
+    const render = byType<{ payload: { html: string } }>(sent, 'RENDER')[0];
+    const numId = render.payload.html.match(/data-lk-id="(numberInput-[^"]+)"/)?.[1];
+    const toggleId = render.payload.html.match(/data-lk-id="(toggle-[^"]+)"/)?.[1];
+    expect(numId).toBeDefined();
+    expect(toggleId).toBeDefined();
+
+    runtime.handleRawMessage(
+      socket,
+      JSON.stringify({
+        type: 'EVENT',
+        payload: { id: numId, event: 'change', value: 42 },
+      }),
+    );
+    const fragNum = byType<{ payload: { id: string; html: string } }>(sent, 'FRAGMENT').at(-1);
+    expect(fragNum?.payload.id).toBe(numId);
+    expect(fragNum?.payload.html).toContain('value="42"');
+
+    runtime.handleRawMessage(
+      socket,
+      JSON.stringify({
+        type: 'EVENT',
+        payload: { id: toggleId, event: 'change', value: true },
+      }),
+    );
+    const fragToggle = byType<{ payload: { id: string; html: string } }>(sent, 'FRAGMENT').at(-1);
+    expect(fragToggle?.payload.id).toBe(toggleId);
+    expect(fragToggle?.payload.html).toContain('checked');
+  });
+
+  it('cross-region: sidebar button updates header metric via shared scope', () => {
+    const { socket, sent } = createSocket();
+    const runtime = createWebSocketHub({
+      title: 'Shell',
+      callback: (ui) => {
+        let metric: ReturnType<typeof ui.metric> | undefined;
+        ui.shell({
+          header: (h) => {
+            metric = h.metric('Count', '0');
+          },
+          main: () => {},
+          sidebar: (s) => {
+            s.button('inc', () => {
+              metric?.update('1');
+            });
+          },
+        });
+      },
+    });
+
+    runtime.addConnection(socket);
+    runtime.handleRawMessage(
+      socket,
+      JSON.stringify({
+        type: 'READY',
+        payload: { viewport: { width: 200, height: 200 }, theme: null },
+      }),
+    );
+
+    const render = byType<{ payload: { html: string } }>(sent, 'RENDER')[0];
+    const buttonId = render.payload.html.match(/data-lk-id="(button-[^"]+)"/)?.[1];
+    expect(buttonId).toBeDefined();
+    expect(render.payload.html).toContain('lk-metric-value');
+
+    runtime.handleRawMessage(
+      socket,
+      JSON.stringify({
+        type: 'EVENT',
+        payload: { id: buttonId, event: 'click' },
+      }),
+    );
+
+    const lastMetricFrag = [...byType<{ payload: { html: string } }>(sent, 'FRAGMENT')]
+      .filter((f) => f.payload.html.includes('lk-metric'))
+      .at(-1);
+    expect(lastMetricFrag?.payload.html).toContain('1');
+  });
+
   it('keeps scopes isolated across connections', () => {
     const a = createSocket();
     const b = createSocket();

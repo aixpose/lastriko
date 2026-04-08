@@ -44,8 +44,8 @@ jobs:
       - name: Lint
         run: ${{ matrix.toolchain }} run lint
 
-      - name: Unit tests
-        run: ${{ matrix.toolchain }} run test
+      - name: Unit tests + coverage (thresholds)
+        run: ${{ matrix.toolchain }} run test:coverage
 
       - name: Integration tests
         run: ${{ matrix.toolchain }} run test:integration

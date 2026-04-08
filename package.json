@@ -14,11 +14,13 @@
     "typecheck": "turbo run typecheck",
     "lint": "turbo run lint",
     "test": "turbo run test",
+    "test:coverage": "turbo run test:coverage",
     "test:integration": "turbo run test:integration",
     "check:bundle": "node ./scripts/check-client-size.mjs"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^6.2.0",
+    "@vitest/coverage-v8": "^3.2.4",
     "eslint": "^9.39.1",
     "prettier": "^3.6.2",
     "turbo": "^2.5.8",
