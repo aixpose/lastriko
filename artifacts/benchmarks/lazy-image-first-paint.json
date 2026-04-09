@@ -1,0 +1,15 @@
+{
+  "scenario": "lazy-image-first-paint",
+  "metric": "first_contentful_paint",
+  "value": 32,
+  "unit": "ms",
+  "target": "<=2000ms",
+  "pass": true,
+  "environment": {
+    "os": "linux",
+    "arch": "x64",
+    "node": "v22.22.1",
+    "browser": "chromium",
+    "url": "http://127.0.0.1:3510"
+  }
+}

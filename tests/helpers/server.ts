@@ -48,8 +48,18 @@ export async function withServer(
 }
 
 export async function gotoAndWaitForRender(page: Page, url: string): Promise<void> {
-  await page.goto(url, { waitUntil: 'domcontentloaded' });
-  await page.waitForSelector('.lk-shell', { timeout: 20_000 });
+  let lastError: unknown;
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    try {
+      await page.goto(url, { waitUntil: 'domcontentloaded' });
+      await page.waitForSelector('.lk-shell', { timeout: 20_000 });
+      return;
+    } catch (error) {
+      lastError = error;
+      await sleep(400 * (attempt + 1));
+    }
+  }
+  throw lastError instanceof Error ? lastError : new Error('Failed to render shell after retry loop');
 }
 
 export async function gotoReadyAndCapture(
@@ -82,10 +92,20 @@ async function startProcessServer(opts: {
   stderr: string[];
   stop(): Promise<void>;
 }> {
-  const child = spawn(opts.command, {
+  const [commandBin, ...commandArgs] = opts.command.trim().split(/\s+/);
+  const npmExecPath = process.env.npm_execpath;
+  const spawnBin = commandBin === 'npm' && npmExecPath ? process.execPath : commandBin;
+  const spawnArgs = commandBin === 'npm' && npmExecPath
+    ? [npmExecPath, ...commandArgs]
+    : commandArgs;
+  const child = spawn(spawnBin, spawnArgs, {
     cwd: opts.cwd,
-    env: { ...process.env, FORCE_COLOR: '0' },
-    shell: true,
+    env: {
+      ...process.env,
+      FORCE_COLOR: '0',
+      PATH: process.env.PATH ?? '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin',
+    },
+    shell: false,
     stdio: 'pipe',
   }) as ChildProcessWithoutNullStreams;
   const stdout: string[] = [];

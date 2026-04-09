@@ -482,7 +482,7 @@ function renderFilmStrip(handle: ComponentHandle<{ images: Array<{ src: string; 
   }).join('');
   const selected = handle.props.images[handle.props.selectedIndex ?? 0];
   const selectedHtml = selected ? `<figure class="lk-film-strip-viewer"><img src="${escapeHtml(selected.src)}" alt="${escapeHtml(selected.alt ?? 'Image')}" loading="lazy" /></figure>` : '';
-  return `<section class="lk-film-strip" data-lk-id="${handle.id}">${selectedHtml}<div class="lk-film-row" role="listbox">${items}</div></section>`;
+  return `<section class="lk-film-strip" data-lk-id="${handle.id}">${selectedHtml}<div class="lk-film-row" role="listbox" aria-label="Film strip thumbnails">${items}</div></section>`;
 }
 
 function renderBeforeAfter(handle: ComponentHandle<{ before: string; after: string; beforeLabel?: string; afterLabel?: string; initialPosition?: number; orientation?: 'horizontal' | 'vertical' }>): string {

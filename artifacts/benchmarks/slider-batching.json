@@ -1,0 +1,15 @@
+{
+  "scenario": "slider-batching",
+  "metric": "batch_messages_observed",
+  "value": 2,
+  "unit": "count",
+  "target": ">0 BATCH messages during rapid slider updates",
+  "pass": true,
+  "environment": {
+    "os": "linux",
+    "arch": "x64",
+    "node": "v22.22.1",
+    "browser": "chromium (fragments=2)",
+    "url": "http://127.0.0.1:3509"
+  }
+}

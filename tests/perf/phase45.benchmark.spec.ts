@@ -27,7 +27,7 @@ function writeBenchmarkArtifact(fileName: string, payload: PerfResult): void {
 
 test.describe('phase 4.5 benchmarks', () => {
   test('10k-row table initial viewport render target', async ({ page, browserName }) => {
-    const server = await startExampleServer('bench-table-10k');
+    const server = await startExampleServer('component-gallery/bench-table-10k');
     try {
       await page.goto(`${server.url}/`, { waitUntil: 'domcontentloaded' });
       await expect(page.locator('.lk-table-wrap[data-lk-virtualized="true"]')).toBeVisible();
@@ -73,7 +73,7 @@ test.describe('phase 4.5 benchmarks', () => {
         }
       });
 
-      const slider = page.getByRole('slider', { name: 'Temperature' });
+      const slider = page.getByRole('slider', { name: 'Temperature', exact: true }).first();
       await slider.focus();
       await page.keyboard.press('Home');
       for (let i = 0; i < 20; i += 1) {

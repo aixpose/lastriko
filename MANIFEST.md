@@ -90,6 +90,7 @@ See [`.cursor/rules/`](.cursor/rules/) for the enforced Cursor rules that implem
 | 2026-04-09 | 0.1.20 | Phase 3 closure cleanup: retire standalone `docs/phases/PHASE-3.md` and remove forward links, keeping completion state in roadmap/history | Cloud Agent |
 | 2026-04-09 | 0.1.21 | Roadmap sequencing update: make Phase 4.5 the active in-progress phase (quality/compliance hardening) before Phase 4 plugin ecosystem work resumes | Cloud Agent |
 | 2026-04-09 | 0.1.22 | Phase 4.5 test hardening spec: add Playwright E2E/a11y/perf benchmark workflow requirements and approve `@playwright/test` + `@axe-core/playwright` dev dependencies | Cloud Agent |
+| 2026-04-09 | 0.1.23 | Phase 4.5 stabilization: harden Playwright reliability (single-worker + resilient selectors), fix filmStrip a11y naming, and validate benchmark artifact generation/results docs | Cloud Agent |
 
 > **When updating:** Add a row to this table for every meaningful change to this document. Include what section changed and why.
 

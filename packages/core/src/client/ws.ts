@@ -211,7 +211,6 @@ function initInteractiveWidgets(root: ParentNode): void {
       thumbs.forEach((thumb, i) => {
         const active = i === index;
         thumb.classList.toggle('is-selected', active);
-        thumb.setAttribute('aria-selected', active ? 'true' : 'false');
         if (active) {
           const src = thumb.dataset.lkSrc;
           const alt = thumb.dataset.lkAlt;
