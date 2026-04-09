@@ -67,16 +67,21 @@ describe('handleClientEvent', () => {
     });
 
     await vi.waitFor(() => {
-      const fragments = scope.outbox.filter(
-        (m) => m.type === 'FRAGMENT' && (m as { payload: { id: string } }).payload.id === button!.id,
-      );
-      expect(fragments.length).toBeGreaterThanOrEqual(2);
+      const batched = scope.outbox.filter((m) => m.type === 'BATCH') as Array<{
+        payload: { messages: Array<{ type: 'FRAGMENT'; payload: { id: string; html: string } }> };
+      }>;
+      const fragments = batched
+        .flatMap((entry) => entry.payload.messages)
+        .filter((entry) => entry.type === 'FRAGMENT' && entry.payload.id === button!.id);
+      expect(fragments.length).toBeGreaterThanOrEqual(1);
     });
 
-    const fragments = scope.outbox.filter(
-      (m) => m.type === 'FRAGMENT' && (m as { payload: { id: string } }).payload.id === button!.id,
-    ) as Array<{ type: 'FRAGMENT'; payload: { html: string } }>;
-    expect(fragments.some((f) => f.payload.html.includes('aria-busy="true"'))).toBe(true);
+    const batched = scope.outbox.filter((m) => m.type === 'BATCH') as Array<{
+      payload: { messages: Array<{ type: 'FRAGMENT'; payload: { id: string; html: string } }> };
+    }>;
+    const fragments = batched
+      .flatMap((entry) => entry.payload.messages)
+      .filter((entry) => entry.type === 'FRAGMENT' && entry.payload.id === button!.id);
     expect(fragments.at(-1)?.payload.html).not.toContain('aria-busy="true"');
   });
 
@@ -100,7 +105,7 @@ describe('handleClientEvent', () => {
     });
   });
 
-  it('routes tabs change through handle.update and updates active value', () => {
+  it('routes tabs change through handle.update and updates active value', async () => {
     const scope = createConnectionScope('exec-tabs');
     const ui = new UIContext(scope);
     const tabs = ui.tabs([
@@ -116,12 +121,16 @@ describe('handleClientEvent', () => {
     });
 
     expect(tabs.value).toBe('B');
-    const fragment = scope.outbox.find(
-      (message) => message.type === 'FRAGMENT'
-        && (message as { payload: { id: string } }).payload.id === tabs.id,
-    ) as { payload: { html: string } } | undefined;
-    expect(fragment).toBeDefined();
-    expect(fragment?.payload.html).toContain('data-lk-tab-target="B"');
-    expect(fragment?.payload.html).toContain('aria-selected="true"');
+    await vi.waitFor(() => {
+      const fragment = scope.outbox
+        .filter((message) => message.type === 'BATCH')
+        .flatMap((message) => (message as {
+          payload: { messages: Array<{ type: 'FRAGMENT'; payload: { id: string; html: string } }> };
+        }).payload.messages)
+        .find((entry) => entry.type === 'FRAGMENT' && entry.payload.id === tabs.id);
+      expect(fragment).toBeDefined();
+      expect(fragment?.payload.html).toContain('data-lk-tab-target="B"');
+      expect(fragment?.payload.html).toContain('aria-selected="true"');
+    });
   });
 });

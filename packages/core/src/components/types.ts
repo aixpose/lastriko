@@ -9,18 +9,26 @@ export type ComponentType
     | 'slider'
     | 'toggle'
     | 'select'
+    | 'multiSelect'
+    | 'colorPicker'
+    | 'dateInput'
     | 'fileUpload'
     | 'markdown'
     | 'image'
     | 'imageGrid'
+    | 'video'
+    | 'audio'
     | 'code'
     | 'json'
+    | 'diff'
     | 'table'
     | 'metric'
     | 'progress'
     | 'shell'
     | 'grid'
     | 'tabs'
+    | 'accordion'
+    | 'fullscreen'
     | 'card'
     | 'divider'
     | 'spacer'
@@ -28,7 +36,11 @@ export type ComponentType
     | 'loading'
     | 'streamText'
     | 'chatUI'
-    | 'promptEditor';
+    | 'promptEditor'
+    | 'modelCompare'
+    | 'parameterPanel'
+    | 'filmStrip'
+    | 'beforeAfter';
 
 export type TableRow = Record<string, unknown>;
 
@@ -110,6 +122,30 @@ export interface FileUploadOpts {
   dragDrop?: boolean;
 }
 
+export interface MultiSelectOpts {
+  defaults?: string[];
+  disabled?: boolean;
+  helperText?: string;
+  maxSelections?: number;
+}
+
+export interface ColorPickerOpts {
+  default?: string;
+  format?: 'hex' | 'rgb' | 'hsl';
+  disabled?: boolean;
+  helperText?: string;
+  swatches?: string[];
+}
+
+export interface DateInputOpts {
+  default?: string;
+  min?: string;
+  max?: string;
+  disabled?: boolean;
+  helperText?: string;
+  type?: 'date' | 'datetime-local' | 'time' | 'month';
+}
+
 export interface UploadedFile {
   name: string;
   path: string;
@@ -158,6 +194,22 @@ export interface FileUploadProps extends FileUploadOpts {
   value: UploadedFile | UploadedFile[] | null;
 }
 
+export interface MultiSelectProps extends MultiSelectOpts {
+  label: string;
+  options: Array<{ label: string; value: string; disabled?: boolean }>;
+  value: string[];
+}
+
+export interface ColorPickerProps extends ColorPickerOpts {
+  label: string;
+  value: string;
+}
+
+export interface DateInputProps extends DateInputOpts {
+  label: string;
+  value: string;
+}
+
 export interface MarkdownProps {
   content: string;
 }
@@ -177,6 +229,25 @@ export interface ImageGridProps {
   minWidth?: number;
 }
 
+export interface VideoProps {
+  src: string;
+  controls?: boolean;
+  autoplay?: boolean;
+  muted?: boolean;
+  loop?: boolean;
+  poster?: string;
+  width?: string;
+  caption?: string;
+}
+
+export interface AudioProps {
+  src: string;
+  controls?: boolean;
+  autoplay?: boolean;
+  loop?: boolean;
+  label?: string;
+}
+
 export interface CodeProps {
   content: string;
   lang?: string;
@@ -185,6 +256,16 @@ export interface CodeProps {
 export interface JsonProps {
   label?: string;
   data: unknown;
+}
+
+export interface DiffProps {
+  before: string;
+  after: string;
+  mode?: 'split' | 'unified';
+  beforeLabel?: string;
+  afterLabel?: string;
+  lang?: string;
+  context?: number;
 }
 
 export interface TableProps {
@@ -235,6 +316,22 @@ export interface TabsOpts {
   defaultTab?: string;
 }
 
+export interface AccordionSection {
+  label: string;
+  content: (ctx: UIContext) => void;
+  defaultOpen?: boolean;
+}
+
+export interface AccordionOpts {
+  allowMultiple?: boolean;
+}
+
+export interface FullscreenOpts {
+  trigger?: 'button' | 'manual';
+  label?: string;
+  defaultOpen?: boolean;
+}
+
 export interface ToastOpts {
   type?: 'info' | 'success' | 'warning' | 'error';
   duration?: number;
@@ -278,6 +375,87 @@ export interface ChatUIProps extends ChatUIOptions {
   messages: ChatMessage[];
 }
 
+export interface ModelSpec {
+  label: string;
+  model: string;
+  provider: string;
+  color?: string;
+}
+
+export interface ModelCompareOpts {
+  prompt: string;
+  systemPrompt?: string;
+  temperature?: number;
+  maxTokens?: number;
+  streaming?: boolean;
+}
+
+export interface ModelCompareResults {
+  results: Record<string, string>;
+  isStreaming: Record<string, boolean>;
+  errors: Record<string, string | null>;
+  latencies: Record<string, number>;
+}
+
+export interface ModelCompareProps extends ModelCompareOpts {
+  models: ModelSpec[];
+  value: ModelCompareResults;
+}
+
+export type ParameterSchema = Record<string, ParameterDef>;
+
+export interface ParameterDef {
+  type: 'number' | 'string' | 'boolean' | 'select';
+  label?: string;
+  default?: unknown;
+  min?: number;
+  max?: number;
+  step?: number;
+  options?: string[];
+  description?: string;
+}
+
+export interface ParameterPanelOpts {
+  title?: string;
+  collapsible?: boolean;
+}
+
+export interface ParameterPanelProps extends ParameterPanelOpts {
+  schema: ParameterSchema;
+  ids: string[];
+  value: Record<string, unknown>;
+}
+
+export interface FilmStripItem {
+  src: string;
+  alt?: string;
+  caption?: string;
+  thumbnail?: string;
+}
+
+export interface FilmStripOpts {
+  height?: number;
+  zoom?: boolean;
+  showCaptions?: boolean;
+  selectedIndex?: number;
+}
+
+export interface FilmStripProps extends FilmStripOpts {
+  images: FilmStripItem[];
+}
+
+export interface BeforeAfterOpts {
+  beforeLabel?: string;
+  afterLabel?: string;
+  initialPosition?: number;
+  orientation?: 'horizontal' | 'vertical';
+}
+
+export interface BeforeAfterProps extends BeforeAfterOpts {
+  before: string;
+  after: string;
+}
+
 export interface PromptEditorOpts extends TextInputOpts {
   label?: string;
   variables?: string[];
@@ -304,6 +482,9 @@ export type SliderHandle = InputHandle<number, SliderProps>;
 export type ToggleHandle = InputHandle<boolean, ToggleProps>;
 export type SelectHandle = InputHandle<string, SelectProps>;
 export type FileUploadHandle = InputHandle<UploadedFile | UploadedFile[] | null, FileUploadProps>;
+export type MultiSelectHandle = InputHandle<string[], MultiSelectProps>;
+export type ColorPickerHandle = InputHandle<string, ColorPickerProps>;
+export type DateInputHandle = InputHandle<string, DateInputProps>;
 
 export interface TableRowHandle {
   id: string;
@@ -335,6 +516,12 @@ export interface TabsHandle extends ComponentHandle<Record<string, unknown>, str
   setActive(label: string): void;
 }
 
+export interface FullscreenHandle extends ComponentHandle<Record<string, unknown>, boolean> {
+  readonly type: 'fullscreen';
+  open(): void;
+  close(): void;
+}
+
 export interface StreamHandle extends Omit<ComponentHandle<StreamTextProps, string>, 'update'> {
   readonly type: 'streamText';
   readonly text: string;
@@ -358,6 +545,16 @@ export interface PromptEditorHandle extends InputHandle<string, PromptEditorProp
   interpolate(vars: Record<string, string>): string;
 }
 
+export interface ModelCompareHandle extends ComponentHandle<ModelCompareProps, ModelCompareResults> {
+  readonly type: 'modelCompare';
+  readonly results: Record<string, string>;
+  readonly isStreaming: Record<string, boolean>;
+  readonly errors: Record<string, string | null>;
+  readonly latencies: Record<string, number>;
+}
+
+export type ParameterPanelHandle = InputHandle<Record<string, unknown>, ParameterPanelProps>;
+
 export type AnyComponentHandle
   = | TextHandle
     | ButtonHandle
@@ -366,19 +563,30 @@ export type AnyComponentHandle
     | SliderHandle
     | ToggleHandle
     | SelectHandle
+    | MultiSelectHandle
+    | ColorPickerHandle
+    | DateInputHandle
     | FileUploadHandle
     | TableHandle
     | MetricHandle
     | ProgressHandle
     | TabsHandle
+    | FullscreenHandle
     | StreamHandle
     | ChatHandle
     | PromptEditorHandle
+    | ModelCompareHandle
+    | ParameterPanelHandle
     | ComponentHandle<MarkdownProps>
     | ComponentHandle<ImageProps>
     | ComponentHandle<ImageGridProps>
+    | ComponentHandle<VideoProps>
+    | ComponentHandle<AudioProps>
     | ComponentHandle<CodeProps>
     | ComponentHandle<JsonProps>
+    | ComponentHandle<DiffProps>
+    | ComponentHandle<FilmStripProps>
+    | ComponentHandle<BeforeAfterProps>
     | ComponentHandle<Record<string, unknown>, unknown>;
 
 export interface RenderNode {
@@ -443,10 +651,18 @@ export interface UIContext {
   slider(label: string, opts: SliderOpts): SliderHandle;
   toggle(label: string, opts?: ToggleOpts): ToggleHandle;
   select(label: string, options: SelectOption[], opts?: SelectOpts): SelectHandle;
+  multiSelect(label: string, options: SelectOption[], opts?: MultiSelectOpts): MultiSelectHandle;
+  colorPicker(label: string, opts?: ColorPickerOpts): ColorPickerHandle;
+  dateInput(label: string, opts?: DateInputOpts): DateInputHandle;
   fileUpload(label: string, opts?: FileUploadOpts): FileUploadHandle;
+  video(src: string, opts?: VideoProps): void;
+  audio(src: string, opts?: AudioProps): void;
+  diff(before: string, after: string, opts?: Partial<DiffProps>): void;
   shell(regions: ShellRegions, opts?: ShellOpts): void;
   grid(areas: Array<(ctx: UIContext) => void>, opts?: GridOpts): void;
   tabs(tabs: TabDef[], opts?: TabsOpts): TabsHandle;
+  accordion(sections: AccordionSection[], opts?: AccordionOpts): void;
+  fullscreen(content: (ctx: UIContext) => void, opts?: FullscreenOpts): FullscreenHandle;
   card(titleOrContent: string | ((ctx: UIContext) => void), contentOrNothing?: (ctx: UIContext) => void): void;
   divider(opts?: { label?: string }): void;
   spacer(size?: number | 'sm' | 'md' | 'lg'): void;
@@ -456,6 +672,10 @@ export interface UIContext {
   streamText(opts?: StreamTextOpts): StreamHandle;
   chatUI(opts?: ChatUIOptions): ChatHandle;
   promptEditor(opts?: PromptEditorOpts): PromptEditorHandle;
+  modelCompare(models: ModelSpec[], opts: ModelCompareOpts): ModelCompareHandle;
+  parameterPanel(schema: ParameterSchema, opts?: ParameterPanelOpts): ParameterPanelHandle;
+  filmStrip(images: Array<string | FilmStripItem>, opts?: FilmStripOpts): void;
+  beforeAfter(before: string, after: string, opts?: BeforeAfterOpts): void;
   onDisconnect(fn: () => void): void;
 }
 

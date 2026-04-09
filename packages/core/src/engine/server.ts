@@ -24,6 +24,7 @@ export interface ServerOptions {
   port?: number;
   host?: string;
   theme?: ThemeMode;
+  hotReloadPreserve?: boolean;
 }
 
 export interface RuntimeConfig {

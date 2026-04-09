@@ -2,7 +2,7 @@
 
 > **The TypeScript UI Toolkit for AI Demos & Rapid Prototyping**
 >
-> Version 0.1.16 — April 2026
+> Version 0.1.18 — April 2026
 > AIXPOSE OÜ
 
 ---
@@ -85,6 +85,7 @@ See [`.cursor/rules/`](.cursor/rules/) for the enforced Cursor rules that implem
 | 2026-04-08 | 0.1.15 | Manifest-first dependency alignment: add `chokidar` as approved core production dependency for Node file-watcher fallback in Phase 2 deliverables | Cloud Agent |
 | 2026-04-08 | 0.1.16 | Phase transition: Phase 2 marked Complete, Phase 3 set In Progress; enforced core+client bundle gate, upload 10MB limit+metadata contract, and Node watcher parity completed to close remaining Phase 2 criteria | Cloud Agent |
 | 2026-04-08 | 0.1.17 | Retire PHASE-2 phase doc from forward iteration docs: remove roadmap/index links and Phase-2 file references, keep completion state in MANIFEST roadmap/history | Cloud Agent |
+| 2026-04-08 | 0.1.18 | Phase 3 protocol preflight: document `BATCH` server message (`{ type: 'BATCH', payload: { messages: [...] } }`) to support 16ms fragment/stream coalescing before implementation | Cloud Agent |
 
 > **When updating:** Add a row to this table for every meaningful change to this document. Include what section changed and why.
 
@@ -288,6 +289,7 @@ Lastriko uses a simple protocol over WebSocket. The key design decision: **the s
 | `FRAGMENT` | `{ id: string, html: string }` | Single component re-render — targeted `outerHTML` swap |
 | `THEME` | `{ mode: 'light' \| 'dark' }` | Theme switch — toggles `data-theme` on `<html>` |
 | `TOAST` | `{ message: string, type: 'info'\|'success'\|'warning'\|'error', duration?: number }` | Non-blocking notification |
+| `BATCH` | `{ messages: Array<ServerMessage> }` | Frame-window coalescing of multiple `FRAGMENT`/`STREAM_CHUNK` messages |
 | `NAVIGATE` | `{ page: string }` | Switch page — server sends `FRAGMENT` for main content area |
 | `ERROR` | `{ message: string, stack?: string }` | Unhandled error in `app()` — show error overlay |
 | `STREAM_CHUNK` | `{ id: string, chunk: string, done: boolean }` | Streaming text append (for `streamText` component) |

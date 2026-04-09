@@ -1,5 +1,16 @@
-import type { ClientMessage, ServerMessage } from '../engine/messages';
-import { applyFragmentSwap, applyRender, applyStreamChunk } from './swap';
+import type { BatchMessage, ClientMessage, ServerMessage } from '../engine/messages';
+import {
+  applyBatch,
+  applyErrorOverlay,
+  applyFragmentSwap,
+  applyRender,
+  applyStreamChunk,
+  clearErrorOverlay,
+  ensureReconnectBanner,
+  hideReconnectBanner,
+  restoreHotReloadSnapshot,
+  saveHotReloadSnapshot,
+} from './swap';
 import { bindEventDelegation, bindThemeToggle } from './events';
 
 type WSLike = Pick<WebSocket, 'send' | 'close'>;
@@ -9,6 +20,7 @@ export interface WSManagerOptions {
   url?: string;
   maxRetries?: number;
   initialDelayMs?: number;
+  hotReloadPreserve?: boolean;
 }
 
 export interface WSManager {
@@ -156,15 +168,136 @@ function setupKeyboardA11y(): void {
   });
 }
 
+function initInteractiveWidgets(root: ParentNode): void {
+  const beforeAfter = Array.from(root.querySelectorAll<HTMLElement>('.lk-before-after[data-lk-id]'));
+  for (const el of beforeAfter) {
+    if (el.dataset.lkBeforeAfterBound === '1') {
+      continue;
+    }
+    el.dataset.lkBeforeAfterBound = '1';
+    const after = el.querySelector<HTMLElement>('.lk-before-after-after');
+    const range = el.querySelector<HTMLInputElement>('.lk-before-after-range');
+    if (!after || !range) {
+      continue;
+    }
+    const apply = (value: number) => {
+      const clamped = Math.max(0, Math.min(100, value));
+      range.value = String(clamped);
+      after.style.clipPath = `inset(0 ${100 - clamped}% 0 0)`;
+    };
+    apply(Number(range.value || 50));
+    range.addEventListener('input', () => {
+      apply(Number(range.value || 50));
+    });
+  }
+
+  const filmStrips = Array.from(root.querySelectorAll<HTMLElement>('.lk-film-strip[data-lk-id]'));
+  for (const strip of filmStrips) {
+    if (strip.dataset.lkFilmStripBound === '1') {
+      continue;
+    }
+    strip.dataset.lkFilmStripBound = '1';
+    const viewer = strip.querySelector<HTMLImageElement>('.lk-film-strip-viewer img');
+    const thumbs = Array.from(strip.querySelectorAll<HTMLButtonElement>('.lk-film-strip-thumb'));
+    if (!viewer || thumbs.length === 0) {
+      continue;
+    }
+    const setActive = (index: number) => {
+      thumbs.forEach((thumb, i) => {
+        const active = i === index;
+        thumb.classList.toggle('is-active', active);
+        thumb.setAttribute('aria-selected', active ? 'true' : 'false');
+        if (active) {
+          const src = thumb.dataset.lkSrc;
+          const alt = thumb.dataset.lkAlt;
+          if (src) {
+            viewer.src = src;
+          }
+          if (alt) {
+            viewer.alt = alt;
+          }
+        }
+      });
+    };
+    thumbs.forEach((thumb, index) => {
+      thumb.addEventListener('click', () => setActive(index));
+      thumb.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          setActive(index);
+        }
+      });
+    });
+    const initial = Math.max(0, thumbs.findIndex((thumb) => thumb.classList.contains('is-active')));
+    setActive(initial);
+  }
+}
+
 function applyClientTheme(mode: 'light' | 'dark'): void {
   document.documentElement.setAttribute('data-theme', mode);
   window.localStorage.setItem('lk-theme', mode);
+}
+
+function applyMessage(parsed: ServerMessage): void {
+  switch (parsed.type) {
+    case 'RENDER':
+      applyRender(parsed.payload);
+      restoreHotReloadSnapshot();
+      clearErrorOverlay();
+      initTabState();
+      syncShellDrawerButtons(document);
+      setupKeyboardA11y();
+      initInteractiveWidgets(document);
+      break;
+    case 'FRAGMENT':
+      applyFragmentSwap(parsed.payload.id, parsed.payload.html);
+      initTabState();
+      syncShellDrawerButtons(document);
+      setupKeyboardA11y();
+      initInteractiveWidgets(document);
+      break;
+    case 'THEME':
+      applyClientTheme(parsed.payload.mode);
+      break;
+    case 'TOAST':
+      if (parsed.payload.message.startsWith('__connection_id__:')) {
+        const connectionId = parsed.payload.message.slice('__connection_id__:'.length);
+        window.localStorage.setItem('lk-connection-id', connectionId);
+        break;
+      }
+      showToast(parsed.payload);
+      break;
+    case 'STREAM_CHUNK':
+      applyStreamChunk(
+        parsed.payload.id,
+        parsed.payload.chunk,
+        parsed.payload.done,
+        parsed.payload.format,
+      );
+      break;
+    case 'STREAM_ERROR':
+      console.error(parsed.payload.error);
+      break;
+    case 'ERROR':
+      applyErrorOverlay(parsed.payload.message, parsed.payload.stack);
+      break;
+    case 'BATCH':
+      applyBatch((parsed as BatchMessage).payload);
+      initTabState();
+      syncShellDrawerButtons(document);
+      setupKeyboardA11y();
+      initInteractiveWidgets(document);
+      break;
+    default:
+      break;
+  }
 }
 
 export function createWSManager(opts: WSManagerOptions = {}): WSManager {
   const wsFactory = opts.wsFactory ?? ((url) => new WebSocket(url));
   const maxRetries = opts.maxRetries ?? Number.POSITIVE_INFINITY;
   const initialDelayMs = opts.initialDelayMs ?? 200;
+  const hotReloadPreserve = opts.hotReloadPreserve ?? true;
 
   let ws: WebSocket | null = null;
   let attempts = 0;
@@ -172,13 +305,15 @@ export function createWSManager(opts: WSManagerOptions = {}): WSManager {
   let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
 
   const connect = (): void => {
-    if (ws)
+    if (ws) {
       return;
+    }
     const url = opts.url ?? getDefaultWsUrl();
     ws = wsFactory(url);
 
     ws.onopen = () => {
       attempts = 0;
+      hideReconnectBanner();
       sendMessage(ws as WebSocket, {
         type: 'READY',
         payload: {
@@ -216,56 +351,22 @@ export function createWSManager(opts: WSManagerOptions = {}): WSManager {
         console.debug('[lastriko] ←', parsed.type, preview);
       }
 
-      switch (parsed.type) {
-        case 'RENDER':
-          applyRender(parsed.payload);
-          initTabState();
-          syncShellDrawerButtons(document);
-          setupKeyboardA11y();
-          break;
-        case 'FRAGMENT':
-          applyFragmentSwap(parsed.payload.id, parsed.payload.html);
-          initTabState();
-          syncShellDrawerButtons(document);
-          setupKeyboardA11y();
-          break;
-        case 'THEME':
-          applyClientTheme(parsed.payload.mode);
-          break;
-        case 'TOAST':
-          if (parsed.payload.message.startsWith('__connection_id__:')) {
-            const connectionId = parsed.payload.message.slice('__connection_id__:'.length);
-            window.localStorage.setItem('lk-connection-id', connectionId);
-            break;
-          }
-          showToast(parsed.payload);
-          break;
-        case 'STREAM_CHUNK':
-          applyStreamChunk(
-            parsed.payload.id,
-            parsed.payload.chunk,
-            parsed.payload.done,
-            parsed.payload.format,
-          );
-          break;
-        case 'STREAM_ERROR':
-          console.error(parsed.payload.error);
-          break;
-        case 'ERROR':
-          console.error(parsed.payload.message);
-          break;
-        default:
-          break;
-      }
+      applyMessage(parsed);
     };
 
     ws.onclose = () => {
       ws = null;
-      if (!shouldReconnect)
+      if (!shouldReconnect) {
         return;
-      if (attempts >= maxRetries)
+      }
+      ensureReconnectBanner();
+      if (attempts >= maxRetries) {
         return;
+      }
       attempts += 1;
+      if (hotReloadPreserve) {
+        saveHotReloadSnapshot();
+      }
       const delay = Math.min(initialDelayMs * 2 ** (attempts - 1), 5000);
       reconnectTimer = setTimeout(() => connect(), delay);
     };
@@ -277,6 +378,7 @@ export function createWSManager(opts: WSManagerOptions = {}): WSManager {
       clearTimeout(reconnectTimer);
       reconnectTimer = null;
     }
+    hideReconnectBanner();
     ws?.close();
     ws = null;
   };

@@ -61,6 +61,16 @@ export interface ErrorMessage {
   };
 }
 
+export type BatchedInnerMessage = FragmentMessage | StreamChunkMessage;
+export type BatchedMessageEntry = BatchedInnerMessage;
+
+export interface BatchMessage {
+  type: 'BATCH';
+  payload: {
+    messages: BatchedInnerMessage[];
+  };
+}
+
 export type ServerMessage
   = | RenderMessage
     | FragmentMessage
@@ -68,7 +78,8 @@ export type ServerMessage
     | ThemeMessage
     | StreamChunkMessage
     | StreamErrorMessage
-    | ErrorMessage;
+    | ErrorMessage
+    | BatchMessage;
 export type ServerToClientMessage = ServerMessage;
 
 export interface ReadyMessage {

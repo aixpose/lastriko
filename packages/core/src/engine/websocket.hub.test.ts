@@ -89,4 +89,35 @@ describe('webSocketHub', () => {
     );
     expect(sent).toHaveLength(0);
   });
+
+  it('emits BATCH when component changes rapidly', async () => {
+    const { socket, sent } = captureSocket();
+    const hub = createWebSocketHub({
+      title: 'batch',
+      callback: (ui) => {
+        const input = ui.textInput('Prompt', { default: '' });
+        ui.text(`v:${input.value}`);
+      },
+    });
+    const scope = hub.addConnection(socket);
+    hub.handleRawMessage(
+      socket,
+      JSON.stringify({
+        type: 'READY',
+        payload: { viewport: { width: 10, height: 10 }, theme: null },
+      }),
+    );
+    const input = scope.getHandle('textInput-1');
+    expect(input).toBeDefined();
+    hub.handleRawMessage(
+      socket,
+      JSON.stringify({
+        type: 'EVENT',
+        payload: { id: input?.id, event: 'change', value: 'abc' },
+      }),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 30));
+    const msgs = parseSent(sent);
+    expect(msgs.some((m) => m.type === 'BATCH')).toBe(true);
+  });
 });
