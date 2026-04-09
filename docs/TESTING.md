@@ -2,7 +2,7 @@
 
 > **Back to:** [MANIFEST.md](../MANIFEST.md#14-testing-strategy)
 > **Cursor rule:** [`.cursor/rules/test-coverage.mdc`](../.cursor/rules/test-coverage.mdc)
-> **Phases:** Foundation shipped unit + integration tests; MVP Components adds E2E + visual; later phases extend coverage.
+> **Phases:** Foundation shipped unit + integration tests. **Phase 4.5** adds enforced Playwright E2E + accessibility gates and reproducible benchmark artifacts in CI.
 
 ---
 
@@ -229,7 +229,7 @@ Turbo runs `build` before `test` / `test:integration`, so distribution bundles e
 
 The published package requires **Node.js 22+** (`engines` in root and `packages/core/package.json`).
 
-**Phase 2** adds Playwright E2E and visual jobs when those suites exist under `tests/e2e/` and `tests/visual/`.
+**Phase 4.5** enforces Playwright E2E and accessibility jobs in CI. The Phase 4.5 quality gate includes: 1) deferred browser flows (`beforeAfter` mobile drag, hot reload state restore, error overlay recovery), 2) screenshot/trace artifacts for failure visibility, and 3) benchmark artifacts for table virtualization, slider batching, and lazy media loading.
 
 ---
 

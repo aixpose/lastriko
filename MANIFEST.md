@@ -2,7 +2,7 @@
 
 > **The TypeScript UI Toolkit for AI Demos & Rapid Prototyping**
 >
-> Version 0.1.21 — April 2026
+> Version 0.1.22 — April 2026
 > AIXPOSE OÜ
 
 ---
@@ -89,6 +89,7 @@ See [`.cursor/rules/`](.cursor/rules/) for the enforced Cursor rules that implem
 | 2026-04-09 | 0.1.19 | Roadmap update: introduce Phase 4.5 (Quality & Compliance Hardening) to carry deferred a11y/E2E/benchmark requirements from Phase 3; remove standalone Phase 3 evidence matrix artifact | Cloud Agent |
 | 2026-04-09 | 0.1.20 | Phase 3 closure cleanup: retire standalone `docs/phases/PHASE-3.md` and remove forward links, keeping completion state in roadmap/history | Cloud Agent |
 | 2026-04-09 | 0.1.21 | Roadmap sequencing update: make Phase 4.5 the active in-progress phase (quality/compliance hardening) before Phase 4 plugin ecosystem work resumes | Cloud Agent |
+| 2026-04-09 | 0.1.22 | Phase 4.5 test hardening spec: add Playwright E2E/a11y/perf benchmark workflow requirements and approve `@playwright/test` + `@axe-core/playwright` dev dependencies | Cloud Agent |
 
 > **When updating:** Add a row to this table for every meaningful change to this document. Include what section changed and why.
 
@@ -790,6 +791,8 @@ Total production dependency footprint for core: **server-side Markdown stack ~20
 | `typescript` | Type checking (Bun handles transpilation natively) |
 | `bun-types` | Bun API type definitions |
 | `vitest` | Test runner (same suite under `npm run test` and `bun run test`) |
+| `@playwright/test` | Browser E2E, accessibility, and benchmark harness for Phase 4.5 quality gates |
+| `@axe-core/playwright` | Automated accessibility audit assertions (critical/serious gate) in Playwright |
 | `turborepo` | Monorepo build orchestration + caching |
 | `changesets` | Version management and changelog generation |
 | `prettier` | Code formatting |
@@ -976,6 +979,12 @@ Every pull request must pass the **quality** matrix in [`.github/workflows/ci.ym
 3. **Unit tests + coverage** — `npm run test:coverage` / `bun run test:coverage` (integration files excluded; enforces Vitest thresholds in `packages/core/vitest.config.ts`)
 4. **Integration tests** — `npm run test:integration` / `bun run test:integration`
 5. **Bundle size** — `check:bundle` — client ≤ 15KB gzip, core ≤ 50KB gzip (hard fail)
+
+Phase 4.5 adds browser-level quality jobs:
+
+6. **Playwright E2E** — deferred Phase 3 interaction coverage (including mobile `beforeAfter`, hot reload restore, error overlay recovery)
+7. **Accessibility audit** — Playwright + aXe checks fail CI on critical/serious violations
+8. **Performance benchmark artifacts** — reproducible benchmark script output for table viewport render, slider batching, and lazy image loading first paint
 
 **Matrix:** Node.js **22 and 24** (npm), plus **Bun** on Node 22 (`npm ci` then `bun run` for the same scripts). Node 26 is omitted until it is available on CI runners. E2E and visual Playwright jobs are added in Phase 2 when those suites exist.
 
