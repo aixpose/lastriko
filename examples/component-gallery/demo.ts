@@ -112,12 +112,15 @@ function syncTopMetrics(activePage: string): void {
 }
 
 function rebuildRunSelector(): void {
-  const labels = runStore.items.length > 0
-    ? runStore.items.map((run) => `${run.id} · ${run.title}`)
-    : ['No runs yet'];
+  const options = runStore.items.length > 0
+    ? runStore.items.map((run) => {
+        const label = `${run.id} · ${run.title}`;
+        return { label, value: label };
+      })
+    : [{ label: 'No runs yet', value: '' }];
   refs.runSelector?.update({
-    options: labels,
-    value: labels[0],
+    options,
+    value: options[0]?.value ?? '',
   });
 }
 
