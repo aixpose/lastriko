@@ -8,6 +8,11 @@ test.describe('image-viewer example', () => {
     await withServer({ demoScript: 'examples/image-viewer/demo.ts' }, async ({ url }) => {
       await gotoAndWaitForRender(page, `${url}/`);
 
+      const mobileNav = page.locator('.lk-shell-mobile-button').first();
+      if (await mobileNav.isVisible()) {
+        await mobileNav.click();
+      }
+
       await expect(page.getByRole('tab', { name: 'Gartenweg 4 Grundrisse' })).toHaveAttribute(
         'aria-selected',
         'true',
