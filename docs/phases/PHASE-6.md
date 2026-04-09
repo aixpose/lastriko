@@ -141,4 +141,4 @@ These are not committed deliverables but are potential directions after `1.0.0`:
 
 ---
 
-*[← Phase 5](PHASE-5.md) — Phase 6 of 6*
+*[← Phase 5](PHASE-5.md) — Phase 6 of 7*
