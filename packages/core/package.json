@@ -1,6 +1,6 @@
 {
   "name": "lastriko",
-  "version": "0.1.11",
+  "version": "0.2.0",
   "description": "TypeScript UI toolkit for AI demos and rapid prototyping (server-rendered HTML + WebSocket).",
   "type": "module",
   "main": "./dist/index.js",
