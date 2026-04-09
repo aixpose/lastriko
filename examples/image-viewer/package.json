@@ -1,0 +1,16 @@
+{
+  "name": "image-viewer",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build:core": "npm --prefix ../../packages/core run build",
+    "dev": "npm run build:core && tsx watch demo.ts",
+    "dev:once": "npm run build:core && tsx demo.ts"
+  },
+  "dependencies": {
+    "lastriko": "file:../../packages/core"
+  },
+  "devDependencies": {
+    "tsx": "^4.20.6"
+  }
+}

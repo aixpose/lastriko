@@ -108,6 +108,7 @@ export type {
   ShellOpts,
   GridOpts,
   TabsOpts,
+  TabsHandle,
   TabDef,
   ToastOpts,
   AlertOpts,
