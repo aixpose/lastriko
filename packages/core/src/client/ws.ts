@@ -1,4 +1,4 @@
-import type { BatchMessage, ClientMessage, ServerMessage } from '../engine/messages';
+import type { BatchMessage, ClientToServerMessage, ClientMessage, ServerMessage } from '../engine/messages';
 import {
   applyBatch,
   applyErrorOverlay,
@@ -21,6 +21,10 @@ export interface WSManagerOptions {
   maxRetries?: number;
   initialDelayMs?: number;
   hotReloadPreserve?: boolean;
+}
+
+interface EventChannelRef {
+  ws: WebSocket | null;
 }
 
 export interface WSManager {
@@ -183,6 +187,7 @@ function initInteractiveWidgets(root: ParentNode): void {
     const apply = (value: number) => {
       const clamped = Math.max(0, Math.min(100, value));
       range.value = String(clamped);
+      el.style.setProperty('--lk-before-after-pos', String(clamped));
       after.style.clipPath = `inset(0 ${100 - clamped}% 0 0)`;
     };
     apply(Number(range.value || 50));
@@ -198,14 +203,14 @@ function initInteractiveWidgets(root: ParentNode): void {
     }
     strip.dataset.lkFilmStripBound = '1';
     const viewer = strip.querySelector<HTMLImageElement>('.lk-film-strip-viewer img');
-    const thumbs = Array.from(strip.querySelectorAll<HTMLButtonElement>('.lk-film-strip-thumb'));
+    const thumbs = Array.from(strip.querySelectorAll<HTMLButtonElement>('.lk-film-item'));
     if (!viewer || thumbs.length === 0) {
       continue;
     }
     const setActive = (index: number) => {
       thumbs.forEach((thumb, i) => {
         const active = i === index;
-        thumb.classList.toggle('is-active', active);
+        thumb.classList.toggle('is-selected', active);
         thumb.setAttribute('aria-selected', active ? 'true' : 'false');
         if (active) {
           const src = thumb.dataset.lkSrc;
@@ -228,7 +233,7 @@ function initInteractiveWidgets(root: ParentNode): void {
         }
       });
     });
-    const initial = Math.max(0, thumbs.findIndex((thumb) => thumb.classList.contains('is-active')));
+    const initial = Math.max(0, thumbs.findIndex((thumb) => thumb.classList.contains('is-selected')));
     setActive(initial);
   }
 }
@@ -242,7 +247,6 @@ function applyMessage(parsed: ServerMessage): void {
   switch (parsed.type) {
     case 'RENDER':
       applyRender(parsed.payload);
-      restoreHotReloadSnapshot();
       clearErrorOverlay();
       initTabState();
       syncShellDrawerButtons(document);
@@ -303,6 +307,14 @@ export function createWSManager(opts: WSManagerOptions = {}): WSManager {
   let attempts = 0;
   let shouldReconnect = true;
   let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+  let handlersBound = false;
+  const channelRef: EventChannelRef = { ws: null };
+  const sendFromChannel = (message: ClientToServerMessage) => {
+    if (!channelRef.ws) {
+      return;
+    }
+    sendMessage(channelRef.ws, message);
+  };
 
   const connect = (): void => {
     if (ws) {
@@ -314,6 +326,16 @@ export function createWSManager(opts: WSManagerOptions = {}): WSManager {
     ws.onopen = () => {
       attempts = 0;
       hideReconnectBanner();
+      channelRef.ws = ws as WebSocket;
+      if (!handlersBound) {
+        bindEventDelegation(document, {
+          send: sendFromChannel,
+        });
+        bindThemeToggle(document, {
+          send: sendFromChannel,
+        });
+        handlersBound = true;
+      }
       sendMessage(ws as WebSocket, {
         type: 'READY',
         payload: {
@@ -328,12 +350,6 @@ export function createWSManager(opts: WSManagerOptions = {}): WSManager {
         },
       });
 
-      bindEventDelegation(document, {
-        send: (message) => sendMessage(ws as WebSocket, message),
-      });
-      bindThemeToggle(document, {
-        send: (message) => sendMessage(ws as WebSocket, message),
-      });
     };
 
     ws.onmessage = (event) => {
@@ -356,6 +372,7 @@ export function createWSManager(opts: WSManagerOptions = {}): WSManager {
 
     ws.onclose = () => {
       ws = null;
+      channelRef.ws = null;
       if (!shouldReconnect) {
         return;
       }

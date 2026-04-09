@@ -196,6 +196,7 @@ function renderMultiSelect(handle: ComponentHandle<{ label: string; options: Arr
       checked,
       'disabled': handle.props.disabled || option.disabled,
       'data-lk-event': 'change',
+      'data-lk-multi-option': 'true',
       'aria-label': option.label,
     });
     return `<label class="lk-multi-option"><input${attrs} /><span>${escapeHtml(option.label)}</span></label>`;
@@ -212,7 +213,7 @@ function renderColorPicker(handle: ComponentHandle<{ label: string; value: strin
     'data-lk-event': 'change',
     'aria-label': handle.props.label,
   });
-  const swatches = (handle.props.swatches ?? []).map((swatch) => `<button class="lk-color-swatch" type="button" data-lk-event="pick-swatch" data-lk-swatch="${escapeHtml(swatch)}" style="background:${escapeHtml(swatch)}" aria-label="Use ${escapeHtml(swatch)}"></button>`).join('');
+  const swatches = (handle.props.swatches ?? []).map((swatch) => `<button class="lk-color-swatch" type="button" data-lk-event="click pick-swatch" data-lk-swatch="${escapeHtml(swatch)}" style="background:${escapeHtml(swatch)}" aria-label="Use ${escapeHtml(swatch)}"></button>`).join('');
   const swatchWrap = swatches ? `<div class="lk-color-swatches">${swatches}</div>` : '';
   return `<div class="lk-field lk-color" data-lk-id="${handle.id}" data-lk-kind="colorPicker">${renderInputLabel(handle.props.label, handle.props.helperText ?? '')}<div class="lk-color-row"><input${attrs} /><code class="lk-color-value">${escapeHtml(handle.props.value)}</code></div>${swatchWrap}</div>`;
 }
@@ -331,20 +332,27 @@ function renderDiff(handle: ComponentHandle<{ before: string; after: string; mod
 }
 
 function renderTable(handle: TableHandle): string {
-  const head = handle.props.columns.map((column) => `<th>${escapeHtml(column)}</th>`).join('');
+  const head = handle.props.columns.map((column) => `<th scope="col" aria-sort="none">${escapeHtml(column)}</th>`).join('');
   const isVirtualized = handle.props.rows.length > 100;
-  const rowsToRender = isVirtualized ? handle.props.rows.slice(0, 40) : handle.props.rows;
+  const rowHeight = 36;
+  const maxHeight = handle.props.maxHeight ?? (isVirtualized ? 420 : undefined);
+  const initialVisibleRows = maxHeight
+    ? Math.ceil(maxHeight / rowHeight) + 6
+    : 16;
+  const rowsToRender = isVirtualized
+    ? handle.props.rows.slice(0, Math.max(8, initialVisibleRows))
+    : handle.props.rows;
   const body = rowsToRender.length > 0
     ? rowsToRender.map((row) => {
         const cells = handle.props.columns.map((column) => `<td>${escapeHtml(String(row.data[column] ?? ''))}</td>`).join('');
         return `<tr data-lk-table-row-id="${row.id}">${cells}</tr>`;
       }).join('')
     : `<tr><td colspan="${Math.max(1, handle.props.columns.length)}">${escapeHtml(handle.props.emptyMessage ?? 'No data')}</td></tr>`;
-  const style = handle.props.maxHeight ? `style="max-height:${handle.props.maxHeight}px;overflow:auto;display:block;"` : '';
+  const style = maxHeight ? `style="max-height:${maxHeight}px;overflow:auto;display:block;"` : '';
   const virtualAttrs = isVirtualized
-    ? ` data-lk-virtualized="true" data-lk-table-rows="${escapeHtml(JSON.stringify(handle.props.rows))}" data-lk-table-columns="${escapeHtml(JSON.stringify(handle.props.columns))}"`
+    ? ` data-lk-virtualized="true" data-lk-table-row-height="${rowHeight}" data-lk-table-empty="${escapeHtml(handle.props.emptyMessage ?? 'No data')}" data-lk-table-rows="${escapeHtml(JSON.stringify(handle.props.rows))}" data-lk-table-columns="${escapeHtml(JSON.stringify(handle.props.columns))}"`
     : '';
-  return `<div class="lk-table-wrap" data-lk-id="${handle.id}" data-lk-kind="table"${virtualAttrs} ${style}><table class="lk-table${handle.props.striped ? ' lk-table--striped' : ''}"><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>`;
+  return `<div class="lk-table-wrap" data-lk-id="${handle.id}" data-lk-kind="table" data-lk-scroll-container="${handle.id}"${virtualAttrs} ${style}><table class="lk-table${handle.props.striped ? ' lk-table--striped' : ''}"><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>`;
 }
 
 function renderMetric(handle: MetricHandle): string {
@@ -440,9 +448,9 @@ function renderFullscreen(handle: ComponentHandle<{ ids: string[]; trigger: 'but
   const content = handle.props.ids.map((id) => byId.get(id)).filter(Boolean).map((child) => renderComponent(child as AnyComponentHandle, byId)).join('');
   const openClass = handle.props.open ? ' is-open' : '';
   const trigger = handle.props.trigger === 'button'
-    ? `<button type="button" class="lk-fullscreen-open" data-lk-event="fullscreen-open" aria-label="${escapeHtml(handle.props.label)}">${escapeHtml(handle.props.label)}</button>`
+    ? `<button type="button" class="lk-fullscreen-open" data-lk-event="click fullscreen-open" aria-label="${escapeHtml(handle.props.label)}">${escapeHtml(handle.props.label)}</button>`
     : '';
-  return `<section class="lk-fullscreen${openClass}" data-lk-id="${handle.id}">${trigger}<div class="lk-fullscreen-overlay" ${handle.props.open ? '' : 'hidden'}><button type="button" class="lk-fullscreen-close" data-lk-event="fullscreen-close" aria-label="Close fullscreen">Close</button><div class="lk-fullscreen-content">${content}</div></div></section>`;
+  return `<section class="lk-fullscreen${openClass}" data-lk-id="${handle.id}">${trigger}<div class="lk-fullscreen-overlay" role="dialog" aria-modal="true" ${handle.props.open ? '' : 'hidden'}><button type="button" class="lk-fullscreen-close" data-lk-event="click fullscreen-close" aria-label="Close fullscreen">Close</button><div class="lk-fullscreen-content">${content}</div></div></section>`;
 }
 
 function renderModelCompare(handle: ComponentHandle<{ models: Array<{ label: string; model: string; provider: string; color?: string }>; value: { results: Record<string, string>; isStreaming: Record<string, boolean>; errors: Record<string, string | null>; latencies: Record<string, number> } }>): string {
@@ -470,19 +478,20 @@ function renderFilmStrip(handle: ComponentHandle<{ images: Array<{ src: string; 
     const src = image.thumbnail ?? image.src;
     const selected = index === (handle.props.selectedIndex ?? 0);
     const caption = image.caption && handle.props.showCaptions ? `<span class="lk-film-caption">${escapeHtml(image.caption)}</span>` : '';
-    return `<button type="button" class="lk-film-item${selected ? ' is-selected' : ''}" data-lk-event="filmstrip-select" data-lk-index="${index}" aria-label="Select image ${index + 1}"><img src="${escapeHtml(src)}" alt="${escapeHtml(image.alt ?? 'Image')}" loading="lazy" style="height:${handle.props.height ?? 120}px" />${caption}</button>`;
+    return `<button type="button" class="lk-film-item${selected ? ' is-selected' : ''}" data-lk-event="click filmstrip-select" data-lk-index="${index}" data-lk-src="${escapeHtml(image.src)}" data-lk-alt="${escapeHtml(image.alt ?? 'Image')}" aria-selected="${selected ? 'true' : 'false'}" aria-label="Select image ${index + 1}"><img src="${escapeHtml(src)}" alt="${escapeHtml(image.alt ?? 'Image')}" loading="lazy" style="height:${handle.props.height ?? 120}px" />${caption}</button>`;
   }).join('');
   const selected = handle.props.images[handle.props.selectedIndex ?? 0];
-  const selectedHtml = selected ? `<figure class="lk-film-preview"><img src="${escapeHtml(selected.src)}" alt="${escapeHtml(selected.alt ?? 'Image')}" loading="lazy" /></figure>` : '';
-  return `<section class="lk-film-strip" data-lk-id="${handle.id}">${selectedHtml}<div class="lk-film-row">${items}</div></section>`;
+  const selectedHtml = selected ? `<figure class="lk-film-strip-viewer"><img src="${escapeHtml(selected.src)}" alt="${escapeHtml(selected.alt ?? 'Image')}" loading="lazy" /></figure>` : '';
+  return `<section class="lk-film-strip" data-lk-id="${handle.id}">${selectedHtml}<div class="lk-film-row" role="listbox">${items}</div></section>`;
 }
 
 function renderBeforeAfter(handle: ComponentHandle<{ before: string; after: string; beforeLabel?: string; afterLabel?: string; initialPosition?: number; orientation?: 'horizontal' | 'vertical' }>): string {
   const pos = Math.max(0, Math.min(100, Number(handle.props.initialPosition ?? 50)));
   return `<section class="lk-before-after" data-lk-id="${handle.id}" data-lk-kind="beforeAfter" data-lk-position="${pos}" data-lk-orientation="${escapeHtml(handle.props.orientation ?? 'horizontal')}">
     <figure class="lk-before"><img src="${escapeHtml(handle.props.before)}" alt="${escapeHtml(handle.props.beforeLabel ?? 'Before')}" loading="lazy" /></figure>
-    <figure class="lk-after" style="clip-path: inset(0 ${100 - pos}% 0 0);"><img src="${escapeHtml(handle.props.after)}" alt="${escapeHtml(handle.props.afterLabel ?? 'After')}" loading="lazy" /></figure>
-    <button type="button" class="lk-before-after-handle" data-lk-before-after-handle data-lk-event="before-after-drag" aria-label="Adjust comparison"></button>
+    <figure class="lk-after lk-before-after-after" style="clip-path: inset(0 ${100 - pos}% 0 0);"><img src="${escapeHtml(handle.props.after)}" alt="${escapeHtml(handle.props.afterLabel ?? 'After')}" loading="lazy" /></figure>
+    <input type="range" class="lk-before-after-range" min="0" max="100" value="${pos}" data-lk-event="before-after-drag" aria-label="Adjust comparison" />
+    <button type="button" class="lk-before-after-handle" data-lk-before-after-handle aria-hidden="true" tabindex="-1"></button>
     <div class="lk-before-after-labels"><span>${escapeHtml(handle.props.beforeLabel ?? 'Before')}</span><span>${escapeHtml(handle.props.afterLabel ?? 'After')}</span></div>
   </section>`;
 }
@@ -527,12 +536,12 @@ function renderStreamText(handle: StreamHandle): string {
   const cursor = handle.props.cursor === false || !handle.props.isStreaming
     ? ''
     : '<span data-lk-stream-cursor class="lk-stream-cursor">▍</span>';
-  return `<div class="lk-stream" data-lk-id="${handle.id}"><div class="lk-stream-body" data-lk-stream-body data-lk-text="${escapeHtml(text)}">${body}</div>${cursor}</div>`;
+  return `<div class="lk-stream" data-lk-id="${handle.id}"><div class="lk-stream-body" data-lk-stream-body data-lk-text="${escapeHtml(text)}" aria-live="polite">${body}</div>${cursor}</div>`;
 }
 
 function renderChat(handle: ChatHandle): string {
   const messages = handle.props.messages.map((message) => `<div class="lk-chat-msg lk-chat-msg--${escapeHtml(message.role)}"><span class="lk-chat-role">${escapeHtml(message.role)}</span><p>${escapeHtml(message.content)}</p></div>`).join('');
-  return `<section class="lk-chat" data-lk-id="${handle.id}"><div class="lk-chat-history">${messages}</div></section>`;
+  return `<section class="lk-chat" data-lk-id="${handle.id}"><div class="lk-chat-history" data-lk-scroll-container="${handle.id}-history" aria-live="polite">${messages}</div></section>`;
 }
 
 export function renderComponent(handle: AnyComponentHandle, byId?: Map<string, AnyComponentHandle>): string {

@@ -191,4 +191,51 @@ describe('websocket integration flow', () => {
     await new Promise((resolve) => setTimeout(resolve, 0));
     expect(clicks).toEqual(['row-1']);
   });
+
+  it('multiSelect change EVENT updates selected values', async () => {
+    const { socket, sent } = createSocket();
+    const runtime = createWebSocketHub({
+      title: 'Multi',
+      callback: (ui) => {
+        ui.multiSelect('Models', ['gpt-4o', 'claude-3.5', 'llama-3.1'], {
+          defaults: ['gpt-4o'],
+        });
+      },
+    });
+
+    runtime.addConnection(socket);
+    runtime.handleRawMessage(
+      socket,
+      JSON.stringify({
+        type: 'READY',
+        payload: { viewport: { width: 120, height: 80 }, theme: null },
+      }),
+    );
+
+    const render = ofType<{ payload: { html: string } }>(sent, 'RENDER')[0];
+    const id = render.payload.html.match(/data-lk-id="(multiSelect-[^"]+)"/)?.[1];
+    expect(id).toBeDefined();
+
+    runtime.handleRawMessage(
+      socket,
+      JSON.stringify({
+        type: 'EVENT',
+        payload: {
+          id,
+          event: 'change',
+          value: ['claude-3.5', 'llama-3.1'],
+        },
+      }),
+    );
+
+    await new Promise((resolve) => setTimeout(resolve, 25));
+    const fragment = batchedEntries(sent)
+      .find((entry) => entry.type === 'FRAGMENT' && entry.payload.id === id);
+    expect(fragment).toBeDefined();
+    if (fragment?.type !== 'FRAGMENT')
+      throw new Error('Expected FRAGMENT entry');
+    expect(fragment.payload.html).toContain('value="claude-3.5" checked');
+    expect(fragment.payload.html).toContain('value="llama-3.1" checked');
+    expect(fragment.payload.html).toContain('value="gpt-4o"');
+  });
 });

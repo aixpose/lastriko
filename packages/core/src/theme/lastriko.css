@@ -586,6 +586,11 @@ body {
   background: var(--lk-surface);
 }
 
+.lk-table-wrap[data-lk-virtualized='true'] {
+  contain: layout style paint;
+  will-change: scroll-position;
+}
+
 .lk-table {
   width: 100%;
   border-collapse: collapse;
@@ -616,6 +621,14 @@ body {
 
 .lk-table tbody tr:hover {
   filter: brightness(0.97);
+}
+
+[data-theme='dark'] .lk-table-virtual-spacer td {
+  background: transparent;
+}
+
+.lk-table-virtual-spacer td {
+  pointer-events: none;
 }
 
 [data-theme='dark'] .lk-table tbody tr:hover {
@@ -930,4 +943,151 @@ div.lk-divider span {
 .lk-chat-msg p {
   margin: 0;
   font-size: 0.9rem;
+}
+
+/* —— Phase 3 media widgets —— */
+.lk-film-strip {
+  border: 1px solid var(--lk-border);
+  border-radius: var(--lk-radius);
+  background: var(--lk-surface);
+  padding: 0.6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.lk-film-strip-viewer {
+  margin: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--lk-border);
+  background: var(--lk-surface-2);
+}
+
+.lk-film-strip-viewer img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+  max-height: 260px;
+}
+
+.lk-film-row {
+  display: flex;
+  gap: 0.4rem;
+  overflow-x: auto;
+  padding-bottom: 0.15rem;
+}
+
+.lk-film-item {
+  border: 1px solid var(--lk-border);
+  border-radius: 8px;
+  padding: 0;
+  background: var(--lk-surface-2);
+  cursor: pointer;
+  flex: 0 0 auto;
+  overflow: hidden;
+}
+
+.lk-film-item:focus-visible {
+  outline: 2px solid var(--lk-primary);
+  outline-offset: 1px;
+}
+
+.lk-film-item.is-selected {
+  border-color: var(--lk-primary);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--lk-primary) 45%, transparent);
+}
+
+.lk-film-item img {
+  display: block;
+  width: auto;
+  object-fit: cover;
+}
+
+.lk-film-caption {
+  display: block;
+  padding: 0.2rem 0.4rem;
+  font-size: 0.72rem;
+  color: var(--lk-muted);
+  max-width: 130px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lk-before-after {
+  position: relative;
+  border: 1px solid var(--lk-border);
+  border-radius: var(--lk-radius);
+  background: var(--lk-surface-2);
+  overflow: hidden;
+  min-height: 220px;
+}
+
+.lk-before-after figure {
+  margin: 0;
+}
+
+.lk-before-after .lk-before img,
+.lk-before-after .lk-after img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+  max-height: 360px;
+}
+
+.lk-before-after .lk-before,
+.lk-before-after .lk-after {
+  position: absolute;
+  inset: 0;
+}
+
+.lk-before-after-range {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0.75rem;
+  width: calc(100% - 1.5rem);
+  margin: 0 0.75rem;
+  z-index: 3;
+}
+
+.lk-before-after-range:focus-visible {
+  outline-offset: 3px;
+}
+
+.lk-before-after-handle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(var(--lk-before-after-pos, 50) * 1%);
+  width: 2px;
+  background: color-mix(in srgb, var(--lk-primary) 75%, white);
+  border: 0;
+  transform: translateX(-1px);
+  z-index: 2;
+}
+
+.lk-before-after-labels {
+  position: absolute;
+  inset: auto 0 0 0;
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.35rem 0.65rem 2rem;
+  font-size: 0.72rem;
+  color: var(--lk-muted);
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Focus visibility baseline for keyboard accessibility */
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--lk-primary);
+  outline-offset: 1px;
 }
