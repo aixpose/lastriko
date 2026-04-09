@@ -1,0 +1,15 @@
+{
+  "scenario": "table-10k-viewport",
+  "metric": "visible_rows_in_initial_viewport",
+  "value": 28,
+  "unit": "rows",
+  "target": ">0 and <350 rows rendered in viewport",
+  "pass": true,
+  "environment": {
+    "os": "linux",
+    "arch": "x64",
+    "node": "v22.22.1",
+    "browser": "chromium",
+    "url": "http://127.0.0.1:3500"
+  }
+}

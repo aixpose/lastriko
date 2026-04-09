@@ -9,6 +9,7 @@ export default defineConfig({
     timeout: 10_000,
   },
   fullyParallel: false,
+  workers: 1,
   retries: process.env.CI ? 2 : 0,
   reporter: process.env.CI
     ? [['github'], ['html', { outputFolder: 'playwright-report', open: 'never' }], ['list']]

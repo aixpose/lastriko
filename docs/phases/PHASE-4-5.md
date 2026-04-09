@@ -34,8 +34,9 @@ This phase is verification-focused: no new component surface, no plugin scope, n
 - Accessibility specs: `tests/a11y/*.a11y.spec.ts` (Playwright + aXe)
 - Benchmark specs: `tests/perf/*.spec.ts`
 - Benchmark artifacts:
-  - machine-readable JSON in `artifacts/phase4-5/benchmarks/`
-  - markdown summary in [docs/benchmarks/PHASE-4-5.md](../benchmarks/PHASE-4-5.md)
+  - machine-readable JSON in `artifacts/benchmarks/`
+  - benchmark runbook in [docs/benchmarks/PHASE-4-5.md](../benchmarks/PHASE-4-5.md)
+  - latest summary in [docs/benchmarks/PHASE-4-5-RESULTS.md](../benchmarks/PHASE-4-5-RESULTS.md)
 - CI uploads screenshot/trace/video artifacts for visibility on failures.
 
 ---

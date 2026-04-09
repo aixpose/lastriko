@@ -16,11 +16,10 @@ test.describe('select update stability', () => {
     await page.waitForTimeout(100);
 
     await page.locator('.lk-tab[data-lk-tab-target="3) Review & publish"]').first().click();
-    const reviewPanel = page.locator('.lk-tab-panel[data-lk-tab-panel="3) Review & publish"]:not([hidden])');
-    const syncBtn = reviewPanel.getByRole('button', { name: 'Sync selected run to review' }).first();
+    await expect(page.getByRole('tab', { name: '3) Review & publish' }).first()).toHaveAttribute('aria-selected', 'true');
+    const syncBtn = page.getByRole('button', { name: 'Sync selected run to review' }).first();
     await expect(syncBtn).toBeVisible();
-    await syncBtn.scrollIntoViewIfNeeded();
-    await syncBtn.click({ force: true });
+    await syncBtn.evaluate((btn) => (btn as HTMLButtonElement).click());
 
     await expect(page.locator('#lk-error-overlay')).toHaveCount(0);
     await expect(page.getByText(/Selected run-|Choose a run/i)).toBeVisible();
