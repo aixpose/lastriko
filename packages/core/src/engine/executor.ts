@@ -26,6 +26,14 @@ export function runAppForScope(
   scope.handles.clear();
   const ui = new UIContext(scope);
   callback(ui);
+  // Keep a stable declaration order for nested render ownership.
+  // Map iteration order is insertion-ordered, so rebuilding from listHandles
+  // preserves deterministic parent/child sequencing for renderPage().
+  const ordered = scope.listHandles();
+  scope.handles.clear();
+  for (const handle of ordered) {
+    scope.registerHandle(handle);
+  }
   const html = renderPage(scope.listHandles());
   const render = { html, title, theme };
   scope.send({ type: 'RENDER', payload: render });
