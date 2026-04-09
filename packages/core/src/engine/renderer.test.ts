@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { renderComponent } from './renderer';
+import { renderComponent, renderPage } from './renderer';
 import type { AnyComponentHandle, FullscreenHandle, ModelCompareHandle, ParameterPanelHandle, TableHandle, TabsHandle, TextHandle } from '../components/types';
 
 function textHandle(id: string, content: string): TextHandle {
@@ -258,6 +258,28 @@ describe('renderer phase 3 components', () => {
     } as TabsHandle, byId);
     expect(html).toContain('<nav class="lk-tab-nav" role="tablist">');
     expect(html).toContain('role="tabpanel"');
+    expect(html).toContain('data-lk-tab-panel="One"');
+  });
+
+  it('renderPage does not duplicate nested tab content', () => {
+    const tabs = {
+      id: 'tabs-1',
+      type: 'tabs',
+      props: {
+        tabs: [{ label: 'One', disabled: false, ids: ['text-1'] }],
+        active: 'One',
+      },
+      get value() {
+        return 'One';
+      },
+      update: () => {},
+      setActive: () => {},
+    } as unknown as TabsHandle;
+
+    const text = textHandle('text-1', 'Unique tab content');
+    const html = renderPage([tabs as unknown as AnyComponentHandle, text as unknown as AnyComponentHandle]);
+    const matches = html.match(/Unique tab content/g) ?? [];
+    expect(matches).toHaveLength(1);
   });
 
   it('escapes potentially unsafe text', () => {

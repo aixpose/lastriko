@@ -4,7 +4,7 @@ import { spawn, type ChildProcessWithoutNullStreams } from 'node:child_process';
 import { setTimeout as sleep } from 'node:timers/promises';
 import type { Page, TestInfo } from '@playwright/test';
 
-const WORKSPACE_ROOT = '/workspace';
+const WORKSPACE_ROOT = resolve(process.cwd());
 const READY_RE = /\[lastriko\] Ready at (https?:\/\/[^\s]+)/;
 
 export function artifactPath(testInfo: TestInfo, name: string): string {

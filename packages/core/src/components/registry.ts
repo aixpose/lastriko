@@ -116,7 +116,7 @@ export function createConnectionScope(
     pushFragment(handle: AnyComponentHandle): void {
       const fragment: FragmentMessage = {
         type: 'FRAGMENT',
-        payload: { id: handle.id, html: renderComponent(handle) },
+        payload: { id: handle.id, html: renderComponent(handle, handles) },
       };
       this.send(fragment);
     },

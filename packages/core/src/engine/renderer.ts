@@ -373,8 +373,62 @@ function renderProgress(handle: ProgressHandle): string {
   return `<div class="lk-progress" data-lk-id="${handle.id}">${handle.props.label ? `<div class="lk-progress-label">${escapeHtml(handle.props.label)}</div>` : ''}<div class="lk-progress-bar"><span style="width:${pct}%"></span></div>${text}</div>`;
 }
 
+function getOwnedChildIds(handle: AnyComponentHandle): string[] {
+  switch (handle.type) {
+    case 'shell': {
+      const shellProps = handle.props as { regions: Record<string, string[]> };
+      return Object.values(shellProps.regions).flatMap((ids) => ids);
+    }
+    case 'grid': {
+      const gridProps = handle.props as { cells: string[][] };
+      return gridProps.cells.flatMap((cell) => cell);
+    }
+    case 'tabs': {
+      const tabsProps = handle.props as { tabs: Array<{ ids: string[] }> };
+      return tabsProps.tabs.flatMap((tab) => tab.ids);
+    }
+    case 'accordion': {
+      const accordionProps = handle.props as { sections: Array<{ ids: string[] }> };
+      return accordionProps.sections.flatMap((section) => section.ids);
+    }
+    case 'fullscreen':
+    case 'parameterPanel':
+    case 'card': {
+      const props = handle.props as { ids: string[] };
+      return props.ids;
+    }
+    default:
+      return [];
+  }
+}
+
+function renderOwnedList(ids: string[], byId: Map<string, AnyComponentHandle>): string {
+  const ownedByContainer = new Set<string>();
+  for (const id of ids) {
+    const handle = byId.get(id);
+    if (!handle) {
+      continue;
+    }
+    for (const ownedId of getOwnedChildIds(handle)) {
+      ownedByContainer.add(ownedId);
+    }
+  }
+
+  const consumed = new Set<string>();
+  const output: string[] = [];
+  for (const id of ids) {
+    const handle = byId.get(id);
+    if (!handle || consumed.has(id) || ownedByContainer.has(id)) {
+      continue;
+    }
+    output.push(renderComponent(handle, byId));
+    consumed.add(id);
+  }
+  return output.join('');
+}
+
 function renderShell(handle: ComponentHandle<{ regions: Record<string, string[]>; opts: { sidebarPosition?: 'left' | 'right'; sidebarWidth?: string } }>, byId: Map<string, AnyComponentHandle>): string {
-  const renderRegion = (ids: string[]) => ids.map((id) => byId.get(id)).filter(Boolean).map((child) => renderComponent(child as AnyComponentHandle, byId)).join('');
+  const renderRegion = (ids: string[]) => renderOwnedList(ids, byId);
   const sidebarPosition = handle.props.opts.sidebarPosition ?? 'left';
   const sidebarWidth = handle.props.opts.sidebarWidth ?? '260px';
   const hasHeader = handle.props.regions.header.length > 0;
@@ -412,7 +466,7 @@ function renderGrid(handle: ComponentHandle<{ cells: string[][]; opts: { cols?: 
       ? `repeat(${cols}, minmax(0, 1fr))`
       : `repeat(auto-fit, minmax(${minWidth}px, 1fr))`;
   const gap = handle.props.opts.gap ?? 16;
-  const cells = handle.props.cells.map((cell) => `<div class="lk-grid-cell">${cell.map((id) => byId.get(id)).filter(Boolean).map((child) => renderComponent(child as AnyComponentHandle, byId)).join('')}</div>`).join('');
+  const cells = handle.props.cells.map((cell) => `<div class="lk-grid-cell">${renderOwnedList(cell, byId)}</div>`).join('');
   return `<div class="lk-grid" data-lk-id="${handle.id}" style="display:grid;grid-template-columns:${escapeHtml(templateCols)};gap:${gap}px;">${cells}</div>`;
 }
 
@@ -429,7 +483,7 @@ function renderTabs(handle: ComponentHandle<Record<string, unknown>, string>, by
   }).join('');
   const bodies = props.tabs.map((tab) => {
     const hidden = tab.label === active ? '' : 'hidden';
-    const content = tab.ids.map((id) => byId.get(id)).filter(Boolean).map((child) => renderComponent(child as AnyComponentHandle, byId)).join('');
+    const content = renderOwnedList(tab.ids, byId);
     return `<section class="lk-tab-panel" role="tabpanel" data-lk-tab-panel="${escapeHtml(tab.label)}" ${hidden}>${content}</section>`;
   }).join('');
   return `<div class="lk-tabs" data-lk-id="${handle.id}"><nav class="lk-tab-nav" role="tablist">${nav}</nav>${bodies}</div>`;
@@ -437,7 +491,7 @@ function renderTabs(handle: ComponentHandle<Record<string, unknown>, string>, by
 
 function renderAccordion(handle: ComponentHandle<{ sections: Array<{ label: string; defaultOpen: boolean; ids: string[] }>; opts: { allowMultiple: boolean } }>, byId: Map<string, AnyComponentHandle>): string {
   const sections = handle.props.sections.map((section, index) => {
-    const body = section.ids.map((id) => byId.get(id)).filter(Boolean).map((child) => renderComponent(child as AnyComponentHandle, byId)).join('');
+    const body = renderOwnedList(section.ids, byId);
     const openAttr = section.defaultOpen ? ' open' : '';
     return `<details class="lk-accordion-item"${openAttr} data-lk-accordion-item="${index}"><summary>${escapeHtml(section.label)}</summary><div class="lk-accordion-body">${body}</div></details>`;
   }).join('');
@@ -445,7 +499,7 @@ function renderAccordion(handle: ComponentHandle<{ sections: Array<{ label: stri
 }
 
 function renderFullscreen(handle: ComponentHandle<{ ids: string[]; trigger: 'button' | 'manual'; label: string; open: boolean }>, byId: Map<string, AnyComponentHandle>): string {
-  const content = handle.props.ids.map((id) => byId.get(id)).filter(Boolean).map((child) => renderComponent(child as AnyComponentHandle, byId)).join('');
+  const content = renderOwnedList(handle.props.ids, byId);
   const openClass = handle.props.open ? ' is-open' : '';
   const trigger = handle.props.trigger === 'button'
     ? `<button type="button" class="lk-fullscreen-open" data-lk-event="click fullscreen-open" aria-label="${escapeHtml(handle.props.label)}">${escapeHtml(handle.props.label)}</button>`
@@ -465,7 +519,7 @@ function renderModelCompare(handle: ComponentHandle<{ models: Array<{ label: str
 }
 
 function renderParameterPanel(handle: ComponentHandle<{ title?: string; collapsible?: boolean; ids: string[] }>, byId: Map<string, AnyComponentHandle>): string {
-  const body = handle.props.ids.map((id) => byId.get(id)).filter(Boolean).map((child) => renderComponent(child as AnyComponentHandle, byId)).join('');
+  const body = renderOwnedList(handle.props.ids, byId);
   const title = handle.props.title ? `<header class="lk-parameter-title">${escapeHtml(handle.props.title)}</header>` : '';
   if (handle.props.collapsible) {
     return `<section class="lk-parameter-panel" data-lk-id="${handle.id}"><details open><summary>${escapeHtml(handle.props.title ?? 'Parameters')}</summary><div class="lk-parameter-body">${body}</div></details></section>`;
@@ -498,7 +552,7 @@ function renderBeforeAfter(handle: ComponentHandle<{ before: string; after: stri
 
 function renderCard(handle: ComponentHandle<{ title?: string; ids: string[] }>, byId: Map<string, AnyComponentHandle>): string {
   const title = handle.props.title ? `<div class="lk-card-title">${escapeHtml(handle.props.title)}</div>` : '';
-  const body = handle.props.ids.map((id) => byId.get(id)).filter(Boolean).map((child) => renderComponent(child as AnyComponentHandle, byId)).join('');
+  const body = renderOwnedList(handle.props.ids, byId);
   return `<section class="lk-card" data-lk-id="${handle.id}">${title}${body}</section>`;
 }
 
@@ -633,80 +687,5 @@ export function renderComponent(handle: AnyComponentHandle, byId?: Map<string, A
 
 export function renderPage(components: AnyComponentHandle[]): string {
   const byId = new Map<string, AnyComponentHandle>(components.map((component) => [component.id, component]));
-  const ownedByContainer = new Set<string>();
-  const consumed = new Set<string>();
-  const output: string[] = [];
-
-  for (const component of components) {
-    if (component.type === 'shell') {
-      const shellProps = component.props as { regions: Record<string, string[]> };
-      for (const ids of Object.values(shellProps.regions)) {
-        for (const id of ids) {
-          ownedByContainer.add(id);
-        }
-      }
-      continue;
-    }
-    if (component.type === 'grid') {
-      const gridProps = component.props as { cells: string[][] };
-      for (const cell of gridProps.cells) {
-        for (const id of cell) {
-          ownedByContainer.add(id);
-        }
-      }
-      continue;
-    }
-    if (component.type === 'tabs') {
-      const tabsProps = component.props as { tabs: Array<{ ids: string[] }> };
-      for (const tab of tabsProps.tabs) {
-        for (const id of tab.ids) {
-          ownedByContainer.add(id);
-        }
-      }
-      continue;
-    }
-    if (component.type === 'accordion') {
-      const props = component.props as { sections: Array<{ ids: string[] }> };
-      for (const section of props.sections) {
-        for (const id of section.ids) {
-          ownedByContainer.add(id);
-        }
-      }
-      continue;
-    }
-    if (component.type === 'fullscreen') {
-      const props = component.props as { ids: string[] };
-      for (const id of props.ids) {
-        ownedByContainer.add(id);
-      }
-      continue;
-    }
-    if (component.type === 'parameterPanel') {
-      const props = component.props as { ids: string[] };
-      for (const id of props.ids) {
-        ownedByContainer.add(id);
-      }
-      continue;
-    }
-    if (component.type === 'card') {
-      const cardProps = component.props as { ids: string[] };
-      for (const id of cardProps.ids) {
-        ownedByContainer.add(id);
-      }
-    }
-  }
-
-  for (const component of components) {
-    if (consumed.has(component.id)) {
-      continue;
-    }
-    if (ownedByContainer.has(component.id)) {
-      consumed.add(component.id);
-      continue;
-    }
-    output.push(renderComponent(component, byId));
-    consumed.add(component.id);
-  }
-
-  return output.join('\n');
+  return renderOwnedList(components.map((component) => component.id), byId);
 }

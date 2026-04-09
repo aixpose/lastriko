@@ -18,6 +18,43 @@ describe('executeApp', () => {
       expect(result.html).toContain('hi');
   });
 
+  it('renders shell and nested tab content', () => {
+    const scope = createConnectionScope('exec-shell-tabs');
+    const result = executeApp(
+      {
+        title: 'shell-tabs',
+        callback: (ui) => {
+          ui.shell({
+            main: (m) => {
+              m.tabs([
+                {
+                  label: 'One',
+                  content: (p) => {
+                    p.text('tab-one');
+                  },
+                },
+                {
+                  label: 'Two',
+                  content: (p) => {
+                    p.button('Run draft generation', () => {});
+                  },
+                },
+              ], { defaultTab: 'Two' });
+            },
+          });
+        },
+      },
+      scope,
+      'light',
+    );
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.html).toContain('lk-shell');
+      expect(result.html).toContain('Run draft generation');
+      expect(result.html).toContain('data-lk-tab-target="Two"');
+    }
+  });
+
   it('returns ok: false when callback throws', () => {
     const scope = createConnectionScope('exec-err');
     const result = executeApp(
