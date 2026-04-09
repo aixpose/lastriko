@@ -381,7 +381,7 @@ function renderShell(handle: ComponentHandle<{ regions: Record<string, string[]>
   const hasSidebar = handle.props.regions.sidebar.length > 0;
   const toggleId = `${handle.id}-drawer-toggle`;
   const mobileToggle = hasSidebar
-    ? `<input id="${escapeHtml(toggleId)}" class="lk-shell-mobile-toggle" type="checkbox" />`
+    ? `<input id="${escapeHtml(toggleId)}" class="lk-shell-mobile-toggle" type="checkbox" aria-label="Toggle navigation drawer" />`
     : '';
   const mobileButton = hasSidebar && hasHeader
     ? `<label class="lk-shell-mobile-button" for="${escapeHtml(toggleId)}" aria-label="Toggle navigation">☰</label>`
@@ -478,7 +478,7 @@ function renderFilmStrip(handle: ComponentHandle<{ images: Array<{ src: string; 
     const src = image.thumbnail ?? image.src;
     const selected = index === (handle.props.selectedIndex ?? 0);
     const caption = image.caption && handle.props.showCaptions ? `<span class="lk-film-caption">${escapeHtml(image.caption)}</span>` : '';
-    return `<button type="button" class="lk-film-item${selected ? ' is-selected' : ''}" data-lk-event="click filmstrip-select" data-lk-index="${index}" data-lk-src="${escapeHtml(image.src)}" data-lk-alt="${escapeHtml(image.alt ?? 'Image')}" aria-selected="${selected ? 'true' : 'false'}" aria-label="Select image ${index + 1}"><img src="${escapeHtml(src)}" alt="${escapeHtml(image.alt ?? 'Image')}" loading="lazy" style="height:${handle.props.height ?? 120}px" />${caption}</button>`;
+    return `<button type="button" class="lk-film-item${selected ? ' is-selected' : ''}" data-lk-event="click filmstrip-select" data-lk-index="${index}" data-lk-src="${escapeHtml(image.src)}" data-lk-alt="${escapeHtml(image.alt ?? 'Image')}" role="option" aria-selected="${selected ? 'true' : 'false'}" aria-label="Select image ${index + 1}"><img src="${escapeHtml(src)}" alt="${escapeHtml(image.alt ?? 'Image')}" loading="lazy" style="height:${handle.props.height ?? 120}px" />${caption}</button>`;
   }).join('');
   const selected = handle.props.images[handle.props.selectedIndex ?? 0];
   const selectedHtml = selected ? `<figure class="lk-film-strip-viewer"><img src="${escapeHtml(selected.src)}" alt="${escapeHtml(selected.alt ?? 'Image')}" loading="lazy" /></figure>` : '';

@@ -16,13 +16,21 @@
     "test": "turbo run test",
     "test:coverage": "turbo run test:coverage",
     "test:integration": "turbo run test:integration",
-    "check:bundle": "node ./scripts/check-client-size.mjs"
+    "check:bundle": "node ./scripts/check-client-size.mjs",
+    "test:e2e": "npm run -w lastriko build && playwright test tests/e2e --project=chromium --project=mobile-chromium",
+    "test:a11y": "npm run -w lastriko build && playwright test tests/a11y --project=chromium",
+    "test:perf": "npm run -w lastriko build && playwright test tests/perf --project=perf-chromium",
+    "perf:report": "node ./scripts/generate-phase45-benchmark-summary.cjs",
+    "benchmark:phase45": "npm run test:perf && npm run perf:report"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^6.2.0",
+    "@axe-core/playwright": "^4.11.1",
+    "@playwright/test": "^1.59.1",
     "@vitest/coverage-v8": "^3.2.4",
     "eslint": "^9.39.1",
     "prettier": "^3.6.2",
+    "tsx": "^4.21.0",
     "turbo": "^2.5.8",
     "typescript": "^5.9.3",
     "vitest": "^3.2.4"

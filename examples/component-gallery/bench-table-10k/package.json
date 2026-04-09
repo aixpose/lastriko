@@ -1,0 +1,15 @@
+{
+  "name": "bench-table-10k",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build:core": "npm --prefix ../../../packages/core run build",
+    "dev:once": "npm run build:core && node --import tsx ./demo.ts"
+  },
+  "dependencies": {
+    "lastriko": "file:../../../packages/core"
+  },
+  "devDependencies": {
+    "tsx": "^4.21.0"
+  }
+}

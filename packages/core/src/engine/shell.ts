@@ -15,7 +15,7 @@ export function createHtmlShell(input: {
     : '';
 
   return `<!doctype html>
-<html data-theme="${input.initialTheme}">
+<html lang="en" data-theme="${input.initialTheme}">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
