@@ -197,6 +197,8 @@ describe('renderer phase 3 components', () => {
       update: () => {},
     } as unknown as AnyComponentHandle);
     expect(film).toContain('lk-film-strip');
+    expect(film).toContain('lk-film-strip-viewer');
+    expect(film).toContain('data-lk-event="click filmstrip-select"');
 
     const beforeAfter = renderComponent({
       id: 'beforeAfter-1',
@@ -207,6 +209,7 @@ describe('renderer phase 3 components', () => {
     } as unknown as AnyComponentHandle);
     expect(beforeAfter).toContain('lk-before-after');
     expect(beforeAfter).toContain('class="lk-before-after-handle"');
+    expect(beforeAfter).toContain('class="lk-before-after-range"');
   });
 
   it('renders virtualized table when row count is large', () => {
@@ -233,6 +236,8 @@ describe('renderer phase 3 components', () => {
     } as TableHandle);
     expect(table).toContain('data-lk-virtualized="true"');
     expect(table).toContain('data-lk-table-rows');
+    expect(table).toContain('data-lk-table-row-height="36"');
+    expect(table).toContain('data-lk-table-empty="none"');
   });
 
   it('renders tabs with proper role wiring', () => {

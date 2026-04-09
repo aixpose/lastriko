@@ -9,6 +9,26 @@ export interface HotReloadSnapshot {
   containerScroll: Record<string, number>;
 }
 
+interface VirtualTableRow {
+  id: string;
+  data: Record<string, unknown>;
+}
+
+interface VirtualTableData {
+  rows: VirtualTableRow[];
+  columns: string[];
+  rowHeight: number;
+}
+
+const VIRTUAL_OVERSCAN_ROWS = 8;
+const VIRTUAL_MIN_VISIBLE_ROWS = 8;
+const virtualBoundTables = new WeakSet<HTMLElement>();
+const virtualVisibleTables = new WeakSet<HTMLElement>();
+const virtualPendingFrames = new WeakMap<HTMLElement, number>();
+const virtualTables = new Set<HTMLElement>();
+let virtualObserver: IntersectionObserver | null = null;
+let virtualResizeBound = false;
+
 function escapeHtml(input: string): string {
   return input
     .replaceAll('&', '&amp;')
@@ -60,6 +80,170 @@ function writeInputValue(input: HTMLElement, value: unknown): void {
   }
 }
 
+function readComponentValue(holder: HTMLElement): unknown {
+  if (holder.dataset.lkKind === 'multiSelect') {
+    const selected: string[] = [];
+    for (const box of Array.from(holder.querySelectorAll<HTMLInputElement>('input[type="checkbox"][data-lk-multi-option]'))) {
+      if (box.checked) {
+        selected.push(box.value);
+      }
+    }
+    return selected;
+  }
+  const input = holder.querySelector<HTMLElement>('input, textarea, select');
+  return input ? readInputValue(input) : undefined;
+}
+
+function writeComponentValue(holder: HTMLElement, value: unknown): void {
+  if (holder.dataset.lkKind === 'multiSelect') {
+    const selected = new Set(Array.isArray(value) ? value.map((item) => String(item)) : []);
+    for (const box of Array.from(holder.querySelectorAll<HTMLInputElement>('input[type="checkbox"][data-lk-multi-option]'))) {
+      box.checked = selected.has(box.value);
+    }
+    return;
+  }
+  const input = holder.querySelector<HTMLElement>('input, textarea, select');
+  if (input) {
+    writeInputValue(input, value);
+  }
+}
+
+function parseVirtualTableData(container: HTMLElement): VirtualTableData | null {
+  if (container.dataset.lkVirtualized !== 'true') {
+    return null;
+  }
+  const rawRows = container.dataset.lkTableRows;
+  const rawColumns = container.dataset.lkTableColumns;
+  if (!rawRows || !rawColumns) {
+    return null;
+  }
+  let rows: VirtualTableRow[] = [];
+  let columns: string[] = [];
+  try {
+    rows = JSON.parse(rawRows) as VirtualTableRow[];
+    columns = JSON.parse(rawColumns) as string[];
+  } catch {
+    return null;
+  }
+  const rowHeight = Number(container.dataset.lkTableRowHeight ?? '36');
+  const safeRowHeight = Number.isFinite(rowHeight) && rowHeight > 0 ? rowHeight : 36;
+  return { rows, columns, rowHeight: safeRowHeight };
+}
+
+function buildVirtualRowsHtml(
+  rows: VirtualTableRow[],
+  columns: string[],
+  rowHeight: number,
+  startIndex: number,
+  endIndex: number,
+): string {
+  const clampedStart = Math.max(0, startIndex);
+  const clampedEnd = Math.min(rows.length, Math.max(clampedStart, endIndex));
+  const topPadding = clampedStart * rowHeight;
+  const bottomPadding = Math.max(0, (rows.length - clampedEnd) * rowHeight);
+  const output: string[] = [];
+
+  if (topPadding > 0) {
+    output.push(`<tr class="lk-table-virtual-spacer" aria-hidden="true"><td colspan="${Math.max(1, columns.length)}" style="height:${topPadding}px;padding:0;border:0;"></td></tr>`);
+  }
+
+  for (let i = clampedStart; i < clampedEnd; i += 1) {
+    const row = rows[i];
+    if (!row) {
+      continue;
+    }
+    const cells = columns
+      .map((column) => `<td>${escapeHtml(String(row.data[column] ?? ''))}</td>`)
+      .join('');
+    output.push(`<tr data-lk-table-row-id="${row.id}">${cells}</tr>`);
+  }
+
+  if (bottomPadding > 0) {
+    output.push(`<tr class="lk-table-virtual-spacer" aria-hidden="true"><td colspan="${Math.max(1, columns.length)}" style="height:${bottomPadding}px;padding:0;border:0;"></td></tr>`);
+  }
+
+  return output.join('');
+}
+
+function renderVirtualTableBody(container: HTMLElement): void {
+  const data = parseVirtualTableData(container);
+  if (!data) {
+    return;
+  }
+  const tbody = container.querySelector<HTMLTableSectionElement>('tbody');
+  if (!tbody) {
+    return;
+  }
+  const viewportHeight = Math.max(1, container.clientHeight || 420);
+  const visibleRows = Math.max(VIRTUAL_MIN_VISIBLE_ROWS, Math.ceil(viewportHeight / data.rowHeight));
+  const scrollTop = Math.max(0, container.scrollTop);
+  const start = Math.max(0, Math.floor(scrollTop / data.rowHeight) - VIRTUAL_OVERSCAN_ROWS);
+  const end = Math.min(data.rows.length, start + visibleRows + VIRTUAL_OVERSCAN_ROWS * 2);
+  tbody.innerHTML = buildVirtualRowsHtml(data.rows, data.columns, data.rowHeight, start, end);
+}
+
+function scheduleVirtualRefresh(container: HTMLElement): void {
+  const pending = virtualPendingFrames.get(container);
+  if (pending !== undefined) {
+    cancelAnimationFrame(pending);
+  }
+  const frame = window.requestAnimationFrame(() => {
+    virtualPendingFrames.delete(container);
+    renderVirtualTableBody(container);
+  });
+  virtualPendingFrames.set(container, frame);
+}
+
+function refreshVisibleVirtualTables(): void {
+  for (const container of Array.from(virtualTables)) {
+    if (!virtualVisibleTables.has(container)) {
+      continue;
+    }
+    scheduleVirtualRefresh(container);
+  }
+}
+
+export function observeVirtualTables(root: ParentNode = document): void {
+  const candidates = Array.from(root.querySelectorAll<HTMLElement>('.lk-table-wrap[data-lk-virtualized="true"]'));
+  if (candidates.length === 0) {
+    return;
+  }
+
+  if (!virtualObserver) {
+    virtualObserver = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        const target = entry.target as HTMLElement;
+        if (entry.isIntersecting) {
+          virtualVisibleTables.add(target);
+          scheduleVirtualRefresh(target);
+        } else {
+          virtualVisibleTables.delete(target);
+        }
+      }
+    }, { threshold: 0 });
+  }
+
+  if (!virtualResizeBound) {
+    virtualResizeBound = true;
+    window.addEventListener('resize', refreshVisibleVirtualTables);
+  }
+
+  for (const container of candidates) {
+    if (virtualBoundTables.has(container)) {
+      continue;
+    }
+    virtualBoundTables.add(container);
+    virtualTables.add(container);
+    container.addEventListener('scroll', () => {
+      if (virtualVisibleTables.has(container)) {
+        scheduleVirtualRefresh(container);
+      }
+    });
+    virtualObserver.observe(container);
+    scheduleVirtualRefresh(container);
+  }
+}
+
 export function saveHotReloadSnapshot(): void {
   const snapshot: HotReloadSnapshot = {
     inputs: {},
@@ -68,12 +252,15 @@ export function saveHotReloadSnapshot(): void {
     containerScroll: {},
   };
 
-  for (const field of Array.from(document.querySelectorAll<HTMLElement>('[data-lk-id] input, [data-lk-id] textarea, [data-lk-id] select'))) {
-    const holder = field.closest<HTMLElement>('[data-lk-id]');
-    if (!holder?.dataset.lkId) {
+  for (const holder of Array.from(document.querySelectorAll<HTMLElement>('[data-lk-id]'))) {
+    const id = holder.dataset.lkId;
+    if (!id) {
       continue;
     }
-    snapshot.inputs[holder.dataset.lkId] = readInputValue(field);
+    const value = readComponentValue(holder);
+    if (value !== undefined) {
+      snapshot.inputs[id] = value;
+    }
   }
 
   for (const tabsRoot of Array.from(document.querySelectorAll<HTMLElement>('.lk-tabs[data-lk-id]'))) {
@@ -119,10 +306,7 @@ export function restoreHotReloadSnapshot(): void {
     if (!holder) {
       continue;
     }
-    const input = holder.querySelector<HTMLElement>('input, textarea, select');
-    if (input) {
-      writeInputValue(input, value);
-    }
+    writeComponentValue(holder, value);
   }
 
   for (const [tabsId, label] of Object.entries(parsed.tabs)) {
@@ -208,6 +392,7 @@ export function applyRender(payload: RenderMessage['payload']): void {
   root.innerHTML = payload.html;
   document.title = payload.title;
   document.documentElement.setAttribute('data-theme', payload.theme);
+  observeVirtualTables(document);
 }
 
 export function applyFragmentSwap(id: string, html: string): void {
@@ -216,6 +401,7 @@ export function applyFragmentSwap(id: string, html: string): void {
     return;
   }
   target.outerHTML = html;
+  observeVirtualTables(document);
 }
 
 export function applyStreamChunk(
@@ -260,4 +446,20 @@ export function applyBatch(payload: BatchMessage['payload']): void {
   for (const entry of payload.messages) {
     applyBatchedInner(entry);
   }
+}
+
+export function __resetVirtualTableStateForTests(): void {
+  if (virtualObserver) {
+    virtualObserver.disconnect();
+    virtualObserver = null;
+  }
+  for (const container of Array.from(virtualTables)) {
+    const pending = virtualPendingFrames.get(container);
+    if (pending !== undefined) {
+      cancelAnimationFrame(pending);
+      virtualPendingFrames.delete(container);
+    }
+  }
+  virtualTables.clear();
+  virtualResizeBound = false;
 }

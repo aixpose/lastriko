@@ -62,10 +62,78 @@ function closestWithEventToken(target: EventTarget | null, token: string): Eleme
   return null;
 }
 
+function hasAnyEventToken(element: Element, tokens: string[]): boolean {
+  return tokens.some((token) => hasEventToken(element, token));
+}
+
 function sendEvent(channel: EventChannel, id: string, event: 'click' | 'change' | 'blur' | 'focus', value?: unknown): void {
   channel.send({
     type: 'EVENT',
     payload: { id, event, value },
+  });
+}
+
+function bindWidgetClicks(root: Document, channel: EventChannel): void {
+  root.addEventListener('click', (event) => {
+    if (!(event.target instanceof Element)) {
+      return;
+    }
+
+    const swatch = closestWithEventToken(event.target, 'pick-swatch');
+    if (swatch) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      const holder = swatch.closest<HTMLElement>('[data-lk-id][data-lk-kind="colorPicker"]');
+      const id = holder?.dataset.lkId;
+      const picked = swatch.getAttribute('data-lk-swatch') ?? '';
+      if (!holder || !id || !picked) {
+        return;
+      }
+      const colorInput = holder.querySelector<HTMLInputElement>('input[type="color"]');
+      if (colorInput) {
+        colorInput.value = picked;
+      }
+      const code = holder.querySelector<HTMLElement>('.lk-color-value');
+      if (code) {
+        code.textContent = picked;
+      }
+      sendEvent(channel, id, 'change', picked);
+      return;
+    }
+
+    const filmItem = closestWithEventToken(event.target, 'filmstrip-select');
+    if (!filmItem) {
+      return;
+    }
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    const strip = filmItem.closest<HTMLElement>('.lk-film-strip[data-lk-id]');
+    const id = strip?.dataset.lkId;
+    if (!strip || !id) {
+      return;
+    }
+    const index = Number((filmItem as HTMLElement).dataset.lkIndex ?? '-1');
+    const buttons = Array.from(strip.querySelectorAll<HTMLButtonElement>('.lk-film-item[data-lk-index]'));
+    const preview = strip.querySelector<HTMLImageElement>('.lk-film-strip-viewer img');
+    for (const [i, button] of buttons.entries()) {
+      const active = i === index;
+      button.classList.toggle('is-selected', active);
+      button.setAttribute('aria-selected', active ? 'true' : 'false');
+      if (!active || !preview) {
+        continue;
+      }
+      const src = button.dataset.lkSrc;
+      const alt = button.dataset.lkAlt;
+      if (src) {
+        preview.src = src;
+      }
+      if (alt) {
+        preview.alt = alt;
+      }
+    }
+    if (index >= 0) {
+      sendEvent(channel, id, 'change', index);
+    }
   });
 }
 
@@ -124,6 +192,8 @@ function bindGenericClicks(root: Document, channel: EventChannel): void {
       return;
     const clickable = closestWithEventToken(event.target, 'click');
     if (!clickable)
+      return;
+    if (hasAnyEventToken(clickable, ['pick-swatch', 'filmstrip-select']))
       return;
     const id = resolveComponentId(clickable);
     if (!id)
@@ -273,6 +343,7 @@ function bindFileUpload(root: Document, channel: EventChannel): void {
 }
 
 export function bindEventDelegation(root: Document, channel: EventChannel): void {
+  bindWidgetClicks(root, channel);
   bindTabs(root, channel);
   bindGenericClicks(root, channel);
   bindTableClicks(root, channel);

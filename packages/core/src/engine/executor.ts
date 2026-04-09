@@ -57,6 +57,24 @@ export function handleClientEvent(scope: ConnectionScope, payload: ClientEventPa
       return;
     }
 
+    if (handle.type === 'filmStrip') {
+      const next = Number(payload.value);
+      if (!Number.isNaN(next)) {
+        (handle.props as { selectedIndex?: number }).selectedIndex = Math.max(0, Math.trunc(next));
+      }
+      scope.pushFragment(handle);
+      return;
+    }
+
+    if (handle.type === 'beforeAfter') {
+      const next = Number(payload.value);
+      if (!Number.isNaN(next)) {
+        (handle.props as { initialPosition?: number }).initialPosition = Math.max(0, Math.min(100, next));
+      }
+      scope.pushFragment(handle);
+      return;
+    }
+
     scope.pushFragment(handle);
     return;
   }

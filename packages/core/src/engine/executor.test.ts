@@ -133,4 +133,39 @@ describe('handleClientEvent', () => {
       expect(fragment?.payload.html).toContain('aria-selected="true"');
     });
   });
+
+  it('routes filmStrip and beforeAfter change events into fragment updates', async () => {
+    const scope = createConnectionScope('exec-phase3-media');
+    const ui = new UIContext(scope);
+    ui.filmStrip(['/a.png', '/b.png'], { selectedIndex: 0 });
+    ui.beforeAfter('/before.png', '/after.png', { initialPosition: 40 });
+
+    const film = scope.getHandle('filmStrip-1');
+    const beforeAfter = scope.getHandle('beforeAfter-1');
+    expect(film).toBeDefined();
+    expect(beforeAfter).toBeDefined();
+    scope.outbox.length = 0;
+
+    handleClientEvent(scope, {
+      id: film!.id,
+      event: 'change',
+      value: 1,
+    });
+    handleClientEvent(scope, {
+      id: beforeAfter!.id,
+      event: 'change',
+      value: 72,
+    });
+
+    await vi.waitFor(() => {
+      const fragments = scope.outbox
+        .filter((message) => message.type === 'BATCH')
+        .flatMap((message) => (message as {
+          payload: { messages: Array<{ type: 'FRAGMENT'; payload: { id: string; html: string } }> };
+        }).payload.messages)
+        .filter((entry) => entry.type === 'FRAGMENT');
+      expect(fragments.some((entry) => entry.payload.id === film!.id && entry.payload.html.includes('data-lk-index="1"'))).toBe(true);
+      expect(fragments.some((entry) => entry.payload.id === beforeAfter!.id && entry.payload.html.includes('value="72"'))).toBe(true);
+    });
+  });
 });

@@ -1,6 +1,6 @@
 # Component gallery
 
-Interactive tour of **foundation** (Phase 1) and **MVP components** (Phase 2): layout, inputs, display, feedback, and AI-oriented widgets in one page.
+Interactive tour of **all shipped components through Phase 3**: layout, inputs, display/media, feedback, AI widgets, and advanced composites in tabbed pages.
 
 ## Run
 
@@ -18,10 +18,11 @@ Open the URL printed in the terminal (default port **3500**). The dev script reb
 
 ## What it shows
 
-- **Shell + grid**: page structure (header, sidebar, main).
-- **Inputs**: button, text/number inputs, slider, toggle, select, file upload, prompt editor.
-- **Display**: text, markdown, code, JSON, table (with row actions), metrics, progress, images.
-- **Feedback**: toast, alert, loading, divider, spacer, card, tabs.
-- **AI-oriented**: streaming text, chat UI.
+- **Inputs & controls page:** button, textInput, numberInput, slider, toggle, select, `multiSelect`, `colorPicker`, `dateInput`.
+- **Display & media page:** text/markdown/code/json/image/imageGrid, plus `video`, `audio`, `diff`.
+- **Layout & containers page:** shell/grid/tabs/card/divider/spacer, plus `accordion` and `fullscreen`.
+- **AI & advanced page:** streamText, chatUI, promptEditor, `modelCompare`, `parameterPanel`, `filmStrip`, `beforeAfter`.
+- **Data table page:** large-table virtualization path with interactive row actions (`append`, `remove`, row click, row handle updates).
+- **Footer:** fileUpload (`POST /upload`) metadata flow.
 
 Use **Toggle theme** in the header to switch light/dark mode.
