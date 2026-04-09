@@ -4,7 +4,7 @@
 >
 > This document covers the public API of the `lastriko` npm package. Plugin APIs are documented in their respective plugin packages.
 >
-> Status markers: ✅ Phase 2 | 🔷 Phase 3 | 🔌 Phase 4 (requires plugin)
+> Status markers: ✅ Shipped in core | 🔌 Phase 4 (requires plugin)
 
 ---
 
@@ -151,7 +151,7 @@ ui.fileUpload(label: string, opts?: FileUploadOpts): FileUploadComponent
 
 ---
 
-#### `ui.multiSelect()` 🔷
+#### `ui.multiSelect()` ✅
 
 ```typescript
 ui.multiSelect(label: string, options: SelectOption[], opts?: MultiSelectOpts): MultiSelectComponent
@@ -160,7 +160,7 @@ ui.multiSelect(label: string, options: SelectOption[], opts?: MultiSelectOpts): 
 
 ---
 
-#### `ui.colorPicker()` 🔷
+#### `ui.colorPicker()` ✅
 
 ```typescript
 ui.colorPicker(label: string, opts?: ColorPickerOpts): ColorPickerComponent
@@ -169,7 +169,7 @@ ui.colorPicker(label: string, opts?: ColorPickerOpts): ColorPickerComponent
 
 ---
 
-#### `ui.dateInput()` 🔷
+#### `ui.dateInput()` ✅
 
 ```typescript
 ui.dateInput(label: string, opts?: DateInputOpts): DateInputComponent
@@ -271,7 +271,7 @@ ui.progress(value: number | null, opts?: ProgressOpts): ProgressComponent
 
 ---
 
-#### `ui.video()` 🔷
+#### `ui.video()` ✅
 
 ```typescript
 ui.video(src: string, opts?: VideoOpts): void
@@ -279,7 +279,7 @@ ui.video(src: string, opts?: VideoOpts): void
 
 ---
 
-#### `ui.audio()` 🔷
+#### `ui.audio()` ✅
 
 ```typescript
 ui.audio(src: string, opts?: AudioOpts): void
@@ -287,7 +287,7 @@ ui.audio(src: string, opts?: AudioOpts): void
 
 ---
 
-#### `ui.diff()` 🔷
+#### `ui.diff()` ✅
 
 ```typescript
 ui.diff(before: string, after: string, opts?: DiffOpts): void
@@ -387,7 +387,7 @@ ui.spacer(size?: number | 'sm' | 'md' | 'lg'): void
 
 ---
 
-#### `ui.accordion()` 🔷
+#### `ui.accordion()` ✅
 
 ```typescript
 ui.accordion(sections: AccordionDef[], opts?: AccordionOpts): AccordionComponent
@@ -395,7 +395,7 @@ ui.accordion(sections: AccordionDef[], opts?: AccordionOpts): AccordionComponent
 
 ---
 
-#### `ui.fullscreen()` 🔷
+#### `ui.fullscreen()` ✅
 
 ```typescript
 ui.fullscreen(content: (ctx: UIContext) => void, opts?: FullscreenOpts): FullscreenComponent
@@ -465,7 +465,7 @@ ui.promptEditor(opts?: PromptEditorOpts): PromptEditorComponent
 
 ---
 
-#### `ui.modelCompare()` 🔷
+#### `ui.modelCompare()` ✅
 
 ```typescript
 ui.modelCompare(models: ModelSpec[], opts?: ModelCompareOpts): ModelCompareComponent
@@ -473,7 +473,7 @@ ui.modelCompare(models: ModelSpec[], opts?: ModelCompareOpts): ModelCompareCompo
 
 ---
 
-#### `ui.parameterPanel()` 🔷
+#### `ui.parameterPanel()` ✅
 
 ```typescript
 ui.parameterPanel(schema: ParameterSchema, opts?: ParameterPanelOpts): ParameterPanelComponent
@@ -481,7 +481,7 @@ ui.parameterPanel(schema: ParameterSchema, opts?: ParameterPanelOpts): Parameter
 
 ---
 
-#### `ui.filmStrip()` 🔷
+#### `ui.filmStrip()` ✅
 
 ```typescript
 ui.filmStrip(images: Array<string | FilmStripItem>, opts?: FilmStripOpts): void
@@ -489,7 +489,7 @@ ui.filmStrip(images: Array<string | FilmStripItem>, opts?: FilmStripOpts): void
 
 ---
 
-#### `ui.beforeAfter()` 🔷
+#### `ui.beforeAfter()` ✅
 
 ```typescript
 ui.beforeAfter(before: string, after: string, opts?: BeforeAfterOpts): void
@@ -507,9 +507,9 @@ ui.setTheme(mode: 'light' | 'dark' | 'auto'): void
 
 ---
 
-#### `ui.navigate()` 🔷
+#### `ui.navigate()`
 
-> Deferred in Phase 3 per [PHASE-3.md](phases/PHASE-3.md#pre-phase-decisions-required).
+> Deferred. Multi-page support remains out of core flow and is tracked outside shipped API.
 
 ```typescript
 ui.navigate(page: string): void
@@ -517,9 +517,9 @@ ui.navigate(page: string): void
 
 ---
 
-#### `ui.page()` 🔷
+#### `ui.page()`
 
-> Deferred in Phase 3 per [PHASE-3.md](phases/PHASE-3.md#pre-phase-decisions-required).
+> Deferred. Multi-page support remains out of core flow and is tracked outside shipped API.
 
 ```typescript
 ui.page(name: string, content: (page: UIContext) => void): void

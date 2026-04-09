@@ -2,7 +2,7 @@
 
 > **The TypeScript UI Toolkit for AI Demos & Rapid Prototyping**
 >
-> Version 0.1.18 — April 2026
+> Version 0.1.20 — April 2026
 > AIXPOSE OÜ
 
 ---
@@ -42,7 +42,6 @@ See [`.cursor/rules/`](.cursor/rules/) for the enforced Cursor rules that implem
 
 **Sub-documents:**
 
-- [docs/phases/PHASE-3.md](docs/phases/PHASE-3.md) — Advanced Components & Polish
 - [docs/phases/PHASE-4.md](docs/phases/PHASE-4.md) — Plugin Ecosystem
 - [docs/phases/PHASE-4-5.md](docs/phases/PHASE-4-5.md) — Quality & Compliance Hardening
 - [docs/phases/PHASE-5.md](docs/phases/PHASE-5.md) — Desktop & Distribution
@@ -88,6 +87,7 @@ See [`.cursor/rules/`](.cursor/rules/) for the enforced Cursor rules that implem
 | 2026-04-08 | 0.1.17 | Retire PHASE-2 phase doc from forward iteration docs: remove roadmap/index links and Phase-2 file references, keep completion state in MANIFEST roadmap/history | Cloud Agent |
 | 2026-04-08 | 0.1.18 | Phase 3 protocol preflight: document `BATCH` server message (`{ type: 'BATCH', payload: { messages: [...] } }`) to support 16ms fragment/stream coalescing before implementation | Cloud Agent |
 | 2026-04-09 | 0.1.19 | Roadmap update: introduce Phase 4.5 (Quality & Compliance Hardening) to carry deferred a11y/E2E/benchmark requirements from Phase 3; remove standalone Phase 3 evidence matrix artifact | Cloud Agent |
+| 2026-04-09 | 0.1.20 | Phase 3 closure cleanup: retire standalone `docs/phases/PHASE-3.md` and remove forward links, keeping completion state in roadmap/history | Cloud Agent |
 
 > **When updating:** Add a row to this table for every meaningful change to this document. Include what section changed and why.
 
@@ -811,7 +811,6 @@ Plugin dependencies must not appear in the core package. The core never `import`
 ## 11. Development Phases & Roadmap
 
 > Active phase docs:
-> - [docs/phases/PHASE-3.md](docs/phases/PHASE-3.md)
 > - [docs/phases/PHASE-4.md](docs/phases/PHASE-4.md)
 > - [docs/phases/PHASE-4-5.md](docs/phases/PHASE-4-5.md)
 > - [docs/phases/PHASE-5.md](docs/phases/PHASE-5.md)

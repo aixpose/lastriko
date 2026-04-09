@@ -256,4 +256,4 @@ Add to `examples/`:
 
 ---
 
-*[← Phase 3](PHASE-3.md) — Phase 4 of 7 — [Next: Phase 4.5 →](PHASE-4-5.md)*
+*Phase 4 of 7 — [Next: Phase 4.5 →](PHASE-4-5.md)*
