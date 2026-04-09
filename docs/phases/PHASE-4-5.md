@@ -1,7 +1,7 @@
 # Phase 4.5 — Quality & Compliance Hardening
 
 > **Back to:** [MANIFEST.md](../../MANIFEST.md)
-> **Status:** Not Started
+> **Status:** In Progress
 > **Target version:** `0.3.5`
 
 ---
@@ -26,6 +26,17 @@ This phase is verification-focused: no new component surface, no plugin scope, n
    - rapid slider event batching target
    - lazy image loading first-paint target
 4. Results are documented in phase docs and linked from roadmap/changelog.
+
+## Implementation Notes (current)
+
+- Playwright config: `playwright.config.ts`
+- E2E specs: `tests/e2e/*.spec.ts`
+- Accessibility specs: `tests/a11y/*.a11y.spec.ts` (Playwright + aXe)
+- Benchmark specs: `tests/perf/*.spec.ts`
+- Benchmark artifacts:
+  - machine-readable JSON in `artifacts/phase4-5/benchmarks/`
+  - markdown summary in [docs/benchmarks/PHASE-4-5.md](../benchmarks/PHASE-4-5.md)
+- CI uploads screenshot/trace/video artifacts for visibility on failures.
 
 ---
 
