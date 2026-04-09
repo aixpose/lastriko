@@ -7,7 +7,8 @@
   },
   "packageManager": "npm@10.9.0",
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "examples/image-viewer"
   ],
   "scripts": {
     "build": "turbo run build",

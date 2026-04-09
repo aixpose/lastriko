@@ -91,6 +91,7 @@ See [`.cursor/rules/`](.cursor/rules/) for the enforced Cursor rules that implem
 | 2026-04-09 | 0.1.21 | Roadmap sequencing update: make Phase 4.5 the active in-progress phase (quality/compliance hardening) before Phase 4 plugin ecosystem work resumes | Cloud Agent |
 | 2026-04-09 | 0.1.22 | Phase 4.5 test hardening spec: add Playwright E2E/a11y/perf benchmark workflow requirements and approve `@playwright/test` + `@axe-core/playwright` dev dependencies | Cloud Agent |
 | 2026-04-09 | 0.1.23 | Phase 4.5 stabilization: harden Playwright reliability (single-worker + resilient selectors), fix filmStrip a11y naming, and validate benchmark artifact generation/results docs | Cloud Agent |
+| 2026-04-09 | 0.1.24 | Public API: export `TabsHandle` from `lastriko` entry (Appendix A quick reference); `examples/image-viewer` npm workspace + Playwright E2E coverage | Cloud Agent |
 
 > **When updating:** Add a row to this table for every meaningful change to this document. Include what section changed and why.
 
@@ -1130,6 +1131,7 @@ import {
   type MetricHandle, type ProgressHandle, type StreamHandle,
   type LastrikoPlugin, type PluginContext, type UIContext,
   type ShellRegions, type ShellOpts, type GridOpts,
+  type TabsHandle,
 } from 'lastriko';
 ```
 
