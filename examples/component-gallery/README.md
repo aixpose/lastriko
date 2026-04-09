@@ -1,6 +1,12 @@
 # Component gallery
 
-Interactive tour of **all shipped components through Phase 3**: layout, inputs, display/media, feedback, AI widgets, and advanced composites in tabbed pages.
+Functional 3-page demo for Lastriko components with **progressive complexity**.
+
+The gallery is intentionally structured by workflow goal rather than by raw component count:
+
+1. **Task Intake** — collect validated inputs and produce a concrete run payload.
+2. **Execution Desk** — run/track jobs with live streams, chat, and table mutations.
+3. **Review Studio** — compare outputs with media + advanced analysis widgets.
 
 ## Run
 
@@ -18,11 +24,21 @@ Open the URL printed in the terminal (default port **3500**). The dev script reb
 
 ## What it shows
 
-- **Inputs & controls page:** button, textInput, numberInput, slider, toggle, select, `multiSelect`, `colorPicker`, `dateInput`.
-- **Display & media page:** text/markdown/code/json/image/imageGrid, plus `video`, `audio`, `diff`.
-- **Layout & containers page:** shell/grid/tabs/card/divider/spacer, plus `accordion` and `fullscreen`.
-- **AI & advanced page:** streamText, chatUI, promptEditor, `modelCompare`, `parameterPanel`, `filmStrip`, `beforeAfter`.
-- **Data table page:** large-table virtualization path with interactive row actions (`append`, `remove`, row click, row handle updates).
-- **Footer:** fileUpload (`POST /upload`) metadata flow.
+### Page 1 — Task Intake (foundation)
+- Inputs: `textInput`, `numberInput`, `slider`, `toggle`, `select`, `multiSelect`, `colorPicker`, `dateInput`, `fileUpload`
+- Validation + payload preview: `json`, `code`, `metric`
+- Goal: build a coherent task config and persist it into the app workflow
+
+### Page 2 — Execution Desk (operational)
+- Queue/status: `table` (+ row click, row handle updates, append/remove), `metric`, `progress`
+- Live outputs: `streamText`, `chatUI`, `promptEditor`
+- Goal: execute and monitor tasks with interactive state updates
+
+### Page 3 — Review Studio (advanced)
+- Structured review: `tabs`, `accordion`, `fullscreen`, `card`, `divider`, `spacer`
+- Analysis/media: `modelCompare`, `parameterPanel`, `diff`, `image`, `imageGrid`, `filmStrip`, `beforeAfter`, `video`, `audio`, `markdown`, `text`
+- Goal: inspect and compare outputs with progressively richer tools
+
+The app keeps cross-page state so every action has visible consequence.
 
 Use **Toggle theme** in the header to switch light/dark mode.
