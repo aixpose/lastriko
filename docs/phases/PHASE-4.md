@@ -1,7 +1,7 @@
 # Phase 4 — Plugin Ecosystem
 
 > **Back to:** [MANIFEST.md](../../MANIFEST.md)
-> **Status:** Not Started
+> **Status:** Not Started (deferred while Phase 4.5 quality gates run first)
 > **Target version:** `0.3.0` (plugins ship as `@lastriko/*` v0.1.0)
 
 ---

@@ -1,7 +1,7 @@
 # Phase 4.5 — Quality & Compliance Hardening
 
 > **Back to:** [MANIFEST.md](../../MANIFEST.md)
-> **Status:** Not Started
+> **Status:** In Progress
 > **Target version:** `0.3.5`
 
 ---

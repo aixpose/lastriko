@@ -2,7 +2,7 @@
 
 > **The TypeScript UI Toolkit for AI Demos & Rapid Prototyping**
 >
-> Version 0.1.20 — April 2026
+> Version 0.1.21 — April 2026
 > AIXPOSE OÜ
 
 ---
@@ -88,6 +88,7 @@ See [`.cursor/rules/`](.cursor/rules/) for the enforced Cursor rules that implem
 | 2026-04-08 | 0.1.18 | Phase 3 protocol preflight: document `BATCH` server message (`{ type: 'BATCH', payload: { messages: [...] } }`) to support 16ms fragment/stream coalescing before implementation | Cloud Agent |
 | 2026-04-09 | 0.1.19 | Roadmap update: introduce Phase 4.5 (Quality & Compliance Hardening) to carry deferred a11y/E2E/benchmark requirements from Phase 3; remove standalone Phase 3 evidence matrix artifact | Cloud Agent |
 | 2026-04-09 | 0.1.20 | Phase 3 closure cleanup: retire standalone `docs/phases/PHASE-3.md` and remove forward links, keeping completion state in roadmap/history | Cloud Agent |
+| 2026-04-09 | 0.1.21 | Roadmap sequencing update: make Phase 4.5 the active in-progress phase (quality/compliance hardening) before Phase 4 plugin ecosystem work resumes | Cloud Agent |
 
 > **When updating:** Add a row to this table for every meaningful change to this document. Include what section changed and why.
 
@@ -823,8 +824,8 @@ Each phase produces a usable, publishable npm package. **Ship early, iterate fas
 | 1 | Infrastructure & Foundation | Working skeleton: serve a page, sync state, render basic components | Complete |
 | 2 | MVP Components | v0.1.0: enough components to build a real AI demo | Complete |
 | 3 | Advanced Components & Polish | Feature parity with full component table | Complete |
-| 4 | Plugin Ecosystem | First official plugins (OpenAI, Anthropic, Ollama, Neutralino) | In Progress |
-| 4.5 | Quality & Compliance Hardening | Deferred quality gates: a11y audit CI gate, Phase 3 E2E suite, benchmark artifacts | Not Started |
+| 4 | Plugin Ecosystem | First official plugins (OpenAI, Anthropic, Ollama, Neutralino) | Not Started |
+| 4.5 | Quality & Compliance Hardening | Deferred quality gates: a11y audit CI gate, Phase 3 E2E suite, benchmark artifacts | In Progress |
 | 5 | Desktop & Distribution | One-command desktop export, static export, Docker | Not Started |
 | 6 | Ecosystem & Community | Templates gallery, community plugins, Lastriko Cloud concept | Not Started |
 
