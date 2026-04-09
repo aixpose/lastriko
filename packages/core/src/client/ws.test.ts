@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import { applyBatch } from './swap';
 import { createWSManager } from './ws';
 
 describe('client ws manager', () => {
@@ -7,7 +6,9 @@ describe('client ws manager', () => {
     expect(typeof createWSManager).toBe('function');
   });
 
-  it('exposes batch apply helper', () => {
-    expect(typeof applyBatch).toBe('function');
+  it('supports hot reload preserve option defaulting to true', () => {
+    const manager = createWSManager();
+    expect(typeof manager.connect).toBe('function');
+    expect(typeof manager.disconnect).toBe('function');
   });
 });

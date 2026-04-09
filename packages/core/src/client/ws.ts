@@ -247,6 +247,7 @@ function applyMessage(parsed: ServerMessage): void {
   switch (parsed.type) {
     case 'RENDER':
       applyRender(parsed.payload);
+      restoreHotReloadSnapshot();
       clearErrorOverlay();
       initTabState();
       syncShellDrawerButtons(document);
@@ -349,7 +350,6 @@ export function createWSManager(opts: WSManagerOptions = {}): WSManager {
           })(),
         },
       });
-
     };
 
     ws.onmessage = (event) => {
