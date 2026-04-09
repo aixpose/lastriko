@@ -41,9 +41,9 @@ Run `bun demo.ts` — a browser opens with a live, structured, interactive page.
 
 ## Status
 
-This repository contains the project specification, the `lastriko` core package, and the active **Advanced Components & Polish** roadmap phase.
+This repository contains the project specification, the `lastriko` core package, and the active **Plugin Ecosystem** roadmap phase.
 
-**Current phase:** [Advanced Components & Polish](docs/phases/PHASE-3.md) (see [MANIFEST.md](MANIFEST.md#11-development-phases--roadmap))
+**Current phase:** [Plugin Ecosystem](docs/phases/PHASE-4.md) (see [MANIFEST.md](MANIFEST.md#11-development-phases--roadmap))
 
 ---
 
@@ -61,8 +61,9 @@ This repository contains the project specification, the `lastriko` core package,
 |-------|----------|--------|
 | 1 | Infrastructure & Foundation — [MANIFEST.md §11.1](MANIFEST.md#111-foundation-milestone-complete) | Complete |
 | 2 | MVP Components | Complete |
-| 3 | [Advanced Components & Polish](docs/phases/PHASE-3.md) | In Progress |
-| 4 | [Plugin Ecosystem](docs/phases/PHASE-4.md) | Not Started |
+| 3 | Advanced Components & Polish | Complete |
+| 4 | [Plugin Ecosystem](docs/phases/PHASE-4.md) | In Progress |
+| 4.5 | [Quality & Compliance Hardening](docs/phases/PHASE-4-5.md) | Not Started |
 | 5 | [Desktop & Distribution](docs/phases/PHASE-5.md) | Not Started |
 | 6 | [Ecosystem & Community](docs/phases/PHASE-6.md) | Not Started |
 
